@@ -1,0 +1,7 @@
+{
+  "name": "MrFileFixit",
+  "description": "Professional-grade, local-first file utility workshop. Resize images, merge PDFs, and extract text entirely in your browser with 100% privacy.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
