@@ -3,6 +3,7 @@ import nlp from 'compromise';
 import natural from 'natural';
 import Sentiment from 'sentiment';
 import { extract } from 'keywords-extractor';
+import { config } from '../config';
 
 // Initialize sentiment analyzer
 const sentiment = new Sentiment();
