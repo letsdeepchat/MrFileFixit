@@ -15,7 +15,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         pluginManager.apply(libs.pluginId("android-application"))
         pluginManager.apply(libs.pluginId("kotlin-compose"))
         extensions.configure<ApplicationExtension> {
-            configureAndroidApplication()
+            configureAndroidApplication(rootDir.resolve("config/lint/lint.xml"))
             buildFeatures { compose = true }
         }
         configureKotlin()

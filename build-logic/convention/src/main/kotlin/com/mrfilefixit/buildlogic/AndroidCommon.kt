@@ -3,6 +3,7 @@ package com.mrfilefixit.buildlogic
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.Lint
+import java.io.File
 
 /**
  * Lint ids that are about the build environment rather than code quality.
@@ -16,7 +17,8 @@ private val ENVIRONMENT_LINT_IDS = setOf(
     "OldTargetApi",
 )
 
-internal fun Lint.configureZeroWarningLint() {
+internal fun Lint.configureZeroWarningLint(config: File) {
+    lintConfig = config
     warningsAsErrors = true
     abortOnError = true
     checkReleaseBuilds = true
@@ -27,11 +29,11 @@ internal fun Lint.configureZeroWarningLint() {
     sarifReport = true
     // Print every finding to the build log, not just the first, so CI shows the whole list at once.
     textReport = true
-    textOutput = java.io.File("stdout")
+    textOutput = File("stdout")
     explainIssues = false
 }
 
-internal fun ApplicationExtension.configureAndroidApplication() {
+internal fun ApplicationExtension.configureAndroidApplication(lintConfig: File) {
     compileSdk = Sdk.COMPILE
     defaultConfig {
         minSdk = Sdk.MIN
@@ -44,7 +46,7 @@ internal fun ApplicationExtension.configureAndroidApplication() {
         targetCompatibility = JAVA_VERSION
     }
     lint {
-        configureZeroWarningLint()
+        configureZeroWarningLint(lintConfig)
         // The app run sees every module, so unused-resource checks are accurate only here.
         checkDependencies = true
     }
@@ -53,7 +55,7 @@ internal fun ApplicationExtension.configureAndroidApplication() {
     }
 }
 
-internal fun LibraryExtension.configureAndroidLibrary() {
+internal fun LibraryExtension.configureAndroidLibrary(lintConfig: File) {
     compileSdk = Sdk.COMPILE
     defaultConfig {
         minSdk = Sdk.MIN
@@ -65,7 +67,7 @@ internal fun LibraryExtension.configureAndroidLibrary() {
         targetCompatibility = JAVA_VERSION
     }
     lint {
-        configureZeroWarningLint()
+        configureZeroWarningLint(lintConfig)
         targetSdk = Sdk.TARGET
         // A library cannot see which of its resources other modules use; :app checks this with dependencies.
         disable += "UnusedResources"
