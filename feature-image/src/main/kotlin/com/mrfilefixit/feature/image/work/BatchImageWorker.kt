@@ -14,7 +14,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.mrfilefixit.core.domain.image.BatchImageUseCase
 import com.mrfilefixit.core.domain.job.ProgressReporter
-import com.mrfilefixit.core.domain.result.Result
+import com.mrfilefixit.core.domain.result.Result as DomainResult
 import com.mrfilefixit.feature.image.R
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -38,14 +38,15 @@ class BatchImageWorker @AssistedInject constructor(
             ?: return@coroutineScope WorkResult.failure()
         setForeground(getForegroundInfo())
         val (sources, spec) = BatchSpecSerialization.decode(File(jobDir, SPEC_FILE).readText())
+        // ListenableWorker.Result shadows the domain Result inside a worker, hence the import alias.
         // One progress event per image; each is published without blocking the batch.
         val reporter = ProgressReporter { p -> launch { setProgress(workDataOf(KEY_PROGRESS to p)) } }
         when (val outcome = batch(sources, spec, jobDir.absolutePath, reporter)) {
-            is Result.Success -> {
+            is DomainResult.Success -> {
                 File(jobDir, RESULT_FILE).writeText(BatchSpecSerialization.encodeResult(outcome.value))
                 WorkResult.success()
             }
-            is Result.Failure -> WorkResult.failure(workDataOf(KEY_ERROR to outcome.error.javaClass.simpleName))
+            is DomainResult.Failure -> WorkResult.failure(workDataOf(KEY_ERROR to outcome.error.javaClass.simpleName))
         }
     }
 
