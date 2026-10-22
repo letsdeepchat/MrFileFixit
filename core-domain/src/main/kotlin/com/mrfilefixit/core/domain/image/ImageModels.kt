@@ -119,11 +119,20 @@ sealed interface EncodeTarget {
         val minBytes: Long,
         val maxBytes: Long,
         val allowPadding: Boolean = false,
+        /** Shrink pixel dimensions when even the lowest quality is too big. Off when dimensions are fixed. */
+        val allowDownscale: Boolean = false,
     ) : EncodeTarget {
         init {
             require(minBytes in 0..maxBytes && maxBytes > 0) { "Invalid size range" }
         }
     }
+
+    /**
+     * Keep the encoded pixels as they are and only remove metadata (lossless EXIF strip).
+     * Valid only with no operations and the source format as output. Engines fall back to a
+     * high-quality re-encode when the source needs rotating to stay upright.
+     */
+    data object Original : EncodeTarget
 }
 
 data class OutputSpec(
