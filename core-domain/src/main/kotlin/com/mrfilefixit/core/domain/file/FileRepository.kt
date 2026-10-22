@@ -12,6 +12,18 @@ interface FileRepository {
 
     /** A `content://` URI for [output] served by our FileProvider, for the share sheet. */
     suspend fun shareUri(output: OutputFile): AppResult<String>
+
+    /**
+     * Copies a file handed to us by another component (for example the document scanner) into [jobDir].
+     * Accepts `content://` URIs, and `file://` URIs only when they point inside this app's private storage.
+     * The copy is capped at [maxBytes]; [baseName] is sanitized and made unique inside [jobDir].
+     */
+    suspend fun importToJob(uri: String, jobDir: String, baseName: String, format: ImportFormat, maxBytes: Long): AppResult<OutputFile>
+}
+
+enum class ImportFormat(val mimeType: String, val extension: String) {
+    PDF("application/pdf", "pdf"),
+    JPEG("image/jpeg", "jpg"),
 }
 
 /** App-private scratch space. Each job gets its own directory that is deleted when the job ends. */

@@ -9,6 +9,7 @@ import com.mrfilefixit.core.domain.dispatchers.DispatcherProvider
 import com.mrfilefixit.core.domain.file.DestinationUri
 import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.file.FileRepository
+import com.mrfilefixit.core.domain.file.ImportFormat
 import com.mrfilefixit.core.domain.file.OutputFile
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.AppResult
@@ -73,6 +74,67 @@ internal class SafFileRepository @Inject constructor(
         }
     }
 
+    override suspend fun importToJob(
+        uri: String,
+        jobDir: String,
+        baseName: String,
+        format: ImportFormat,
+        maxBytes: Long,
+    ): AppResult<OutputFile> = withContext(dispatchers.io) {
+        runCatchingAppFlat {
+            val parsed = Uri.parse(uri)
+            val allowed = when (parsed.scheme) {
+                ContentResolver.SCHEME_CONTENT -> true
+                ContentResolver.SCHEME_FILE -> parsed.path?.let { isInsideAppStorage(File(it)) } == true
+                else -> false
+            }
+            if (!allowed) return@runCatchingAppFlat failure(AppError.PermissionDenied)
+            val dir = File(jobDir).canonicalFile
+            if (!isInsideJobs(dir)) return@runCatchingAppFlat failure(AppError.PermissionDenied)
+            val target = uniqueFile(dir, FilenameSanitizer.sanitize(baseName).ifBlank { "scan" }, format.extension)
+            val input = resolver.openInputStream(parsed) ?: return@runCatchingAppFlat failure(AppError.FileNotFound)
+            var copied = 0L
+            input.use { source ->
+                target.outputStream().use { out ->
+                    val buffer = ByteArray(BUFFER_BYTES)
+                    while (true) {
+                        val read = source.read(buffer)
+                        if (read < 0) break
+                        copied += read
+                        if (copied > maxBytes) {
+                            out.close()
+                            target.delete()
+                            return@runCatchingAppFlat failure(AppError.FileTooLarge(copied, maxBytes))
+                        }
+                        out.write(buffer, 0, read)
+                    }
+                }
+            }
+            if (copied == 0L) {
+                target.delete()
+                return@runCatchingAppFlat failure(AppError.EmptyFile)
+            }
+            success(OutputFile(target.absolutePath, target.name, format.mimeType, copied))
+        }
+    }
+
+    private fun uniqueFile(dir: File, base: String, extension: String): File {
+        var candidate = File(dir, "$base.$extension")
+        var n = 2
+        while (candidate.exists()) candidate = File(dir, "$base-${n++}.$extension")
+        return candidate
+    }
+
+    private fun isInsideAppStorage(file: File): Boolean {
+        val canonical = file.canonicalFile.path
+        return listOf(context.cacheDir, context.filesDir).any { canonical.startsWith(it.canonicalPath + File.separator) }
+    }
+
+    private fun isInsideJobs(dir: File): Boolean {
+        val root = File(context.cacheDir, CacheTempFileStore.JOBS_DIR).canonicalFile
+        return dir.isDirectory && dir.path.startsWith(root.path + File.separator)
+    }
+
     /** Resolves [output] only if it really lives in our job cache (defence against path tricks). */
     private fun jobFile(output: OutputFile): File? {
         val root = File(context.cacheDir, CacheTempFileStore.JOBS_DIR).canonicalFile
@@ -82,5 +144,6 @@ internal class SafFileRepository @Inject constructor(
 
     private companion object {
         val PROJECTION = arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE)
+        const val BUFFER_BYTES = 64 * 1024
     }
 }
