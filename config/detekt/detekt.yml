@@ -1,0 +1,98 @@
+# Builds on detekt's default config (buildUponDefaultConfig = true). Only overrides live here.
+config:
+  validation: true
+  warningsAsErrors: true
+
+complexity:
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 10
+    ignoreDefaultParameters: true
+    ignoreAnnotated: ['Composable']
+  LongMethod:
+    threshold: 80
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 15
+    thresholdInInterfaces: 15
+    ignorePrivate: true
+  CyclomaticComplexMethod:
+    threshold: 15
+    ignoreAnnotated: ['Composable']
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable', 'Test', 'ParameterizedTest']
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][A-Za-z0-9_]*'
+  MatchingDeclarationName:
+    active: false
+
+style:
+  MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotated: ['Preview', 'PhonePreviews', 'ThemePreviews', 'DevicePreviews']
+    excludes: ['**/test/**', '**/androidTest/**', '**/theme/**']
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview', 'DevicePreviews']
+  ForbiddenComment:
+    active: false
+  ReturnCount:
+    max: 4
+  ForbiddenImport:
+    active: true
+    # Processing code must never touch the network. AdMob (core-ads) is the only network consumer,
+    # and it goes through the Mobile Ads SDK, so these imports are banned project-wide.
+    imports:
+      - value: 'java.net.URL'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'java.net.HttpURLConnection'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'java.net.Socket'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'javax.net.*'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'okhttp3.*'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'retrofit2.*'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'io.ktor.*'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'kotlinx.coroutines.GlobalScope'
+        reason: 'Use an injected or lifecycle-bound scope.'
+  ForbiddenMethodCall:
+    active: true
+    methods:
+      - value: 'kotlin.io.println'
+        reason: 'Use AppLogger; release builds must not log.'
+      - value: 'android.util.Log.d'
+        reason: 'Use AppLogger; release builds must not log.'
+      - value: 'android.util.Log.i'
+        reason: 'Use AppLogger; release builds must not log.'
+
+potential-bugs:
+  UnsafeCallOnNullableType:
+    active: true   # bans !!
+
+exceptions:
+  TooGenericExceptionCaught:
+    # Data-layer boundaries catch everything and map it to AppError on purpose.
+    excludes: ['**/core-processing/**', '**/core-storage/**', '**/core-ads/**', '**/result/**']
+  SwallowedException:
+    excludes: ['**/core-processing/**', '**/core-storage/**', '**/core-ads/**']
+
+formatting:
+  android: true
+  autoCorrect: true
+  MaximumLineLength:
+    maxLineLength: 120
+  TrailingCommaOnCallSite:
+    active: true
+    useTrailingCommaOnCallSite: true
+  TrailingCommaOnDeclarationSite:
+    active: true
+    useTrailingCommaOnDeclarationSite: true
+  FunctionNaming:
+    ignoreWhenAnnotatedWith: ['Composable']
