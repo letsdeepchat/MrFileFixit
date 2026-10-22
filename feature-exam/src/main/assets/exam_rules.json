@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "profiles": [
+    {
+      "id": "ssc-cgl",
+      "name": "SSC Combined Graduate Level (CGL)",
+      "category": "SSC",
+      "conductingBody": "Staff Selection Commission",
+      "sourceUrl": "https://ssc.gov.in/",
+      "lastVerified": null,
+      "verification": "unverified",
+      "notes": "Sample values. Recent SSC applications may require a live photograph taken during the application; check the notice.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": ["jpeg"],
+          "sizeKb": { "min": 20, "max": 50 },
+          "widthPx": { "min": 100, "max": 500 },
+          "heightPx": { "min": 120, "max": 600 },
+          "targetPx": { "width": 350, "height": 450 },
+          "notes": "About 3.5 cm x 4.5 cm."
+        },
+        {
+          "kind": "signature",
+          "formats": ["jpeg"],
+          "sizeKb": { "min": 10, "max": 20 },
+          "widthPx": { "min": 140, "max": 600 },
+          "heightPx": { "min": 60, "max": 300 },
+          "targetPx": { "width": 400, "height": 200 },
+          "notes": "About 4.0 cm x 2.0 cm."
+        }
+      ]
+    },
+    {
+      "id": "upsc-cse",
+      "name": "UPSC Civil Services Examination",
+      "category": "UPSC",
+      "conductingBody": "Union Public Service Commission",
+      "sourceUrl": "https://upsconline.gov.in/",
+      "lastVerified": null,
+      "verification": "unverified",
+      "notes": "Sample values.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": ["jpeg"],
+          "sizeKb": { "min": 20, "max": 300 },
+          "widthPx": { "min": 350, "max": 1000 },
+          "heightPx": { "min": 350, "max": 1000 },
+          "targetPx": { "width": 450, "height": 550 }
+        },
+        {
+          "kind": "signature",
+          "formats": ["jpeg"],
+          "sizeKb": { "min": 20, "max": 300 },
+          "widthPx": { "min": 350, "max": 1000 },
+          "heightPx": { "min": 350, "max": 1000 },
+          "targetPx": { "width": 700, "height": 350 }
+        }
+      ]
+    },
+    {
+      "id": "ibps-po",
+      "name": "IBPS Probationary Officer (PO)",
+      "category": "IBPS",
+      "conductingBody": "Institute of Banking Personnel Selection",
+      "sourceUrl": "https://www.ibps.in/",
+      "lastVerified": null,
+      "verification": "unverified",
+      "notes": "Sample values.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": ["jpeg"],
+          "sizeKb": { "min": 20, "max": 50 },
+          "widthPx": { "min": 200, "max": 200 },
+          "heightPx": { "min": 230, "max": 230 },
+          "targetPx": { "width": 200, "height": 230 }
+        },
+        {
+          "kind": "signature",
+          "formats": ["jpeg"],
+          "sizeKb": { "min": 10, "max": 20 },
+          "widthPx": { "min": 140, "max": 140 },
+          "heightPx": { "min": 60, "max": 60 },
+          "targetPx": { "width": 140, "height": 60 },
+          "notes": "Black ink on white paper."
+        },
+        {
+          "kind": "left_thumb",
+          "formats": ["jpeg"],
+          "sizeKb": { "min": 20, "max": 50 },
+          "widthPx": { "min": 240, "max": 240 },
+          "heightPx": { "min": 240, "max": 240 },
+          "targetPx": { "width": 240, "height": 240 }
+        },
+        {
+          "kind": "declaration",
+          "formats": ["jpeg"],
+          "sizeKb": { "min": 50, "max": 100 },
+          "widthPx": { "min": 800, "max": 800 },
+          "heightPx": { "min": 400, "max": 400 },
+          "targetPx": { "width": 800, "height": 400 },
+          "notes": "Handwritten declaration in English, black ink."
+        }
+      ]
+    }
+  ]
+}

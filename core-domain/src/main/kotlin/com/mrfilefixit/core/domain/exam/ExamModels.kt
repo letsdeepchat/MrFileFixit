@@ -92,12 +92,19 @@ data class ExamProfile(
     val category: ExamCategory,
     val conductingBody: String,
     val sourceUrl: String,
-    /** ISO-8601 date (yyyy-MM-dd). */
-    val lastVerified: String,
+    /** ISO-8601 date (yyyy-MM-dd) of the last check against the official notification; null if never checked. */
+    val lastVerified: String?,
     val verification: VerificationStatus,
     val documents: List<DocumentSpec>,
     val composite: CompositeSpec? = null,
     val notes: String? = null,
 ) {
+    init {
+        require(documents.isNotEmpty()) { "A profile needs at least one document" }
+        require(verification == VerificationStatus.UNVERIFIED || lastVerified != null) {
+            "A verified profile needs a lastVerified date"
+        }
+    }
+
     fun document(kind: DocumentKind): DocumentSpec? = documents.firstOrNull { it.kind == kind }
 }
