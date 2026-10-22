@@ -51,7 +51,7 @@ jobs:
       - name: Unit tests
         run: ./gradlew testDebugUnitTest :core-domain:test
       - name: Android Lint (warnings are errors)
-        run: ./gradlew lintDebug
+        run: ./gradlew lintDebug --continue
       - name: Assemble debug
         run: ./gradlew :app:assembleDebug
       - name: Merged manifest has no broad storage permissions

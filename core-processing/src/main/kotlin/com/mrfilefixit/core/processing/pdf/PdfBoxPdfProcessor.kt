@@ -74,9 +74,7 @@ internal class PdfBoxPdfProcessor @Inject constructor(
     override suspend fun info(source: FileRef): AppResult<PdfInfo> = withContext(dispatchers.io) {
         runCatchingAppFlat(::mapEngineError) {
             limits.checkFileSize(source.sizeBytes).throwIfFailure()
-            val descriptor = resolver.openFileDescriptor(Uri.parse(source.uri), "r")
-                ?: return@runCatchingAppFlat failure(AppError.FileNotFound)
-            descriptor.use { fd ->
+            resolver.openFileDescriptor(Uri.parse(source.uri), "r")?.use { fd ->
                 try {
                     PdfRenderer(fd).use {
                         success(
@@ -91,7 +89,7 @@ internal class PdfBoxPdfProcessor @Inject constructor(
                 } catch (_: SecurityException) {
                     success(PdfInfo(pageCount = 0, encrypted = true, sizeBytes = source.sizeBytes ?: 0))
                 }
-            }
+            } ?: failure(AppError.FileNotFound)
         }
     }
 

@@ -60,9 +60,9 @@ internal class SafFileRepository @Inject constructor(
             runCatchingAppFlat {
                 val file = jobFile(output) ?: return@runCatchingAppFlat failure(AppError.FileNotFound)
                 // "wt" truncates: overwriting a longer file must not leave its tail behind.
-                val stream = resolver.openOutputStream(Uri.parse(destination.value), "wt")
+                resolver.openOutputStream(Uri.parse(destination.value), "wt")
+                    ?.use { out -> file.inputStream().use { it.copyTo(out) } }
                     ?: return@runCatchingAppFlat failure(AppError.PermissionDenied)
-                stream.use { out -> file.inputStream().use { it.copyTo(out) } }
                 success(Unit)
             }
         }
@@ -92,9 +92,8 @@ internal class SafFileRepository @Inject constructor(
             val dir = File(jobDir).canonicalFile
             if (!isInsideJobs(dir)) return@runCatchingAppFlat failure(AppError.PermissionDenied)
             val target = uniqueFile(dir, FilenameSanitizer.sanitize(baseName).ifBlank { "scan" }, format.extension)
-            val input = resolver.openInputStream(parsed) ?: return@runCatchingAppFlat failure(AppError.FileNotFound)
             var copied = 0L
-            input.use { source ->
+            resolver.openInputStream(parsed)?.use { source ->
                 target.outputStream().use { out ->
                     val buffer = ByteArray(BUFFER_BYTES)
                     while (true) {
@@ -109,7 +108,7 @@ internal class SafFileRepository @Inject constructor(
                         out.write(buffer, 0, read)
                     }
                 }
-            }
+            } ?: return@runCatchingAppFlat failure(AppError.FileNotFound)
             if (copied == 0L) {
                 target.delete()
                 return@runCatchingAppFlat failure(AppError.EmptyFile)

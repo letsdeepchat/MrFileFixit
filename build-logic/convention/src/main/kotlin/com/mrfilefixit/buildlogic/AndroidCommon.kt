@@ -25,6 +25,9 @@ internal fun Lint.configureZeroWarningLint() {
     error += setOf("HardcodedText", "MissingTranslation", "SetTextI18n", "RtlHardcoded", "RtlEnabled")
     xmlReport = true
     sarifReport = true
+    // Print every finding to the build log, not just the first, so CI shows the whole list at once.
+    textReport = true
+    textOutput = java.io.File("stdout")
 }
 
 internal fun ApplicationExtension.configureAndroidApplication() {
