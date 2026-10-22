@@ -67,7 +67,7 @@ internal class ImageDecoding @Inject constructor(
             mimeType = mime,
             exifRotation = exif?.rotationDegrees ?: 0,
             flipped = exif?.isFlipped ?: false,
-            hasExif = exif?.hasAttributes() ?: false,
+            hasExif = exif?.let { e -> METADATA_TAGS.any(e::hasAttribute) } ?: false,
         )
     }
 
@@ -142,5 +142,19 @@ internal class ImageDecoding @Inject constructor(
     private companion object {
         const val HEAP_FRACTION = 4
         const val BYTES_PER_PIXEL = 4L
+
+        /** Tags whose presence means the export would carry metadata worth stripping. */
+        val METADATA_TAGS = listOf(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.TAG_DATETIME,
+            ExifInterface.TAG_DATETIME_ORIGINAL,
+            ExifInterface.TAG_MAKE,
+            ExifInterface.TAG_MODEL,
+            ExifInterface.TAG_SOFTWARE,
+            ExifInterface.TAG_GPS_LATITUDE,
+            ExifInterface.TAG_GPS_LONGITUDE,
+            ExifInterface.TAG_ARTIST,
+            ExifInterface.TAG_IMAGE_UNIQUE_ID,
+        )
     }
 }

@@ -100,6 +100,7 @@ internal class PdfBoxPdfProcessor @Inject constructor(
             runCatchingAppFlat(::mapPdfError) {
                 pdfBoxReady
                 File(operation.outputDir).mkdirs()
+                val processor = this@PdfBoxPdfProcessor
                 val outputs = when (operation) {
                     is PdfOperation.Merge -> listOf(merge(operation, progress))
                     is PdfOperation.Split -> split(operation, progress)
@@ -108,8 +109,8 @@ internal class PdfBoxPdfProcessor @Inject constructor(
                     is PdfOperation.Compress -> listOf(compress(operation, progress))
                     is PdfOperation.ImagesToPdf -> listOf(imagesToPdf(operation, progress))
                     is PdfOperation.ToImages -> toImages(operation, progress)
-                    is PdfOperation.Watermark -> listOf(PdfStamping.watermark(this, operation, progress))
-                    is PdfOperation.PageNumbers -> listOf(PdfStamping.pageNumbers(this, operation, progress))
+                    is PdfOperation.Watermark -> listOf(PdfStamping.watermark(processor, operation, progress))
+                    is PdfOperation.PageNumbers -> listOf(PdfStamping.pageNumbers(processor, operation, progress))
                     is PdfOperation.Protect -> listOf(protect(operation))
                     is PdfOperation.Unlock -> listOf(unlock(operation))
                 }
