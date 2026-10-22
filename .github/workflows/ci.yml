@@ -86,12 +86,20 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      # Only modules that ship instrumented tests get a test APK run. A bare connectedDebugAndroidTest also
+      # installs empty test APKs for every library (they crash: no runner, or no AdMob app ID in :core-ads)
+      # and runs :benchmark, whose macrobenchmarks need an installed release-like app on a real device.
+      - name: Find modules with instrumented tests
+        id: modules
+        run: |
+          tasks=$(for d in */src/androidTest; do printf ':%s:connectedDebugAndroidTest ' "${d%%/src/androidTest}"; done)
+          echo "tasks=$tasks" >> "$GITHUB_OUTPUT"
       - uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           arch: x86_64
           target: google_apis
-          script: ./gradlew connectedDebugAndroidTest
+          script: ./gradlew ${{ steps.modules.outputs.tasks }}
 
   release:
     name: Release bundle
