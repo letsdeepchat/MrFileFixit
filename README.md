@@ -1,0 +1,49 @@
+# Mr File Fixit
+
+A free, fully offline Android app for fixing files for government exam forms and everyday paperwork:
+resize and compress photos and signatures to exam specs, PDF tools, image tools, and a document scanner.
+All processing happens on the device. No uploads, no backend, no logging of file content.
+
+> **Disclaimer.** Exam profiles bundled with the app are community-maintained samples. They are **not official**.
+> Always verify the photo and signature requirements against the official notification of your exam before submitting.
+
+## Modules
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture diagram, module graph, and design rules.
+
+| Module | Type | Purpose |
+| --- | --- | --- |
+| `app` | Android application | Navigation shell, DI wiring, adaptive layout |
+| `feature-exam` | Android library | Exam profile picker, photo/signature flow, live spec checker |
+| `feature-pdf` | Android library | Merge, split, extract, reorder, rotate, delete, compress, image↔PDF, watermark, page numbers, password |
+| `feature-image` | Android library | Resize, crop, rotate, compress, convert, batch, strip EXIF |
+| `feature-scan` | Android library | ML Kit document scanner and on-device OCR |
+| `core-ui` | Android library | Material 3 theme, components, previews, ad slots |
+| `core-domain` | Pure Kotlin (JVM) | Result types, job pipeline, use cases, processor interfaces, pure algorithms |
+| `core-processing` | Android library | Image, PDF and OCR engines |
+| `core-ads` | Android library | AdMob, UMP consent, frequency capping (the only network user) |
+| `core-storage` | Android library | SAF, temp files, FileProvider sharing, DataStore |
+| `benchmark` | Android test | Baseline Profile generator and Macrobenchmark startup tests |
+
+## Build
+
+```bash
+./gradlew assembleDebug          # debug build, AdMob test IDs
+./gradlew check                  # unit tests, Detekt, Android Lint, network isolation check
+./gradlew :app:bundleRelease     # release bundle (needs ADMOB_* properties and signing, see below)
+```
+
+Release builds read secrets from Gradle properties or environment variables, never from source:
+
+| Property | Purpose |
+| --- | --- |
+| `ADMOB_APP_ID` | AdMob application ID |
+| `ADMOB_BANNER_ID`, `ADMOB_INTERSTITIAL_ID`, `ADMOB_REWARDED_ID` | Ad unit IDs |
+| `MFF_KEYSTORE_PATH`, `MFF_KEYSTORE_PASSWORD`, `MFF_KEY_ALIAS`, `MFF_KEY_PASSWORD` | Release signing |
+
+## Exam rules
+
+Exam profiles live in `feature-exam/src/main/assets/exam_rules.json` and follow
+[`docs/exam-rules.schema.json`](docs/exam-rules.schema.json). Each profile carries a `sourceUrl` and a
+`lastVerified` date. To update a profile, edit the JSON, update `lastVerified`, and run
+`./gradlew :feature-exam:testDebugUnitTest` (golden tests guard the parsed result).
