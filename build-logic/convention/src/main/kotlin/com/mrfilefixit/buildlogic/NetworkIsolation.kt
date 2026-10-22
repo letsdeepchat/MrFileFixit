@@ -19,6 +19,8 @@ import org.gradle.api.tasks.TaskAction
  *
  * `com.google.android.datatransport` is deliberately NOT listed: ML Kit uses it for anonymous usage
  * metrics. It never carries file content. See docs/SECURITY.md, "ML Kit telemetry".
+ * The same telemetry pulls in a few Firebase utility artifacts ([FIREBASE_UTILITIES]); they serialize
+ * and wire components but contain no network code, so they are allowed while the rest of Firebase is not.
  */
 private val NETWORK_GROUP_PREFIXES = listOf(
     "com.squareup.okhttp",
@@ -30,6 +32,14 @@ private val NETWORK_GROUP_PREFIXES = listOf(
     "com.google.firebase",
     "com.google.android.gms:play-services-ads",
     "com.google.android.ump",
+)
+
+private val FIREBASE_UTILITIES = setOf(
+    "com.google.firebase:firebase-annotations",
+    "com.google.firebase:firebase-components",
+    "com.google.firebase:firebase-encoders",
+    "com.google.firebase:firebase-encoders-json",
+    "com.google.firebase:firebase-encoders-proto",
 )
 
 /**
@@ -51,7 +61,7 @@ abstract class VerifyNetworkIsolationTask : DefaultTask() {
     @TaskAction
     fun verify() {
         val offenders = resolvedModules.get().filter { coordinate ->
-            NETWORK_GROUP_PREFIXES.any { coordinate.startsWith(it) }
+            coordinate !in FIREBASE_UTILITIES && NETWORK_GROUP_PREFIXES.any { coordinate.startsWith(it) }
         }
         val manifestFile = manifest.orNull?.asFile
         val declaresInternet = manifestFile?.takeIf { it.exists() }?.readText()

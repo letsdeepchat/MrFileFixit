@@ -40,7 +40,7 @@ flowchart LR
 The bundled ML Kit text-recognition libraries depend on `com.google.android.datatransport`. Google documents this
 as anonymous usage and performance metrics (API latency, error codes). It does not include images, recognised
 text, or file names. The network-isolation check deliberately does **not** list `datatransport` so the build
-passes, but this is a judgement call for the product owner:
+passes. The same dependency brings in `firebase-encoders*`, `firebase-components` and `firebase-annotations`; these are serialization/DI utilities with no network code, so they are allow-listed by exact name while every other `com.google.firebase` artifact still fails the build. This is a judgement call for the product owner:
 
 * Keep it (current state), and mention it in the Play Store data-safety form.
 * Or disable it: ML Kit honours `<meta-data android:name="com.google.mlkit.vision.DependencyInfo" ...>` style
