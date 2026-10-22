@@ -3,6 +3,8 @@ package com.mrfilefixit.core.processing.io
 import android.content.ContentResolver
 import android.net.Uri
 import com.mrfilefixit.core.domain.result.AppError
+import com.mrfilefixit.core.domain.result.AppResult
+import com.mrfilefixit.core.domain.result.Result
 import java.io.FileNotFoundException
 import java.io.FilterInputStream
 import java.io.IOException
@@ -58,3 +60,8 @@ internal fun ContentResolver.openLimited(uri: String, limitBytes: Long): InputSt
 
 internal fun ContentResolver.readAllLimited(uri: String, limitBytes: Long): ByteArray =
     openLimited(uri, limitBytes).use { it.readBytes() }
+
+/** For code paths that cannot return a Result (inside library callbacks): turns a validation failure into a throw. */
+internal fun AppResult<Unit>.throwIfFailure() {
+    if (this is Result.Failure) throw InputRejectedException(error)
+}

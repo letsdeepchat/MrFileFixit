@@ -2,8 +2,10 @@ package com.mrfilefixit.core.processing.di
 
 import com.mrfilefixit.core.domain.image.ImageProcessor
 import com.mrfilefixit.core.domain.ocr.OcrProcessor
+import com.mrfilefixit.core.domain.pdf.PdfProcessor
 import com.mrfilefixit.core.processing.image.AndroidImageProcessor
 import com.mrfilefixit.core.processing.ocr.MlKitOcrProcessor
+import com.mrfilefixit.core.processing.pdf.PdfBoxPdfProcessor
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -20,6 +22,10 @@ internal interface ProcessingModule {
     @Binds
     @Singleton
     fun bindImageProcessor(impl: AndroidImageProcessor): ImageProcessor
+
+    @Binds
+    @Singleton
+    fun bindPdfProcessor(impl: PdfBoxPdfProcessor): PdfProcessor
 
     @Binds
     @Singleton
