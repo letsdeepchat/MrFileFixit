@@ -2,6 +2,7 @@ package com.mrfilefixit.core.ui.error
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.ui.R
@@ -14,8 +15,18 @@ fun appErrorMessage(error: AppError): String = when (error) {
     is AppError.FileTooLarge ->
         stringResource(R.string.error_file_too_large, formatBytes(error.actualBytes), formatBytes(error.limitBytes))
     is AppError.DimensionsTooLarge -> stringResource(R.string.error_dimensions_too_large, error.width, error.height)
-    is AppError.TooManyPages -> stringResource(R.string.error_too_many_pages, error.pageCount, error.limit)
-    is AppError.TooManyFiles -> stringResource(R.string.error_too_many_files, error.count, error.limit)
+    is AppError.TooManyPages -> pluralStringResource(
+        R.plurals.error_too_many_pages,
+        error.pageCount,
+        error.pageCount,
+        error.limit,
+    )
+    is AppError.TooManyFiles -> pluralStringResource(
+        R.plurals.error_too_many_files,
+        error.count,
+        error.count,
+        error.limit,
+    )
     is AppError.UnsupportedFormat -> stringResource(R.string.error_unsupported_format)
     AppError.CorruptFile -> stringResource(R.string.error_corrupt)
     AppError.EmptyFile -> stringResource(R.string.error_empty)

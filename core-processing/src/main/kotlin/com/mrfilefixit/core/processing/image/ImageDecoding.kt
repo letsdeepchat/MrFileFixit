@@ -5,8 +5,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.BitmapRegionDecoder
 import android.graphics.Rect
-import android.net.Uri
 import android.os.Build
+import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.NormalizedRect
@@ -46,7 +46,7 @@ internal class ImageDecoding @Inject constructor(
     fun readRawInfo(uri: String): RawImageInfo {
         val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         resolver.openLimited(uri, limits.maxFileBytes).use { BitmapFactory.decodeStream(it, null, options) }
-        val mime = options.outMimeType ?: resolver.getType(Uri.parse(uri))
+        val mime = options.outMimeType ?: resolver.getType(uri.toUri())
         if (options.outWidth <= 0 || options.outHeight <= 0) {
             val format = ImageFormat.fromMimeType(mime)
             if (format == null || (format == ImageFormat.HEIC && Build.VERSION.SDK_INT < Build.VERSION_CODES.P)) {

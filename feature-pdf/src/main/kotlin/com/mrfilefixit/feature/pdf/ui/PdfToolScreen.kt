@@ -43,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -139,7 +140,7 @@ internal fun PdfToolScreen(state: PdfToolUiState, actions: PdfToolActions, modif
                         val details = buildList {
                             file.sizeBytes?.let { add(formatBytes(it)) }
                             if (!tool.multipleInputs && info != null) {
-                                add(stringResource(R.string.pdf_pages_count, info.pageCount))
+                                add(pluralStringResource(R.plurals.pdf_pages_count, info.pageCount, info.pageCount))
                                 if (info.encrypted) add(stringResource(R.string.pdf_encrypted))
                             }
                         }
@@ -379,7 +380,10 @@ private fun Results(state: PdfToolUiState, actions: PdfToolActions) {
             if (uri != null && index != null) actions.onSave(index, uri.toString())
             pendingSave = null
         }
-    Text(stringResource(R.string.pdf_result_files, outputs.size), style = MaterialTheme.typography.titleSmall)
+    Text(
+        pluralStringResource(R.plurals.pdf_result_files, outputs.size, outputs.size),
+        style = MaterialTheme.typography.titleSmall,
+    )
     outputs.forEachIndexed { index, file ->
         Card(Modifier.fillMaxWidth()) {
             ListItem(

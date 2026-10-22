@@ -19,9 +19,18 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Make sure no library sneaks in broad storage access. -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage"
+        tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
 
     <application
@@ -66,11 +75,5 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
-
-        <!-- Batch jobs run as a foreground service only while a job is running. -->
-        <service
-            android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="dataSync|mediaProcessing"
-            tools:node="merge" />
     </application>
 </manifest>

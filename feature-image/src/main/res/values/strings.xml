@@ -2,7 +2,10 @@
 <resources>
     <string name="image_title">Image tools</string>
     <string name="image_pick">Choose images</string>
-    <string name="image_selected">%1$d images selected</string>
+    <plurals name="image_selected">
+        <item quantity="one">%1$d image selected</item>
+        <item quantity="other">%1$d images selected</item>
+    </plurals>
     <string name="image_tool">Tool</string>
     <string name="image_tool_RESIZE">Resize</string>
     <string name="image_tool_CROP">Crop</string>
@@ -21,8 +24,14 @@
     <string name="image_strip_note">Removes location, camera and date details. JPEG and PNG are cleaned without re-compressing.</string>
     <string name="image_crop_single_only">Crop works on one image at a time.</string>
     <string name="image_run">Process</string>
-    <string name="image_done">%1$d images ready</string>
-    <string name="image_some_failed">%1$d files could not be processed.</string>
+    <plurals name="image_done">
+        <item quantity="one">%1$d image ready</item>
+        <item quantity="other">%1$d images ready</item>
+    </plurals>
+    <plurals name="image_some_failed">
+        <item quantity="one">%1$d file could not be processed.</item>
+        <item quantity="other">%1$d files could not be processed.</item>
+    </plurals>
     <string name="image_batch_background">Large batches keep running in the background with a notification.</string>
     <string name="image_quota_left">Free batch jobs left today: %1$d</string>
     <string name="image_quota_empty">You have used today\'s free batch jobs. Single images are always free.</string>

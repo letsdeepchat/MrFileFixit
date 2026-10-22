@@ -52,15 +52,13 @@ class BatchImageWorker @AssistedInject constructor(
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
         val manager = applicationContext.getSystemService(NotificationManager::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            manager.createNotificationChannel(
-                NotificationChannel(
-                    CHANNEL_ID,
-                    applicationContext.getString(R.string.notification_channel_jobs),
-                    NotificationManager.IMPORTANCE_LOW,
-                ),
-            )
-        }
+        manager.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_ID,
+                applicationContext.getString(R.string.notification_channel_jobs),
+                NotificationManager.IMPORTANCE_LOW,
+            ),
+        )
         // No file names in the notification: it can show on the lock screen.
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_upload)

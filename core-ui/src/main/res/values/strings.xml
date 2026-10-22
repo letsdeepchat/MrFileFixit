@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<!-- Page-range examples keep the ASCII hyphen: it is what the page parser accepts (TypographyDashes ignored). -->
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Common actions -->
     <string name="action_cancel">Cancel</string>
     <string name="action_retry">Try again</string>
@@ -49,14 +50,20 @@
     <!-- Errors. Never include file names. -->
     <string name="error_file_too_large">This file is %1$s. The limit is %2$s.</string>
     <string name="error_dimensions_too_large">This image is too large to process safely (%1$d × %2$d px).</string>
-    <string name="error_too_many_pages">This PDF has %1$d pages. The limit is %2$d.</string>
-    <string name="error_too_many_files">You picked %1$d files. The limit is %2$d.</string>
+    <plurals name="error_too_many_pages">
+        <item quantity="one">This PDF has %1$d page. The limit is %2$d.</item>
+        <item quantity="other">This PDF has %1$d pages. The limit is %2$d.</item>
+    </plurals>
+    <plurals name="error_too_many_files">
+        <item quantity="one">You picked %1$d file. The limit is %2$d.</item>
+        <item quantity="other">You picked %1$d files. The limit is %2$d.</item>
+    </plurals>
     <string name="error_unsupported_format">This file type is not supported.</string>
     <string name="error_corrupt">This file looks damaged or incomplete.</string>
     <string name="error_empty">This file is empty.</string>
     <string name="error_password_required">This PDF is password-protected. Unlock it first.</string>
     <string name="error_wrong_password">That password is not correct.</string>
-    <string name="error_invalid_pages">Enter pages between 1 and %1$d, for example 1-3, 5.</string>
+    <string name="error_invalid_pages" tools:ignore="TypographyDashes">Enter pages between 1 and %1$d, for example 1-3, 5.</string>
     <string name="error_target_unreachable">Could not reach %1$s–%2$s (got %3$s). Try a different photo or crop.</string>
     <string name="error_not_found">The file is no longer available. Pick it again.</string>
     <string name="error_permission">The app lost access to this file. Pick it again.</string>

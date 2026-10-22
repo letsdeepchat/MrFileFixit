@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +51,7 @@ object ThumbnailCache {
 
     suspend fun load(context: Context, uri: String, sizePx: Int): Bitmap? {
         get(uri, sizePx)?.let { return it }
-        val bitmap = withContext(Dispatchers.IO) { decode(context, Uri.parse(uri), sizePx) } ?: return null
+        val bitmap = withContext(Dispatchers.IO) { decode(context, uri.toUri(), sizePx) } ?: return null
         cache.put(key(uri, sizePx), bitmap)
         return bitmap
     }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<!-- Page-range examples keep the ASCII hyphen: it is what the page parser accepts (TypographyDashes ignored). -->
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="pdf_title">PDF टूल</string>
     <string name="pdf_pick_tool">कोई टूल चुनें</string>
     <string name="pdf_tool_MERGE">PDF जोड़ें</string>
@@ -16,13 +17,15 @@
     <string name="pdf_tool_PROTECT">पासवर्ड लगाएँ</string>
     <string name="pdf_tool_UNLOCK">पासवर्ड हटाएँ</string>
     <string name="pdf_add_files">फ़ाइलें जोड़ें</string>
-    <string name="pdf_files_count">%1$d फ़ाइलें चुनी गईं</string>
-    <string name="pdf_pages_count">%1$d पेज</string>
+    <plurals name="pdf_pages_count">
+        <item quantity="one">%1$d पेज</item>
+        <item quantity="other">%1$d पेज</item>
+    </plurals>
     <string name="pdf_encrypted">पासवर्ड से सुरक्षित</string>
     <string name="pdf_pages_label">पेज</string>
-    <string name="pdf_pages_hint">जैसे 1-3, 5, 8-</string>
+    <string name="pdf_pages_hint" tools:ignore="TypographyDashes">जैसे 1-3, 5, 8-</string>
     <string name="pdf_order_hint">नया क्रम, जैसे 3, 1, 2</string>
-    <string name="pdf_split_hint">रेंज, हर एक की अलग फ़ाइल: 1-3, 4-6</string>
+    <string name="pdf_split_hint" tools:ignore="TypographyDashes">रेंज, हर एक की अलग फ़ाइल: 1-3, 4-6</string>
     <string name="pdf_rotate_by">कितना घुमाएँ</string>
     <string name="pdf_compress_level">कम्प्रेशन</string>
     <string name="pdf_compress_LOW">हल्का (सबसे अच्छी क्वालिटी)</string>
@@ -34,7 +37,7 @@
     <string name="pdf_page_size_LETTER">लेटर</string>
     <string name="pdf_page_size_LEGAL">लीगल</string>
     <string name="pdf_page_size_FIT_IMAGE">इमेज जितना</string>
-    <string name="pdf_dpi">रिज़ॉल्यूशन: %1$d dpi</string>
+    <string name="pdf_dpi">रिज़ॉल्यूशन (dpi): %1$d</string>
     <string name="pdf_watermark_text">वॉटरमार्क टेक्स्ट</string>
     <string name="pdf_watermark_latin_only">अंग्रेज़ी अक्षर और अंक इस्तेमाल करें। स्टैम्प में अभी दूसरी लिपियाँ सपोर्ट नहीं हैं।</string>
     <string name="pdf_watermark_diagonal">तिरछा</string>
@@ -49,7 +52,10 @@
     <string name="pdf_password_mismatch">पासवर्ड मेल नहीं खाते।</string>
     <string name="pdf_password_note">पासवर्ड कभी सेव नहीं होता। भूल जाने पर फ़ाइल नहीं खुलेगी।</string>
     <string name="pdf_run">शुरू करें</string>
-    <string name="pdf_result_files">%1$d फ़ाइलें तैयार</string>
+    <plurals name="pdf_result_files">
+        <item quantity="one">%1$d फ़ाइल तैयार</item>
+        <item quantity="other">%1$d फ़ाइलें तैयार</item>
+    </plurals>
     <string name="pdf_share_all">सभी शेयर करें</string>
     <string name="cd_show_password">पासवर्ड दिखाएँ</string>
     <string name="cd_hide_password">पासवर्ड छिपाएँ</string>

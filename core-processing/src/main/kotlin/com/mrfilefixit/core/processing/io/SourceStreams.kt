@@ -2,7 +2,7 @@ package com.mrfilefixit.core.processing.io
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
-import android.net.Uri
+import androidx.core.net.toUri
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.AppResult
 import com.mrfilefixit.core.domain.result.Result
@@ -57,7 +57,7 @@ internal class LimitedInputStream(input: InputStream, private val limit: Long) :
 // The stream is handed to the caller, who closes it with use {}.
 @SuppressLint("Recycle")
 internal fun ContentResolver.openLimited(uri: String, limitBytes: Long): InputStream {
-    val stream = openInputStream(Uri.parse(uri)) ?: throw FileNotFoundException()
+    val stream = openInputStream(uri.toUri()) ?: throw FileNotFoundException()
     return LimitedInputStream(stream.buffered(), limitBytes)
 }
 

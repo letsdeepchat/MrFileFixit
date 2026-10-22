@@ -3,6 +3,8 @@ package com.mrfilefixit.core.processing.image
 import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 import com.mrfilefixit.core.domain.dispatchers.DispatcherProvider
 import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.file.OutputFile
@@ -110,7 +112,7 @@ internal class AndroidImageProcessor @Inject constructor(
                     val bottom =
                         renderPart(request.bottom, request.bottomCrop, request.width, bottomHeight, request.output)
                     bottom.use { bottomBitmap ->
-                        Bitmap.createBitmap(request.width, request.height, Bitmap.Config.ARGB_8888).also { out ->
+                        createBitmap(request.width, request.height).also { out ->
                             Canvas(out).apply {
                                 drawColor(request.output.backgroundArgb)
                                 drawBitmap(topBitmap, 0f, 0f, null)
@@ -256,7 +258,7 @@ internal class AndroidImageProcessor @Inject constructor(
                         val ratio = sqrt(target.maxBytes.toDouble() / outcome.smallest.sizeBytes) * DOWNSCALE_SAFETY
                         val w = (current.width * ratio).toInt().coerceAtLeast(1)
                         val h = (current.height * ratio).toInt().coerceAtLeast(1)
-                        bitmap = Bitmap.createScaledBitmap(current, w, h, true)
+                        bitmap = current.scale(w, h)
                         if (current !== source) current.recycle()
                         attempt++
                     }

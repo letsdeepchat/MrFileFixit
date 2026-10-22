@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -118,7 +119,7 @@ internal fun ImageToolScreen(
             }
             if (state.files.isNotEmpty()) {
                 item {
-                    Text(stringResource(R.string.image_selected, state.files.size))
+                    Text(pluralStringResource(R.plurals.image_selected, state.files.size, state.files.size))
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
                         items(state.files, key = { it.uri }) { file ->
                             Thumbnail(file.uri, stringResource(CoreR.string.cd_thumbnail), Dimens.ThumbnailSize)
@@ -315,9 +316,15 @@ private fun Results(state: ImageToolUiState, actions: ImageToolActions) {
         if (uri != null && index != null) actions.onSave(index, uri.toString())
         pendingSave = null
     }
-    Text(stringResource(R.string.image_done, outcome.images.size), style = MaterialTheme.typography.titleSmall)
+    Text(
+        pluralStringResource(R.plurals.image_done, outcome.images.size, outcome.images.size),
+        style = MaterialTheme.typography.titleSmall,
+    )
     if (outcome.failures.isNotEmpty()) {
-        Text(stringResource(R.string.image_some_failed, outcome.failures.size), color = MaterialTheme.colorScheme.error)
+        Text(
+            pluralStringResource(R.plurals.image_some_failed, outcome.failures.size, outcome.failures.size),
+            color = MaterialTheme.colorScheme.error,
+        )
     }
     outcome.images.forEachIndexed { index, image ->
         ListItem(

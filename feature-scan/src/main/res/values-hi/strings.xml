@@ -4,15 +4,24 @@
     <string name="scan_intro">कैमरे से काग़ज़ी दस्तावेज़ स्कैन करें, या टेक्स्ट पढ़ने के लिए कोई इमेज या PDF चुनें। सब कुछ इसी फ़ोन पर प्रोसेस होता है।</string>
     <string name="scan_start">दस्तावेज़ स्कैन करें</string>
     <string name="scan_pick_ocr">टेक्स्ट के लिए इमेज या PDF चुनें</string>
-    <string name="scan_pages">%1$d पेज स्कैन हुए</string>
+    <plurals name="scan_pages">
+        <item quantity="one">%1$d पेज स्कैन हुआ</item>
+        <item quantity="other">%1$d पेज स्कैन हुए</item>
+    </plurals>
     <string name="scan_pdf">स्कैन की गई PDF</string>
     <string name="scan_page">पेज %1$d</string>
-    <string name="scan_ocr_files">टेक्स्ट पहचान के लिए %1$d फ़ाइलें</string>
+    <plurals name="scan_ocr_files">
+        <item quantity="one">टेक्स्ट पहचान के लिए %1$d फ़ाइल</item>
+        <item quantity="other">टेक्स्ट पहचान के लिए %1$d फ़ाइलें</item>
+    </plurals>
     <string name="scan_script">टेक्स्ट की भाषा</string>
     <string name="scan_script_LATIN">अंग्रेज़ी / लैटिन</string>
     <string name="scan_script_DEVANAGARI">हिंदी / देवनागरी</string>
     <string name="scan_recognize">टेक्स्ट पहचानें</string>
-    <string name="scan_text_result">पहचाना गया टेक्स्ट (%1$d पेज)</string>
+    <plurals name="scan_text_result">
+        <item quantity="one">पहचाना गया टेक्स्ट (%1$d पेज)</item>
+        <item quantity="other">पहचाना गया टेक्स्ट (%1$d पेज)</item>
+    </plurals>
     <string name="scan_no_text">कोई टेक्स्ट नहीं मिला।</string>
     <string name="scan_copy">टेक्स्ट कॉपी करें</string>
     <string name="scan_copied">टेक्स्ट कॉपी हो गया</string>

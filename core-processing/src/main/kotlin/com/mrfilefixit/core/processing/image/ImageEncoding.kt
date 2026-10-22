@@ -23,9 +23,10 @@ internal class ImageEncoding @Inject constructor() {
 
     /** Encodes [bitmap]; [scratchDir] is only used for HEIC, which HeifWriter can only write to a file. */
     fun encode(bitmap: Bitmap, format: ImageFormat, quality: Int, scratchDir: File): ByteArray = when (format) {
-        ImageFormat.HEIC -> {
-            check(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { "HEIC encoding needs API 28" }
+        ImageFormat.HEIC -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             encodeHeic(bitmap, quality, scratchDir)
+        } else {
+            error("HEIC encoding needs API 28")
         }
         else -> ByteArrayOutputStream(bitmap.byteCount / ESTIMATED_RATIO).use { out ->
             check(bitmap.compress(compressFormat(format), quality, out)) { "Encoder refused bitmap" }

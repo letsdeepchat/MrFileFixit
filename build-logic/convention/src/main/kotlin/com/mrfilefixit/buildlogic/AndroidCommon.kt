@@ -28,6 +28,7 @@ internal fun Lint.configureZeroWarningLint() {
     // Print every finding to the build log, not just the first, so CI shows the whole list at once.
     textReport = true
     textOutput = java.io.File("stdout")
+    explainIssues = false
 }
 
 internal fun ApplicationExtension.configureAndroidApplication() {

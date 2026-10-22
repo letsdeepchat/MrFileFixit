@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<!-- Page-range examples keep the ASCII hyphen: it is what the page parser accepts (TypographyDashes ignored). -->
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="action_cancel">रद्द करें</string>
     <string name="action_retry">फिर से कोशिश करें</string>
     <string name="action_save">सेव करें</string>
@@ -44,14 +45,20 @@
 
     <string name="error_file_too_large">यह फ़ाइल %1$s की है। सीमा %2$s है।</string>
     <string name="error_dimensions_too_large">यह इमेज सुरक्षित रूप से प्रोसेस करने के लिए बहुत बड़ी है (%1$d × %2$d px)।</string>
-    <string name="error_too_many_pages">इस PDF में %1$d पेज हैं। सीमा %2$d है।</string>
-    <string name="error_too_many_files">आपने %1$d फ़ाइलें चुनीं। सीमा %2$d है।</string>
+    <plurals name="error_too_many_pages">
+        <item quantity="one">इस PDF में %1$d पेज है। सीमा %2$d है।</item>
+        <item quantity="other">इस PDF में %1$d पेज हैं। सीमा %2$d है।</item>
+    </plurals>
+    <plurals name="error_too_many_files">
+        <item quantity="one">आपने %1$d फ़ाइल चुनी। सीमा %2$d है।</item>
+        <item quantity="other">आपने %1$d फ़ाइलें चुनीं। सीमा %2$d है।</item>
+    </plurals>
     <string name="error_unsupported_format">यह फ़ाइल टाइप सपोर्टेड नहीं है।</string>
     <string name="error_corrupt">यह फ़ाइल खराब या अधूरी लगती है।</string>
     <string name="error_empty">यह फ़ाइल खाली है।</string>
     <string name="error_password_required">यह PDF पासवर्ड से सुरक्षित है। पहले इसे अनलॉक करें।</string>
     <string name="error_wrong_password">पासवर्ड सही नहीं है।</string>
-    <string name="error_invalid_pages">1 से %1$d के बीच पेज लिखें, जैसे 1-3, 5।</string>
+    <string name="error_invalid_pages" tools:ignore="TypographyDashes">1 से %1$d के बीच पेज लिखें, जैसे 1-3, 5।</string>
     <string name="error_target_unreachable">%1$s–%2$s तक नहीं पहुँच सके (मिला %3$s)। कोई दूसरी फ़ोटो या क्रॉप आज़माएँ।</string>
     <string name="error_not_found">फ़ाइल अब उपलब्ध नहीं है। उसे फिर से चुनें।</string>
     <string name="error_permission">ऐप के पास अब इस फ़ाइल की अनुमति नहीं है। उसे फिर से चुनें।</string>
