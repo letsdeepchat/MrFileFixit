@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="image_title">इमेज टूल</string>
+    <string name="image_pick">इमेज चुनें</string>
+    <string name="image_selected">%1$d इमेज चुनी गईं</string>
+    <string name="image_tool">टूल</string>
+    <string name="image_tool_RESIZE">साइज़ बदलें</string>
+    <string name="image_tool_CROP">क्रॉप करें</string>
+    <string name="image_tool_ROTATE">घुमाएँ</string>
+    <string name="image_tool_COMPRESS">छोटा करें</string>
+    <string name="image_tool_CONVERT">फ़ॉर्मैट बदलें</string>
+    <string name="image_tool_STRIP_EXIF">मेटाडेटा हटाएँ</string>
+    <string name="image_width">चौड़ाई (px)</string>
+    <string name="image_height">ऊँचाई (px)</string>
+    <string name="image_keep_aspect">अनुपात बनाए रखें</string>
+    <string name="image_aspect">अनुपात</string>
+    <string name="image_aspect_free">मूल</string>
+    <string name="image_quality">क्वालिटी: %1$d</string>
+    <string name="image_target_kb">लक्ष्य साइज़ (KB), वैकल्पिक</string>
+    <string name="image_format">आउटपुट फ़ॉर्मैट</string>
+    <string name="image_strip_note">लोकेशन, कैमरा और तारीख की जानकारी हटाता है। JPEG और PNG बिना दोबारा कम्प्रेस किए साफ़ होते हैं।</string>
+    <string name="image_crop_single_only">क्रॉप एक बार में एक ही इमेज पर काम करता है।</string>
+    <string name="image_run">प्रोसेस करें</string>
+    <string name="image_done">%1$d इमेज तैयार</string>
+    <string name="image_some_failed">%1$d फ़ाइलें प्रोसेस नहीं हो सकीं।</string>
+    <string name="image_batch_background">बड़े बैच नोटिफ़िकेशन के साथ बैकग्राउंड में चलते रहते हैं।</string>
+    <string name="image_quota_left">आज बचे मुफ़्त बैच जॉब: %1$d</string>
+    <string name="image_quota_empty">आज के मुफ़्त बैच जॉब खत्म हो गए। एक इमेज हमेशा मुफ़्त है।</string>
+    <string name="image_watch_ad">2 और बैच जॉब के लिए विज्ञापन देखें</string>
+    <string name="image_heic_unavailable">इस डिवाइस पर HEIC आउटपुट सपोर्टेड नहीं है।</string>
+    <string name="notification_channel_jobs">फ़ाइल जॉब</string>
+    <string name="notification_job_running">इमेज प्रोसेस हो रही हैं…</string>
+</resources>
