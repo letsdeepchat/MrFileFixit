@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.mff.android.application)
     alias(libs.plugins.mff.android.hilt)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.baselineprofile)
 }
 
 /** Secrets come from Gradle properties or environment variables, never from source control. */
@@ -79,11 +78,6 @@ tasks.matching { it.name == "bundleRelease" || it.name == "assembleRelease" }.co
     dependsOn(verifyReleaseSecrets)
 }
 
-baselineProfile {
-    // Profiles are generated on a device by :benchmark and checked in under src/main/generated.
-    automaticGenerationDuringBuild = false
-}
-
 dependencies {
     implementation(projects.coreDomain)
     implementation(projects.coreUi)
@@ -113,7 +107,6 @@ dependencies {
     implementation(libs.androidx.compose.material3.navigation.suite)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
-    baselineProfile(projects.benchmark)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

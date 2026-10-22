@@ -1,18 +1,12 @@
 plugins {
     alias(libs.plugins.mff.android.test)
-    alias(libs.plugins.baselineprofile)
 }
 
 android {
     namespace = "com.mrfilefixit.benchmark"
     targetProjectPath = ":app"
-    // Benchmarks run against a release-like build: minified, but signed with the debug key.
+    // Lets the test APK instrument the app under test (needed by Macrobenchmark and BaselineProfileRule).
     experimentalProperties["android.experimental.self-instrumenting"] = true
-}
-
-baselineProfile {
-    // Generate on a connected device or a Gradle Managed Device in CI.
-    useConnectedDevices = true
 }
 
 dependencies {
