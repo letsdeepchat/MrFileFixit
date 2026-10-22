@@ -47,3 +47,30 @@ Exam profiles live in `feature-exam/src/main/assets/exam_rules.json` and follow
 [`docs/exam-rules.schema.json`](docs/exam-rules.schema.json). Each profile carries a `sourceUrl` and a
 `lastVerified` date. To update a profile, edit the JSON, update `lastVerified`, and run
 `./gradlew :feature-exam:testDebugUnitTest` (golden tests guard the parsed result).
+
+## Verification status
+
+This code was written in a cloud sandbox that could not reach Google's Maven repository (`dl.google.com` /
+`maven.google.com` returned 403). That decides what could and could not be checked:
+
+| Checked | How | Result |
+| --- | --- | --- |
+| Pure Kotlin code (all of `core-domain`, exam rules parser, PDF layout, ad pacing) | Compiled with Kotlin 2.4.21, `allWarningsAsErrors`, run with JUnit 5 + MockK on a plain JVM | 106 tests pass |
+| Style | ktlint 1.7.1 (`android_studio`) and detekt 1.23.8 + formatting, using this repo's config | Zero findings |
+| Exam rules JSON | Validated against `docs/exam-rules.schema.json` | Valid |
+| CI / Dependabot YAML | Parsed | Valid |
+
+| **Not** checked yet | Why |
+| --- | --- |
+| Android modules compile (`app`, `feature-*`, `core-ui`, `core-processing`, `core-storage`, `core-ads`) | Needs AGP and AndroidX from Google Maven |
+| Android Lint, Compose UI tests, Macrobenchmark | Same, plus an emulator/device |
+| Library versions listed as unverified at the top of `gradle/libs.versions.toml` (AGP, Compose BOM, AndroidX, Play services, ML Kit) | Could not query Google Maven; pinned to the newest versions known to the author. Dependabot will propose corrections |
+
+The first CI run (`.github/workflows/ci.yml`) is the real compile check. Expect a small number of API-signature
+fixes there.
+
+## Docs
+
+* [Architecture](docs/ARCHITECTURE.md)
+* [Security and privacy](docs/SECURITY.md)
+* [Performance checklist](docs/PERFORMANCE.md)

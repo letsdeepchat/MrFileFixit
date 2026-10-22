@@ -71,7 +71,7 @@ Rules enforced by the graph:
 | --- | --- |
 | Dependencies point inward only | `core-domain` is a `kotlin("jvm")` module, so it cannot see Android or any other module. Features only see `core-ui` and `core-domain`. |
 | Features never see implementations | `core-processing` and `core-storage` bind their implementations with Hilt `@Binds`. Only `:app` puts them on the classpath. |
-| Features never see ads | `core-ui` defines `AdSlots` (banner slot + `ResultGate`). `core-ads` implements them; `:app` provides them via a `CompositionLocal`. |
+| Features never see ads | `core-ui` defines `AdSlots` (banner slot, `beforeResult` gate, opt-in rewarded). `core-ads` implements them; `:app` provides them via a `CompositionLocal`. |
 | Processing never touches the network | `mrfilefixit.network-isolation` convention plugin fails the build if any non-ads module resolves a networking library or declares `INTERNET`; Detekt `ForbiddenImport` bans `java.net.*`, `okhttp3.*`, etc. |
 
 ## 3. Package layout per module

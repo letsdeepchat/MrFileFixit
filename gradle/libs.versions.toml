@@ -1,3 +1,7 @@
+# Version status when this catalog was written:
+#   Verified on Maven Central: kotlin, ksp, hilt, coroutines, turbine, timber, detekt, pdfbox-android.
+#   Unverified (Google Maven was unreachable from the authoring sandbox): agp, every androidx.* and compose
+#   version, play-services-ads, ump, mlkit. Confirm on the first CI build; Dependabot will propose updates.
 [versions]
 # Build
 agp = "9.0.0"
