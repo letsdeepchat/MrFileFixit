@@ -7,6 +7,12 @@
       and go out through FileProvider or "Save as". INTERNET is merged in by the Mobile Ads SDK (core-ads),
       the only component that uses the network.
     -->
+    <!--
+      heifwriter declares minSdk 28. It is only reached from ImageEncoding.encodeHeic, which is
+      @RequiresApi(P) and gated on SDK_INT, so older devices never load it.
+    -->
+    <uses-sdk tools:overrideLibrary="androidx.heifwriter" />
+
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING" />
