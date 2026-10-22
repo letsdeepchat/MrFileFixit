@@ -10,7 +10,7 @@ import com.mrfilefixit.core.domain.result.success
  * (tiny files that decode to gigapixel bitmaps) and oversized or malformed PDFs.
  */
 data class InputLimits(
-    val maxFileBytes: Long = 50L * 1024 * 1024,
+    val maxFileBytes: Long = MAX_FILE_MIB * 1024 * 1024,
     val maxPixels: Long = 64_000_000L,
     val maxDimension: Int = 16_384,
     val maxPdfPages: Int = 1_000,
@@ -44,3 +44,5 @@ data class InputLimits(
         val DEFAULT = InputLimits()
     }
 }
+
+private const val MAX_FILE_MIB = 50L

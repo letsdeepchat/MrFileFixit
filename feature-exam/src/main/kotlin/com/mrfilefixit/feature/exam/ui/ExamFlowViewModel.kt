@@ -170,7 +170,9 @@ class ExamFlowViewModel @AssistedInject constructor(
 
     fun onCropChanged(key: SlotKey, rect: NormalizedRect) = updateSlot(key) { it.copy(crop = rect) }
 
-    fun onRotate(key: SlotKey) = updateSlot(key) { it.copy(rotation = (it.rotation + QUARTER_TURN) % FULL_TURN, crop = null) }
+    fun onRotate(key: SlotKey) = updateSlot(key) {
+        it.copy(rotation = (it.rotation + QUARTER_TURN) % FULL_TURN, crop = null)
+    }
 
     fun onFix(key: SlotKey) {
         val slot = mutableState.value.slots[key] ?: return

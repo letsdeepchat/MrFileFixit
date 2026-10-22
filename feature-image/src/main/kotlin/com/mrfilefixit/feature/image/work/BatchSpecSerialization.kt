@@ -85,7 +85,15 @@ internal object BatchSpecSerialization {
         BatchResultDto.serializer(),
         BatchResultDto(
             outputs = outcome.images.map {
-                OutputDto(it.file.path, it.file.displayName, it.file.mimeType, it.file.sizeBytes, it.file.width, it.file.height, it.format.name)
+                OutputDto(
+                    it.file.path,
+                    it.file.displayName,
+                    it.file.mimeType,
+                    it.file.sizeBytes,
+                    it.file.width,
+                    it.file.height,
+                    it.format.name,
+                )
             },
             failures = outcome.failures.size,
         ),
@@ -95,7 +103,12 @@ internal object BatchSpecSerialization {
         val dto = json.decodeFromString(BatchResultDto.serializer(), text)
         return BatchOutcome(
             images = dto.outputs.map {
-                ProcessedImage(OutputFile(it.path, it.name, it.mime, it.size, it.width, it.height), ImageFormat.valueOf(it.format), null, false)
+                ProcessedImage(
+                    OutputFile(it.path, it.name, it.mime, it.size, it.width, it.height),
+                    ImageFormat.valueOf(it.format),
+                    null,
+                    false,
+                )
             },
             failures = List(dto.failures) { AppError.Unexpected("BatchItem") },
         )

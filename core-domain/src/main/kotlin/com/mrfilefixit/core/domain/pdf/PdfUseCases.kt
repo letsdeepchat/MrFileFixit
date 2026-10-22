@@ -27,7 +27,10 @@ class RunPdfOperationUseCase @Inject constructor(
     private val processor: PdfProcessor,
     private val limits: InputLimits,
 ) {
-    suspend operator fun invoke(operation: PdfOperation, progress: ProgressReporter): AppResult<List<OutputFile>> = try {
+    suspend operator fun invoke(
+        operation: PdfOperation,
+        progress: ProgressReporter,
+    ): AppResult<List<OutputFile>> = try {
         validate(operation).flatMap { processor.run(operation, progress) }
     } finally {
         operation.wipeSecrets()
@@ -35,8 +38,13 @@ class RunPdfOperationUseCase @Inject constructor(
 
     private fun validate(operation: PdfOperation): AppResult<Unit> = when (operation) {
         is PdfOperation.Merge ->
-            if (operation.sources.size < 2) failure(AppError.TooManyFiles(operation.sources.size, limits.maxFilesPerJob))
-            else limits.checkFileCount(operation.sources.size)
+            if (operation.sources.size <
+                2
+            ) {
+                failure(AppError.TooManyFiles(operation.sources.size, limits.maxFilesPerJob))
+            } else {
+                limits.checkFileCount(operation.sources.size)
+            }
         is PdfOperation.ImagesToPdf -> limits.checkFileCount(operation.images.size)
         is PdfOperation.Protect ->
             if (operation.userPassword.isEmpty()) failure(AppError.WrongPassword) else success(Unit)

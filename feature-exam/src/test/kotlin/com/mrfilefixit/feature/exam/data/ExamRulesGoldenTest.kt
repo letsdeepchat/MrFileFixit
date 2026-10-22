@@ -3,10 +3,10 @@ package com.mrfilefixit.feature.exam.data
 import com.mrfilefixit.core.domain.exam.ExamProfile
 import com.mrfilefixit.core.domain.exam.VerificationStatus
 import com.mrfilefixit.core.domain.result.Result
+import java.io.File
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.io.File
 
 /**
  * Golden test for the bundled exam rules. Any change to a number in exam_rules.json shows up as a
@@ -69,7 +69,8 @@ class ExamRulesGoldenTest {
                 )
             }
             p.composite?.let { c ->
-                appendLine("  composite: photoFraction=${c.photoFraction} target=${c.document.targetWidth}x${c.document.targetHeight}")
+                val size = "${c.document.targetWidth}x${c.document.targetHeight}"
+                appendLine("  composite: photoFraction=${c.photoFraction} target=$size")
             }
         }
     }

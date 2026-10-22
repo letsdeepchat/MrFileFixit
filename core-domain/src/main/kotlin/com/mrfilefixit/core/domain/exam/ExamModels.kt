@@ -65,7 +65,13 @@ data class DocumentSpec(
         get() {
             val safeMin = minKb.toLong() * KIB + SAFETY_MARGIN_BYTES
             val safeMax = maxKb.toLong() * DECIMAL_KB - SAFETY_MARGIN_BYTES
-            return if (minKb == 0) 0L..safeMax else if (safeMin < safeMax) safeMin..safeMax else minBytes..maxBytes
+            return if (minKb == 0) {
+                0L..safeMax
+            } else if (safeMin < safeMax) {
+                safeMin..safeMax
+            } else {
+                minBytes..maxBytes
+            }
         }
 
     companion object {

@@ -14,12 +14,12 @@ import com.mrfilefixit.core.domain.image.ImageBatchSpec
 import com.mrfilefixit.core.domain.job.JobState
 import com.mrfilefixit.core.domain.result.AppError
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 /** Hands big batches to WorkManager and maps WorkInfo back to the app's [JobState]. */
 class ImageBatchScheduler @Inject constructor(
@@ -40,7 +40,9 @@ class ImageBatchScheduler @Inject constructor(
         return request.id
     }
 
-    fun observe(id: UUID, jobDir: String): Flow<JobState<BatchOutcome>> = workManager.getWorkInfoByIdFlow(id).map { info ->
+    fun observe(id: UUID, jobDir: String): Flow<JobState<BatchOutcome>> = workManager.getWorkInfoByIdFlow(
+        id,
+    ).map { info ->
         when (info?.state) {
             null, WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> JobState.Running(null)
             WorkInfo.State.RUNNING -> JobState.Running(info.progress.getFloat(BatchImageWorker.KEY_PROGRESS, 0f))
@@ -48,7 +50,9 @@ class ImageBatchScheduler @Inject constructor(
                 val text = withContext(dispatchers.io) { File(jobDir, BatchImageWorker.RESULT_FILE).readText() }
                 JobState.Success(BatchSpecSerialization.decodeResult(text))
             }
-            WorkInfo.State.FAILED -> JobState.Failed(AppError.Unexpected(info.outputData.getString(BatchImageWorker.KEY_ERROR) ?: "Batch"))
+            WorkInfo.State.FAILED -> JobState.Failed(
+                AppError.Unexpected(info.outputData.getString(BatchImageWorker.KEY_ERROR) ?: "Batch"),
+            )
             WorkInfo.State.CANCELLED -> JobState.Cancelled
         }
     }

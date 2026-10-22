@@ -23,8 +23,8 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -53,6 +53,7 @@ import com.mrfilefixit.core.domain.job.JobState
 import com.mrfilefixit.core.domain.pdf.CompressionLevel
 import com.mrfilefixit.core.domain.pdf.PageSize
 import com.mrfilefixit.core.domain.pdf.Position
+import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.ads.BannerPlacement
 import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.ErrorCard
@@ -63,7 +64,6 @@ import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.feature.pdf.R
-import com.mrfilefixit.core.ui.R as CoreR
 
 /** Every callback the tool screen needs; keeps the screen previewable without a ViewModel. */
 internal class PdfToolActions(
@@ -102,19 +102,33 @@ internal fun PdfToolScreen(state: PdfToolUiState, actions: PdfToolActions, modif
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item {
-                Text(toolLabel(tool), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
+                Text(
+                    toolLabel(tool),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.semantics {
+                        heading()
+                    },
+                )
             }
             item {
                 Button(
                     onClick = {
                         when {
-                            tool.acceptsImages -> pickImages.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                            tool.acceptsImages -> pickImages.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                            )
                             tool.multipleInputs -> pickPdfs.launch(arrayOf(PDF_MIME))
                             else -> pickPdf.launch(arrayOf(PDF_MIME))
                         }
                     },
                     modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
-                ) { Text(stringResource(if (tool.multipleInputs) R.string.pdf_add_files else CoreR.string.action_choose_file)) }
+                ) {
+                    Text(
+                        stringResource(
+                            if (tool.multipleInputs) R.string.pdf_add_files else CoreR.string.action_choose_file,
+                        ),
+                    )
+                }
             }
             state.inputError?.let { item { ErrorCard(it, onRetry = null) } }
             itemsIndexed(state.files, key = { index, file -> "$index-${file.uri}" }) { index, file ->
@@ -137,7 +151,11 @@ internal fun PdfToolScreen(state: PdfToolUiState, actions: PdfToolActions, modif
                                 IconButton(onClick = { actions.onMove(index, index - 1) }, enabled = index > 0) {
                                     Icon(Icons.Filled.ArrowUpward, stringResource(CoreR.string.action_move_up))
                                 }
-                                IconButton(onClick = { actions.onMove(index, index + 1) }, enabled = index < state.files.lastIndex) {
+                                IconButton(
+                                    onClick = { actions.onMove(index, index + 1) },
+                                    enabled =
+                                    index < state.files.lastIndex,
+                                ) {
                                     Icon(Icons.Filled.ArrowDownward, stringResource(CoreR.string.action_move_down))
                                 }
                             }
@@ -177,7 +195,10 @@ private fun Options(
     onConfirm: (String) -> Unit,
 ) {
     val o = state.options
-    Column(Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
+    Column(
+        Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+    ) {
         when (state.tool) {
             PdfTool.SPLIT, PdfTool.EXTRACT, PdfTool.REORDER, PdfTool.DELETE, PdfTool.ROTATE, PdfTool.TO_IMAGES -> {
                 val hint = when (state.tool) {
@@ -196,7 +217,9 @@ private fun Options(
                 )
                 if (state.tool == PdfTool.ROTATE) {
                     Text(stringResource(R.string.pdf_rotate_by), style = MaterialTheme.typography.titleSmall)
-                    ChipRow(listOf(90, 180, 270), o.degrees, { "$it°" }) { d -> actions.onOptions { it.copy(degrees = d) } }
+                    ChipRow(listOf(90, 180, 270), o.degrees, {
+                        "$it°"
+                    }) { d -> actions.onOptions { it.copy(degrees = d) } }
                 }
                 if (state.tool == PdfTool.TO_IMAGES) {
                     Text(stringResource(R.string.pdf_dpi, o.dpi))
@@ -209,12 +232,16 @@ private fun Options(
             }
             PdfTool.COMPRESS -> {
                 Text(stringResource(R.string.pdf_compress_level), style = MaterialTheme.typography.titleSmall)
-                ChipRow(CompressionLevel.entries, o.level, { compressionLabel(it) }) { l -> actions.onOptions { it.copy(level = l) } }
+                ChipRow(CompressionLevel.entries, o.level, {
+                    compressionLabel(it)
+                }) { l -> actions.onOptions { it.copy(level = l) } }
                 Text(stringResource(R.string.pdf_compress_note), style = MaterialTheme.typography.bodySmall)
             }
             PdfTool.IMAGES_TO_PDF -> {
                 Text(stringResource(R.string.pdf_page_size), style = MaterialTheme.typography.titleSmall)
-                ChipRow(PageSize.entries, o.pageSize, { pageSizeLabel(it) }) { p -> actions.onOptions { it.copy(pageSize = p) } }
+                ChipRow(PageSize.entries, o.pageSize, {
+                    pageSizeLabel(it)
+                }) { p -> actions.onOptions { it.copy(pageSize = p) } }
             }
             PdfTool.WATERMARK -> {
                 OutlinedTextField(
@@ -226,8 +253,18 @@ private fun Options(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(stringResource(R.string.pdf_opacity, (o.opacity * PERCENT).toInt()))
-                Slider(value = o.opacity, onValueChange = { v -> actions.onOptions { it.copy(opacity = v) } }, valueRange = 0.1f..1f)
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
+                Slider(
+                    value = o.opacity,
+                    onValueChange = { v ->
+                        actions.onOptions { it.copy(opacity = v) }
+                    },
+                    valueRange =
+                    0.1f..1f,
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
+                ) {
                     Text(stringResource(R.string.pdf_watermark_diagonal), Modifier.weight(1f))
                     Switch(checked = o.diagonal, onCheckedChange = { v -> actions.onOptions { it.copy(diagonal = v) } })
                 }
@@ -240,7 +277,9 @@ private fun Options(
                     { positionLabel(it) },
                 ) { p -> actions.onOptions { it.copy(position = p) } }
                 Text(stringResource(R.string.pdf_number_style), style = MaterialTheme.typography.titleSmall)
-                ChipRow(NumberStyle.entries, o.numberStyle, { it.pattern.replace("{n}", "1").replace("{total}", "9") }) { n ->
+                ChipRow(NumberStyle.entries, o.numberStyle, {
+                    it.pattern.replace("{n}", "1").replace("{total}", "9")
+                }) { n ->
                     actions.onOptions { it.copy(numberStyle = n) }
                 }
             }
@@ -300,7 +339,10 @@ private fun <T> ChipRow(values: List<T>, selected: T, label: @Composable (T) -> 
 private fun JobSection(state: PdfToolUiState, actions: PdfToolActions, onRun: () -> Unit, passwordsValid: Boolean) {
     val context = LocalContext.current
     val adSlots = LocalAdSlots.current
-    Column(Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
+    Column(
+        Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+    ) {
         when (val job = state.job) {
             is JobState.Running -> JobProgressCard(job.progress, actions.onCancel)
             is JobState.Success -> if (!state.resultRevealed) {
@@ -329,11 +371,14 @@ private fun JobSection(state: PdfToolUiState, actions: PdfToolActions, onRun: ()
 private fun Results(state: PdfToolUiState, actions: PdfToolActions) {
     val outputs = state.outputs
     var pendingSave by remember { mutableStateOf<Int?>(null) }
-    val saver = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(outputs.firstOrNull()?.mimeType ?: PDF_MIME)) { uri ->
-        val index = pendingSave
-        if (uri != null && index != null) actions.onSave(index, uri.toString())
-        pendingSave = null
-    }
+    val saver =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.CreateDocument(outputs.firstOrNull()?.mimeType ?: PDF_MIME),
+        ) { uri ->
+            val index = pendingSave
+            if (uri != null && index != null) actions.onSave(index, uri.toString())
+            pendingSave = null
+        }
     Text(stringResource(R.string.pdf_result_files, outputs.size), style = MaterialTheme.typography.titleSmall)
     outputs.forEachIndexed { index, file ->
         Card(Modifier.fillMaxWidth()) {

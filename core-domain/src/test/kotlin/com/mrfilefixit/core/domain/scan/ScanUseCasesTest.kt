@@ -37,7 +37,16 @@ class ScanUseCasesTest {
     fun `imports pdf first then numbered pages and reaches full progress`() = runTest {
         stubImport()
         val seen = mutableListOf<Float>()
-        val result = import(ScanCapture("content://s/pdf", listOf("content://s/1", "content://s/2")), "/jobs/1", "scan", ProgressReporter { seen += it })
+        val result =
+            import(
+                ScanCapture("content://s/pdf", listOf("content://s/1", "content://s/2")),
+                "/jobs/1",
+                "scan",
+                ProgressReporter {
+                    seen +=
+                        it
+                },
+            )
         val doc = (result as Result.Success).value
         assertEquals("scan.pdf", doc.pdf?.displayName)
         assertEquals(listOf("scan-1.jpg", "scan-2.jpg"), doc.pages.map { it.displayName })
@@ -54,7 +63,8 @@ class ScanUseCasesTest {
     @Test
     fun `a failed page import fails the whole import`() = runTest {
         stubImport()
-        coEvery { files.importToJob("content://s/2", any(), any(), any(), any()) } returns failure(AppError.FileTooLarge(1, 0))
+        coEvery { files.importToJob("content://s/2", any(), any(), any(), any()) } returns
+            failure(AppError.FileTooLarge(1, 0))
         val result = import(ScanCapture(null, listOf("content://s/1", "content://s/2")), "/jobs/1", "scan")
         assertTrue(result is Result.Failure)
     }

@@ -27,6 +27,8 @@ import com.mrfilefixit.core.domain.logging.AppLogger
 import com.mrfilefixit.core.ui.ads.AdSlots
 import com.mrfilefixit.core.ui.ads.BannerPlacement
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,8 +37,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * The one place that talks to AdMob. Order is always: UMP consent -> MobileAds.initialize -> preload.
@@ -168,7 +168,11 @@ internal class AdManager @Inject constructor(
     }
 
     private fun preloadInterstitial() {
-        if (!ready.value || interstitial != null || interstitialLoading || BuildConfig.INTERSTITIAL_UNIT_ID.isEmpty()) return
+        if (!ready.value || interstitial != null || interstitialLoading ||
+            BuildConfig.INTERSTITIAL_UNIT_ID.isEmpty()
+        ) {
+            return
+        }
         interstitialLoading = true
         InterstitialAd.load(
             context,

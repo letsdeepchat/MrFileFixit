@@ -10,9 +10,9 @@ import com.mrfilefixit.core.domain.result.failure
 import com.mrfilefixit.core.domain.result.success
 import com.mrfilefixit.core.domain.security.FilenameSanitizer
 import com.mrfilefixit.core.domain.security.InputLimits
+import javax.inject.Inject
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import javax.inject.Inject
 
 /** Same edit applied to many images. */
 data class ImageBatchSpec(
@@ -65,7 +65,14 @@ class BatchImageUseCase @Inject constructor(
                 },
             )
             val sizeCheck = limits.checkFileSize(source.sizeBytes)
-            val result = if (sizeCheck is Result.Failure) sizeCheck else processor.process(request, ProgressReporter.NONE)
+            val result = if (sizeCheck is Result.Failure) {
+                sizeCheck
+            } else {
+                processor.process(
+                    request,
+                    ProgressReporter.NONE,
+                )
+            }
             when (result) {
                 is Result.Success -> images += result.value
                 is Result.Failure -> failures += result.error

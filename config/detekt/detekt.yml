@@ -6,20 +6,30 @@ config:
 complexity:
   LongParameterList:
     functionThreshold: 8
-    constructorThreshold: 10
+    # UI "actions" holders bundle one callback per user intent, so they are allowed a few more.
+    constructorThreshold: 13
     ignoreDefaultParameters: true
-    ignoreAnnotated: ['Composable']
+    # Hilt constructors list dependencies; splitting them only hides the coupling.
+    ignoreAnnotated: ['Composable', 'Inject', 'AssistedInject']
   LongMethod:
     threshold: 80
     ignoreAnnotated: ['Composable']
   TooManyFunctions:
+    thresholdInObjects: 15
     thresholdInFiles: 20
     thresholdInClasses: 15
     thresholdInInterfaces: 15
     ignorePrivate: true
   CyclomaticComplexMethod:
-    threshold: 15
+    # Byte-level parsers and engine entry points read better as one guarded function.
+    threshold: 21
+    ignoreSimpleWhenEntries: true
     ignoreAnnotated: ['Composable']
+  NestedBlockDepth:
+    # Nested `use {}` blocks for files, decoders and PDF pages count as depth.
+    threshold: 6
+  ComplexCondition:
+    threshold: 5
 
 naming:
   FunctionNaming:
@@ -33,14 +43,26 @@ style:
   MagicNumber:
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
-    ignoreAnnotated: ['Preview', 'PhonePreviews', 'ThemePreviews', 'DevicePreviews']
+    ignoreEnums: true
+    # Right angles, percentages, KiB and "centre" are self-explanatory in image code.
+    ignoreNumbers: ['-1', '0', '1', '2', '4', '90', '180', '270', '360', '100', '1024', '0.5']
+    ignoreAnnotated: ['Preview', 'AllPreviews', 'FontScalePreviews', 'ThemePreviews', 'DevicePreviews']
     excludes: ['**/test/**', '**/androidTest/**', '**/theme/**']
   UnusedPrivateMember:
-    ignoreAnnotated: ['Preview', 'DevicePreviews']
+    ignoreAnnotated: ['Preview', 'AllPreviews', 'FontScalePreviews', 'ThemePreviews', 'DevicePreviews']
   ForbiddenComment:
     active: false
   ReturnCount:
-    max: 4
+    # Input parsers reject malformed data with early returns; that is clearer than nested ifs.
+    max: 5
+    excludeGuardClauses: true
+    excludes: ['**/test/**']
+  ThrowsCount:
+    max: 3
+    excludeGuardClauses: true
+    excludes: ['**/test/**']
+  LoopWithTooManyJumpStatements:
+    maxJumpCount: 2
   ForbiddenImport:
     active: true
     # Processing code must never touch the network. AdMob (core-ads) is the only network consumer,
@@ -86,6 +108,10 @@ exceptions:
 formatting:
   android: true
   autoCorrect: true
+  ImportOrdering:
+    # Same layout as ktlint 1.x android_studio style (see .editorconfig): plain lexicographic.
+    layout: '*'
+
   MaximumLineLength:
     maxLineLength: 120
   TrailingCommaOnCallSite:

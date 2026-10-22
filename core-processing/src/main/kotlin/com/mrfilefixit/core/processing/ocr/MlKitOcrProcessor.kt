@@ -29,11 +29,11 @@ import com.mrfilefixit.core.processing.image.ImageDecoding
 import com.mrfilefixit.core.processing.image.use
 import com.mrfilefixit.core.processing.io.InputRejectedException
 import com.mrfilefixit.core.processing.io.mapEngineError
+import javax.inject.Inject
+import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
-import kotlin.coroutines.coroutineContext
 
 /**
  * On-device OCR with ML Kit's bundled models (no model download, works offline).
@@ -88,7 +88,11 @@ internal class MlKitOcrProcessor @Inject constructor(
         }
     }
 
-    private suspend fun recognizePdf(recognizer: TextRecognizer, source: FileRef, progress: ProgressReporter): List<String> {
+    private suspend fun recognizePdf(
+        recognizer: TextRecognizer,
+        source: FileRef,
+        progress: ProgressReporter,
+    ): List<String> {
         val descriptor = resolver.openFileDescriptor(Uri.parse(source.uri), "r") ?: return emptyList()
         return descriptor.use { fd ->
             PdfRenderer(fd).use { renderer ->

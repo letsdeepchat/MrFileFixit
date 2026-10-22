@@ -1,12 +1,12 @@
 package com.mrfilefixit.core.domain.result
 
+import java.io.FileNotFoundException
+import java.io.IOException
 import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.io.FileNotFoundException
-import java.io.IOException
 
 class ResultTest {
     @Test
@@ -42,7 +42,8 @@ class ResultTest {
 
     @Test
     fun `collectAll returns first failure`() {
-        val results: List<AppResult<Int>> = listOf(success(1), failure(AppError.CorruptFile), failure(AppError.EmptyFile))
+        val results: List<AppResult<Int>> =
+            listOf(success(1), failure(AppError.CorruptFile), failure(AppError.EmptyFile))
         assertEquals(failure(AppError.CorruptFile), results.collectAll())
         assertEquals(success(listOf(1, 2)), listOf<AppResult<Int>>(success(1), success(2)).collectAll())
     }

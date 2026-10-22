@@ -16,9 +16,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.share.shareFiles
 import kotlinx.serialization.Serializable
-import com.mrfilefixit.core.ui.R as CoreR
 
 @Serializable
 data object ImageRoute
@@ -52,7 +52,9 @@ private fun ImageToolRoute(viewModel: ImageToolViewModel = hiltViewModel()) {
             onCancel = viewModel::onCancel,
             onRevealed = viewModel::onResultRevealed,
             onRewardEarned = viewModel::onRewardEarned,
-            onSave = { index, uri -> viewModel.state.value.outcome?.images?.getOrNull(index)?.let { viewModel.onSave(it.file, uri) } },
+            onSave = { index, uri ->
+                viewModel.state.value.outcome?.images?.getOrNull(index)?.let { viewModel.onSave(it.file, uri) }
+            },
             onShareAll = viewModel::onShareAll,
             onReset = viewModel::onReset,
             canEncode = viewModel::canEncode,

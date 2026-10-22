@@ -26,12 +26,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.mrfilefixit.core.domain.image.NormalizedRect
+import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.share.shareFile
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.feature.exam.R
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import com.mrfilefixit.core.ui.R as CoreR
 
 @Serializable
 data object ExamRoute

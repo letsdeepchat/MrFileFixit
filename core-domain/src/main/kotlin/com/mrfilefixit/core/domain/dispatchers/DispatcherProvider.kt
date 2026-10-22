@@ -1,8 +1,8 @@
 package com.mrfilefixit.core.domain.dispatchers
 
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import javax.inject.Inject
 
 /** Injected instead of hardcoding [Dispatchers], so tests can use a test dispatcher. */
 interface DispatcherProvider {

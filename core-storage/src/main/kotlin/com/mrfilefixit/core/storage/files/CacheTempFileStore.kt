@@ -9,10 +9,10 @@ import com.mrfilefixit.core.domain.result.failure
 import com.mrfilefixit.core.domain.result.runCatchingAppFlat
 import com.mrfilefixit.core.domain.result.success
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.withContext
 
 /** Job scratch space under app-private `cache/jobs/<jobId>/`. Never on shared storage. */
 @Singleton

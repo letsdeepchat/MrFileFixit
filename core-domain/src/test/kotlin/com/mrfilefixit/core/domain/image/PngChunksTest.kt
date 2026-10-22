@@ -1,17 +1,20 @@
 package com.mrfilefixit.core.domain.image
 
+import java.nio.ByteBuffer
+import java.util.zip.CRC32
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import java.nio.ByteBuffer
-import java.util.zip.CRC32
 
 class PngChunksTest {
     private val signature = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
 
     private fun chunk(type: String, data: ByteArray): ByteArray {
         val typeBytes = type.toByteArray(Charsets.US_ASCII)
-        val crc = CRC32().apply { update(typeBytes); update(data) }.value.toInt()
+        val crc = CRC32().apply {
+            update(typeBytes)
+            update(data)
+        }.value.toInt()
         return ByteBuffer.allocate(12 + data.size).putInt(data.size).put(typeBytes).put(data).putInt(crc).array()
     }
 

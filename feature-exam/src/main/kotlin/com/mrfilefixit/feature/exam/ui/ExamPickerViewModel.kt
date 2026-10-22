@@ -7,11 +7,11 @@ import com.mrfilefixit.core.domain.exam.GetExamProfilesUseCase
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.fold
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface ExamPickerUiState {
     data object Loading : ExamPickerUiState

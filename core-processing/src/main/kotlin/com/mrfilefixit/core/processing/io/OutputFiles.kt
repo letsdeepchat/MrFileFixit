@@ -14,7 +14,8 @@ internal fun newOutputFile(dir: String, baseName: String, extension: String): Fi
     var candidate = File(canonicalDir, first)
     var index = 1
     while (candidate.exists()) {
-        candidate = File(canonicalDir, FilenameSanitizer.withExtension("${first.substringBeforeLast('.')}-$index", extension))
+        candidate =
+            File(canonicalDir, FilenameSanitizer.withExtension("${first.substringBeforeLast('.')}-$index", extension))
         index++
     }
     check(candidate.canonicalFile.parentFile == canonicalDir) { "Output escaped its job directory" }

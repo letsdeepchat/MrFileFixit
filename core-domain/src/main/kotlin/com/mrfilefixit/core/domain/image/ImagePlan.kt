@@ -48,7 +48,12 @@ data class ImagePlan(
                     }
                 }
             }
-            return ImagePlan(((rotation % FULL_TURN) + FULL_TURN) % FULL_TURN, crop ?: NormalizedRect.FULL, resize, scale)
+            return ImagePlan(
+                ((rotation % FULL_TURN) + FULL_TURN) % FULL_TURN,
+                crop ?: NormalizedRect.FULL,
+                resize,
+                scale,
+            )
         }
     }
 }
@@ -121,7 +126,12 @@ data class OutputGeometry(
             return when (resize.mode) {
                 ResizeMode.STRETCH -> OutputGeometry(boxW, boxH, 0, 0, boxW, boxH, NormalizedRect.FULL)
                 ResizeMode.FILL -> OutputGeometry(
-                    boxW, boxH, 0, 0, boxW, boxH,
+                    boxW,
+                    boxH,
+                    0,
+                    0,
+                    boxW,
+                    boxH,
                     NormalizedRect.centeredWithAspect(boxW.toFloat() / boxH, regionAspect),
                 )
                 ResizeMode.FIT -> {

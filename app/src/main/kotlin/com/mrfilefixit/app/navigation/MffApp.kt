@@ -12,8 +12,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -58,6 +62,8 @@ fun MffApp() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val destination = backStackEntry?.destination
     NavigationSuiteScaffold(
+        // Exposes test tags as resource ids so UiAutomator (Baseline Profile, Macrobenchmark) can find them.
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
         navigationSuiteItems = {
             TopLevelDestination.entries.forEach { top ->
                 item(
@@ -65,6 +71,7 @@ fun MffApp() {
                     onClick = { navController.navigateTopLevel(top) },
                     icon = { Icon(top.icon, contentDescription = null) },
                     label = { Text(stringResource(top.label)) },
+                    modifier = Modifier.testTag("nav_${top.name.lowercase()}"),
                 )
             }
         },

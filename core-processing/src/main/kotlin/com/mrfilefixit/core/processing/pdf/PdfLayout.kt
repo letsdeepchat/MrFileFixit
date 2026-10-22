@@ -31,7 +31,14 @@ internal object PdfLayout {
     }
 
     /** Baseline origin for a text of [textWidth] at [position], [margin] from the page edges. */
-    fun textOrigin(position: Position, textWidth: Float, fontSize: Float, pageW: Float, pageH: Float, margin: Float): Pair<Float, Float> {
+    fun textOrigin(
+        position: Position,
+        textWidth: Float,
+        fontSize: Float,
+        pageW: Float,
+        pageH: Float,
+        margin: Float,
+    ): Pair<Float, Float> {
         val x = when (position) {
             Position.TOP_LEFT, Position.BOTTOM_LEFT -> margin
             Position.TOP_CENTER, Position.BOTTOM_CENTER -> (pageW - textWidth) / 2f
@@ -53,6 +60,10 @@ internal object PdfLayout {
      * instead of failing the whole job; the UI tells users to stick to Latin letters for stamps.
      */
     fun toWinAnsi(text: String): String = buildString(text.length) {
-        for (ch in text) append(if (ch.code in 0x20..0x7E || ch.code in 0xA0..0xFF) ch else '?')
+        for (ch in text) append(if (ch.code in PRINTABLE_ASCII || ch.code in PRINTABLE_LATIN1) ch else '?')
     }
 }
+
+// Characters Helvetica can draw with WinAnsi encoding.
+private val PRINTABLE_ASCII = 0x20..0x7E
+private val PRINTABLE_LATIN1 = 0xA0..0xFF

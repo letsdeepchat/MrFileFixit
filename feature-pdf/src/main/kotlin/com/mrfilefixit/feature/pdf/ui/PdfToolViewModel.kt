@@ -86,7 +86,9 @@ data class PdfToolUiState(
     val job: JobState<List<OutputFile>> = JobState.Idle,
     val resultRevealed: Boolean = false,
 ) {
-    val outputs: List<OutputFile> get() = (job as? JobState.Success)?.value.orEmpty().takeIf { resultRevealed }.orEmpty()
+    val outputs: List<OutputFile> get() = (job as? JobState.Success)?.value.orEmpty().takeIf {
+        resultRevealed
+    }.orEmpty()
     val canRun: Boolean get() = when {
         files.isEmpty() -> false
         tool.multipleInputs -> files.size >= if (tool == PdfTool.MERGE) 2 else 1
@@ -131,7 +133,9 @@ class PdfToolViewModel @AssistedInject constructor(
     init {
         viewModelScope.launch {
             runner.state.collect { job ->
-                mutableState.update { it.copy(job = job, resultRevealed = it.resultRevealed && job is JobState.Success) }
+                mutableState.update {
+                    it.copy(job = job, resultRevealed = it.resultRevealed && job is JobState.Success)
+                }
             }
         }
     }
@@ -145,7 +149,13 @@ class PdfToolViewModel @AssistedInject constructor(
             when (described) {
                 is Result.Failure -> mutableState.update { it.copy(inputError = described.error) }
                 is Result.Success -> {
-                    val files = if (tool.multipleInputs) state.value.files + described.value else described.value.take(1)
+                    val files = if (tool.multipleInputs) {
+                        state.value.files + described.value
+                    } else {
+                        described.value.take(
+                            1,
+                        )
+                    }
                     mutableState.update { it.copy(files = files, inputError = null, info = null) }
                     if (!tool.multipleInputs) loadInfo(files.first())
                 }
@@ -169,7 +179,9 @@ class PdfToolViewModel @AssistedInject constructor(
         s.copy(files = s.files.toMutableList().apply { add(to, removeAt(from)) })
     }
 
-    fun onOptionsChanged(transform: (PdfOptions) -> PdfOptions) = mutableState.update { it.copy(options = transform(it.options)) }
+    fun onOptionsChanged(transform: (PdfOptions) -> PdfOptions) = mutableState.update {
+        it.copy(options = transform(it.options))
+    }
 
     /** [password] and [ownerPassword] are only used for PROTECT/UNLOCK and are wiped after the job. */
     fun onRun(password: CharArray? = null) {
@@ -178,7 +190,9 @@ class PdfToolViewModel @AssistedInject constructor(
         val id = jobIds.next()
         discardOutputs()
         mutableState.update { it.copy(resultRevealed = false) }
-        runner.start(cleanup = { if (runner.state.value !is JobState.Success) tempFiles.deleteJobDir(id) }) { progress ->
+        runner.start(cleanup = {
+            if (runner.state.value !is JobState.Success) tempFiles.deleteJobDir(id)
+        }) { progress ->
             tempFiles.createJobDir(id).flatMap { dir ->
                 jobId = id
                 buildOperation(s, dir, password).flatMap { runOperation(it, progress) }
@@ -194,7 +208,9 @@ class PdfToolViewModel @AssistedInject constructor(
         fun pages() = PageSelection.parse(o.pages, pageCount)
         return when (s.tool) {
             PdfTool.MERGE -> success(PdfOperation.Merge(s.files, dir, "merged"))
-            PdfTool.SPLIT -> PageSelection.parseRanges(o.pages, pageCount).map { PdfOperation.Split(first, it, dir, base) }
+            PdfTool.SPLIT -> PageSelection.parseRanges(o.pages, pageCount).map {
+                PdfOperation.Split(first, it, dir, base)
+            }
             PdfTool.EXTRACT, PdfTool.REORDER -> pages().map { PdfOperation.SelectPages(first, it, dir, "$base-pages") }
             PdfTool.DELETE -> pages().map { remove ->
                 PdfOperation.SelectPages(first, (1..pageCount).filterNot { it in remove.toSet() }, dir, "$base-edited")
@@ -204,7 +220,15 @@ class PdfToolViewModel @AssistedInject constructor(
             PdfTool.IMAGES_TO_PDF -> success(PdfOperation.ImagesToPdf(s.files, o.pageSize, MARGIN_PT, dir, "images"))
             PdfTool.TO_IMAGES -> pages().map { PdfOperation.ToImages(first, it, o.dpi, ImageFormat.JPEG, dir, base) }
             PdfTool.WATERMARK -> success(
-                PdfOperation.Watermark(first, o.watermarkText, o.opacity, WATERMARK_SIZE_PT, o.diagonal, dir, "$base-watermarked"),
+                PdfOperation.Watermark(
+                    first,
+                    o.watermarkText,
+                    o.opacity,
+                    WATERMARK_SIZE_PT,
+                    o.diagonal,
+                    dir,
+                    "$base-watermarked",
+                ),
             )
             PdfTool.PAGE_NUMBERS -> success(
                 PdfOperation.PageNumbers(first, o.position, 1, o.numberStyle.pattern, dir, "$base-numbered"),
@@ -213,7 +237,9 @@ class PdfToolViewModel @AssistedInject constructor(
                 val pw = password ?: CharArray(0)
                 success(PdfOperation.Protect(first, pw.copyOf(), pw.copyOf(), dir, "$base-protected"))
             }
-            PdfTool.UNLOCK -> success(PdfOperation.Unlock(first, (password ?: CharArray(0)).copyOf(), dir, "$base-unlocked"))
+            PdfTool.UNLOCK -> success(
+                PdfOperation.Unlock(first, (password ?: CharArray(0)).copyOf(), dir, "$base-unlocked"),
+            )
         }
     }
 

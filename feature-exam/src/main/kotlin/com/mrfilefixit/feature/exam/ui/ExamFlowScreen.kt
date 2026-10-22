@@ -40,8 +40,9 @@ import androidx.compose.ui.semantics.semantics
 import com.mrfilefixit.core.domain.exam.DocumentKind
 import com.mrfilefixit.core.domain.exam.DocumentSpec
 import com.mrfilefixit.core.domain.exam.ExamProfile
-import com.mrfilefixit.core.domain.job.JobState
 import com.mrfilefixit.core.domain.image.NormalizedRect
+import com.mrfilefixit.core.domain.job.JobState
+import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.CropBox
 import com.mrfilefixit.core.ui.components.ErrorCard
@@ -57,7 +58,6 @@ import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.core.ui.thumbnail.Thumbnail
 import com.mrfilefixit.feature.exam.R
-import com.mrfilefixit.core.ui.R as CoreR
 
 /** Callbacks from the exam flow UI to its ViewModel. */
 internal interface ExamFlowActions {
@@ -117,9 +117,14 @@ private fun ProfileHeader(profile: ExamProfile) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
             VerificationChip(profile)
             // Opens the official site in the user's browser. The app itself never fetches anything.
-            TextButton(onClick = { uriHandler.openUri(profile.sourceUrl) }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
+            TextButton(onClick = {
+                uriHandler.openUri(profile.sourceUrl)
+            }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
                 Icon(Icons.Filled.Public, contentDescription = null)
-                Text(stringResource(CoreR.string.action_open_source), modifier = Modifier.padding(start = Dimens.SpaceXs))
+                Text(
+                    stringResource(CoreR.string.action_open_source),
+                    modifier = Modifier.padding(start = Dimens.SpaceXs),
+                )
             }
         }
         profile.notes?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
@@ -133,7 +138,13 @@ private fun SlotCard(key: SlotKey, slot: SlotUiState, actions: ExamFlowActions, 
     }
     Card(modifier.fillMaxWidth()) {
         Column(Modifier.padding(Dimens.SpaceM), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
-            Text(documentLabel(slot.spec.kind), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            Text(
+                documentLabel(slot.spec.kind),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics {
+                    heading()
+                },
+            )
             Text(requirementsText(slot.spec), style = MaterialTheme.typography.bodyMedium)
             slot.spec.notes?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
 
@@ -142,7 +153,9 @@ private fun SlotCard(key: SlotKey, slot: SlotUiState, actions: ExamFlowActions, 
             val info = slot.sourceInfo
             if (source == null || info == null) {
                 Button(
-                    onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                    onClick = {
+                        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    },
                     modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
                 ) { Text(stringResource(CoreR.string.action_choose_image)) }
                 return@Column
@@ -163,14 +176,23 @@ private fun SlotCard(key: SlotKey, slot: SlotUiState, actions: ExamFlowActions, 
                 )
                 Text(stringResource(R.string.exam_crop_hint), style = MaterialTheme.typography.bodySmall)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
-                    OutlinedButton(onClick = { actions.onRotate(key) }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
+                    OutlinedButton(onClick = {
+                        actions.onRotate(key)
+                    }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
                         Icon(Icons.Filled.Rotate90DegreesCw, contentDescription = null)
-                        Text(stringResource(CoreR.string.action_rotate), modifier = Modifier.padding(start = Dimens.SpaceXs))
+                        Text(
+                            stringResource(CoreR.string.action_rotate),
+                            modifier = Modifier.padding(start = Dimens.SpaceXs),
+                        )
                     }
-                    Button(onClick = { actions.onFix(key) }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
+                    Button(onClick = {
+                        actions.onFix(key)
+                    }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
                         Text(stringResource(R.string.exam_fix_button))
                     }
-                    TextButton(onClick = { actions.onReset(key) }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
+                    TextButton(onClick = {
+                        actions.onReset(key)
+                    }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
                         Text(stringResource(CoreR.string.action_reset))
                     }
                 }
@@ -253,10 +275,14 @@ private fun ResultSection(key: SlotKey, slot: SlotUiState, actions: ExamFlowActi
     }
     if (result.image.padded) Text(stringResource(R.string.exam_padded_note), style = MaterialTheme.typography.bodySmall)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
-        Button(onClick = { saver.launch(file.displayName) }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
+        Button(onClick = {
+            saver.launch(file.displayName)
+        }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
             Text(stringResource(if (slot.saved) R.string.exam_saved else CoreR.string.action_save))
         }
-        FilledTonalButton(onClick = { actions.onShare(key) }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
+        FilledTonalButton(onClick = {
+            actions.onShare(key)
+        }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
             Text(stringResource(CoreR.string.action_share))
         }
         TextButton(onClick = { actions.onReset(key) }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {

@@ -2,8 +2,8 @@ package com.mrfilefixit.app.logging
 
 import com.mrfilefixit.app.BuildConfig
 import com.mrfilefixit.core.domain.logging.AppLogger
-import timber.log.Timber
 import javax.inject.Inject
+import timber.log.Timber
 
 /** Release tree: logs nothing. There is no crash-reporting SDK, so no user data can leave via logs. */
 object ReleaseTree : Timber.Tree() {

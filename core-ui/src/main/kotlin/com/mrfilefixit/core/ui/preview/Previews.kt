@@ -12,7 +12,11 @@ annotation class DevicePreviews
 
 /** Light and dark. */
 @Preview(name = "Light", showBackground = true)
-@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL, showBackground = true)
+@Preview(
+    name = "Dark",
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
+    showBackground = true,
+)
 annotation class ThemePreviews
 
 /** Default and 200% font scale, plus Hindi to catch truncation in longer strings. */

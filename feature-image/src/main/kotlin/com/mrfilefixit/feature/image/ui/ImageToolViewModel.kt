@@ -35,6 +35,8 @@ import com.mrfilefixit.core.domain.result.fold
 import com.mrfilefixit.core.domain.security.InputLimits
 import com.mrfilefixit.feature.image.work.ImageBatchScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.UUID
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -47,8 +49,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
-import javax.inject.Inject
 
 enum class ImageTool { RESIZE, CROP, ROTATE, COMPRESS, CONVERT, STRIP_EXIF }
 
@@ -168,13 +168,21 @@ class ImageToolViewModel @Inject constructor(
             val id = jobIds.next()
             discardOutputs()
             mutableState.update { it.copy(resultRevealed = false, inputError = null) }
-            if (s.files.size > BatchPolicy.INLINE_LIMIT) runInBackground(id, s.files, spec) else runInline(id, s.files, spec)
+            if (s.files.size >
+                BatchPolicy.INLINE_LIMIT
+            ) {
+                runInBackground(id, s.files, spec)
+            } else {
+                runInline(id, s.files, spec)
+            }
         }
     }
 
     private fun runInline(id: String, files: List<FileRef>, spec: ImageBatchSpec) {
         mutableState.update { it.copy(runsInBackground = false) }
-        runner.start(cleanup = { if (runner.state.value !is JobState.Success) tempFiles.deleteJobDir(id) }) { progress ->
+        runner.start(cleanup = {
+            if (runner.state.value !is JobState.Success) tempFiles.deleteJobDir(id)
+        }) { progress ->
             tempFiles.createJobDir(id).flatMap { dir ->
                 jobId = id
                 batchImages(files, spec, dir, progress)
@@ -215,7 +223,11 @@ class ImageToolViewModel @Inject constructor(
                 "-resized",
             )
             ImageTool.CROP -> ImageBatchSpec(listOf(ImageOp.Crop(o.crop)), OutputSpec(o.format, quality), "-cropped")
-            ImageTool.ROTATE -> ImageBatchSpec(listOf(ImageOp.Rotate(o.degrees)), OutputSpec(o.format, quality), "-rotated")
+            ImageTool.ROTATE -> ImageBatchSpec(
+                listOf(ImageOp.Rotate(o.degrees)),
+                OutputSpec(o.format, quality),
+                "-rotated",
+            )
             ImageTool.COMPRESS -> {
                 val kb = o.targetKb.toLongOrNull()?.takeIf { it > 0 }
                 val target = if (kb != null) {
@@ -227,7 +239,11 @@ class ImageToolViewModel @Inject constructor(
                 ImageBatchSpec(emptyList(), OutputSpec(format, target), "-compressed")
             }
             ImageTool.CONVERT -> ImageBatchSpec(emptyList(), OutputSpec(o.format, quality), "")
-            ImageTool.STRIP_EXIF -> ImageBatchSpec(emptyList(), OutputSpec(ImageFormat.JPEG, EncodeTarget.Original), "-clean")
+            ImageTool.STRIP_EXIF -> ImageBatchSpec(
+                emptyList(),
+                OutputSpec(ImageFormat.JPEG, EncodeTarget.Original),
+                "-clean",
+            )
         }
     }
 

@@ -19,11 +19,11 @@ import com.mrfilefixit.core.domain.result.runCatchingAppFlat
 import com.mrfilefixit.core.domain.result.success
 import com.mrfilefixit.core.domain.security.FilenameSanitizer
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileNotFoundException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.withContext
 
 @Singleton
 internal class SafFileRepository @Inject constructor(
@@ -127,7 +127,9 @@ internal class SafFileRepository @Inject constructor(
 
     private fun isInsideAppStorage(file: File): Boolean {
         val canonical = file.canonicalFile.path
-        return listOf(context.cacheDir, context.filesDir).any { canonical.startsWith(it.canonicalPath + File.separator) }
+        return listOf(context.cacheDir, context.filesDir).any {
+            canonical.startsWith(it.canonicalPath + File.separator)
+        }
     }
 
     private fun isInsideJobs(dir: File): Boolean {

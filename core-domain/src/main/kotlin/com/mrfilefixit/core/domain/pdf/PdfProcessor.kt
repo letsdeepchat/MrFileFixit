@@ -9,5 +9,8 @@ interface PdfProcessor {
     /** Page count and encryption flag. Encrypted files report [PdfInfo.encrypted] instead of failing. */
     suspend fun info(source: FileRef): AppResult<PdfInfo>
 
-    suspend fun run(operation: PdfOperation, progress: ProgressReporter = ProgressReporter.NONE): AppResult<List<OutputFile>>
+    suspend fun run(
+        operation: PdfOperation,
+        progress: ProgressReporter = ProgressReporter.NONE,
+    ): AppResult<List<OutputFile>>
 }

@@ -56,10 +56,16 @@ class PrepareExamDocumentUseCaseTest {
         coEvery { processor.readInfo(source) } returns success(ImageInfo(4000, 3000, ImageFormat.JPEG, 3_000_000))
         val request = slot<ImageRequest>()
         coEvery { processor.process(capture(request), any()) } returns success(
-            ProcessedImage(OutputFile("/cache/jobs/1/photo.jpg", "photo.jpg", "image/jpeg", 35_000, 200, 230), ImageFormat.JPEG, 92, false),
+            ProcessedImage(
+                OutputFile("/cache/jobs/1/photo.jpg", "photo.jpg", "image/jpeg", 35_000, 200, 230),
+                ImageFormat.JPEG,
+                92,
+                false,
+            ),
         )
 
-        val result = useCase(source, spec, crop = null, rotationDegrees = 0, "/cache/jobs/1", "../photo", ProgressReporter.NONE)
+        val result =
+            useCase(source, spec, crop = null, rotationDegrees = 0, "/cache/jobs/1", "../photo", ProgressReporter.NONE)
 
         result as Result.Success
         assertTrue(result.value.report.passed)

@@ -50,7 +50,13 @@ object QualitySearch {
         var iterations = 0
         val top = encode(maxQuality).also { iterations++ }
         if (top.sizeBytes <= maxBytes) {
-            return if (top.sizeBytes >= minBytes) Outcome.Found(top, iterations) else Outcome.BelowMinimum(top, iterations)
+            return if (top.sizeBytes >=
+                minBytes
+            ) {
+                Outcome.Found(top, iterations)
+            } else {
+                Outcome.BelowMinimum(top, iterations)
+            }
         }
 
         var low = minQuality

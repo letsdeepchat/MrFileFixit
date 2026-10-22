@@ -27,6 +27,7 @@ import com.mrfilefixit.core.domain.scan.ScanDocument
 import com.mrfilefixit.core.domain.scan.asSource
 import com.mrfilefixit.core.domain.security.InputLimits
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +37,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class ScanUiState(
     val scan: JobState<ScanDocument> = JobState.Idle,
@@ -48,7 +48,8 @@ data class ScanUiState(
     val inputError: AppError? = null,
 ) {
     val document: ScanDocument? get() = (scan as? JobState.Success)?.value
-    val canRecognize: Boolean get() = ocr !is JobState.Running && (ocrFiles.isNotEmpty() || document?.pages?.isNotEmpty() == true)
+    val canRecognize: Boolean get() = ocr !is JobState.Running &&
+        (ocrFiles.isNotEmpty() || document?.pages?.isNotEmpty() == true)
 }
 
 sealed interface ScanEffect {
@@ -95,7 +96,9 @@ class ScanViewModel @Inject constructor(
         discardOutputs()
         ocrRunner.reset()
         mutableState.update { it.copy(inputError = null, ocrFiles = emptyList()) }
-        scanRunner.start(cleanup = { if (scanRunner.state.value !is JobState.Success) tempFiles.deleteJobDir(id) }) { progress ->
+        scanRunner.start(cleanup = {
+            if (scanRunner.state.value !is JobState.Success) tempFiles.deleteJobDir(id)
+        }) { progress ->
             tempFiles.createJobDir(id).flatMap { dir ->
                 jobId = id
                 importScan(capture, dir, SCAN_BASE_NAME, progress)

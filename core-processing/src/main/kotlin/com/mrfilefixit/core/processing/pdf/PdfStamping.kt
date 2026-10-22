@@ -9,11 +9,11 @@ import com.tom_roush.pdfbox.pdmodel.PDPageContentStream
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState
 import com.tom_roush.pdfbox.util.Matrix
-import kotlinx.coroutines.ensureActive
 import kotlin.coroutines.coroutineContext
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlinx.coroutines.ensureActive
 
 /** Watermark and page numbers: text drawn on top of each page, appended to the existing content. */
 internal object PdfStamping {
@@ -21,12 +21,19 @@ internal object PdfStamping {
     private const val MARGIN_PT = 24f
     private const val PAGE_NUMBER_SIZE = 10f
 
-    suspend fun watermark(engine: PdfBoxPdfProcessor, op: PdfOperation.Watermark, progress: ProgressReporter): OutputFile {
+    suspend fun watermark(
+        engine: PdfBoxPdfProcessor,
+        op: PdfOperation.Watermark,
+        progress: ProgressReporter,
+    ): OutputFile {
         val src = engine.copyToJob(op.source, op.outputDir, "watermark-src")
         val text = PdfLayout.toWinAnsi(op.text)
         val font = PDType1Font.HELVETICA_BOLD
         return engine.openDocument(src, null).use { doc ->
-            val state = PDExtendedGraphicsState().apply { nonStrokingAlphaConstant = op.opacity.coerceIn(0.05f, 1f) }
+            val state = PDExtendedGraphicsState().apply {
+                nonStrokingAlphaConstant =
+                    op.opacity.coerceIn(MIN_OPACITY, 1f)
+            }
             val total = doc.numberOfPages
             for (index in 0 until total) {
                 coroutineContext.ensureActive()
@@ -37,7 +44,7 @@ internal object PdfStamping {
                     cs.setGraphicsStateParameters(state)
                     cs.beginText()
                     cs.setFont(font, op.fontSizePt)
-                    cs.setNonStrokingColor(0.5f, 0.5f, 0.5f)
+                    cs.setNonStrokingColor(GREY, GREY, GREY)
                     if (op.diagonal) {
                         val angle = atan2(box.height.toDouble(), box.width.toDouble())
                         val cx = box.width / 2f - (width / 2f) * cos(angle).toFloat()
@@ -57,7 +64,11 @@ internal object PdfStamping {
         }.also { src.delete() }
     }
 
-    suspend fun pageNumbers(engine: PdfBoxPdfProcessor, op: PdfOperation.PageNumbers, progress: ProgressReporter): OutputFile {
+    suspend fun pageNumbers(
+        engine: PdfBoxPdfProcessor,
+        op: PdfOperation.PageNumbers,
+        progress: ProgressReporter,
+    ): OutputFile {
         val src = engine.copyToJob(op.source, op.outputDir, "numbers-src")
         val font = PDType1Font.HELVETICA
         return engine.openDocument(src, null).use { doc ->
@@ -66,9 +77,22 @@ internal object PdfStamping {
                 coroutineContext.ensureActive()
                 val page = doc.getPage(index)
                 val box = page.mediaBox
-                val label = PdfLayout.toWinAnsi(PdfLayout.pageLabel(op.pattern, op.startAt + index, op.startAt + total - 1))
+                val label = PdfLayout.toWinAnsi(
+                    PdfLayout.pageLabel(
+                        op.pattern,
+                        op.startAt + index,
+                        op.startAt + total - 1,
+                    ),
+                )
                 val width = font.getStringWidth(label) / FONT_UNITS * PAGE_NUMBER_SIZE
-                val (x, y) = PdfLayout.textOrigin(op.position, width, PAGE_NUMBER_SIZE, box.width, box.height, MARGIN_PT)
+                val (x, y) = PdfLayout.textOrigin(
+                    op.position,
+                    width,
+                    PAGE_NUMBER_SIZE,
+                    box.width,
+                    box.height,
+                    MARGIN_PT,
+                )
                 PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true).use { cs ->
                     cs.beginText()
                     cs.setFont(font, PAGE_NUMBER_SIZE)
@@ -84,3 +108,6 @@ internal object PdfStamping {
         }.also { src.delete() }
     }
 }
+
+private const val MIN_OPACITY = 0.05f
+private const val GREY = 0.5f

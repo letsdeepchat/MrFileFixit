@@ -28,7 +28,8 @@ class BatchImageUseCaseTest {
     @Test
     fun `continues past failures and reports progress per file`() = runTest {
         every { processor.canEncode(any()) } returns true
-        coEvery { processor.process(match { it.source.displayName == "bad.jpg" }, any()) } returns failure(AppError.CorruptFile)
+        coEvery { processor.process(match { it.source.displayName == "bad.jpg" }, any()) } returns
+            failure(AppError.CorruptFile)
         coEvery { processor.process(match { it.source.displayName != "bad.jpg" }, any()) } answers {
             success(processed(firstArg<ImageRequest>().outputBaseName))
         }

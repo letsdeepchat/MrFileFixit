@@ -44,6 +44,7 @@ import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.domain.job.JobState
 import com.mrfilefixit.core.domain.result.AppError
+import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.ads.BannerPlacement
 import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.CropBox
@@ -58,7 +59,6 @@ import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.core.ui.thumbnail.Thumbnail
 import com.mrfilefixit.feature.image.R
 import kotlinx.coroutines.launch
-import com.mrfilefixit.core.ui.R as CoreR
 
 internal class ImageToolActions(
     val onTool: (ImageTool) -> Unit,
@@ -74,7 +74,10 @@ internal class ImageToolActions(
     val canEncode: (ImageFormat) -> Boolean,
 )
 
-private val CROP_ASPECTS = listOf<Float?>(null, 1f, 4f / 3f, 3f / 4f, 16f / 9f)
+private const val ASPECT_4_3 = 4f / 3f
+private const val ASPECT_3_4 = 3f / 4f
+private const val ASPECT_16_9 = 16f / 9f
+private val CROP_ASPECTS = listOf<Float?>(null, 1f, ASPECT_4_3, ASPECT_3_4, ASPECT_16_9)
 
 @Composable
 internal fun ImageToolScreen(
@@ -94,14 +97,22 @@ internal fun ImageToolScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item {
-                Text(stringResource(R.string.image_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
+                Text(
+                    stringResource(R.string.image_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.semantics {
+                        heading()
+                    },
+                )
             }
             item {
                 ChipRow(ImageTool.entries, state.tool, { toolLabel(it) }, actions.onTool)
             }
             item {
                 Button(
-                    onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                    onClick = {
+                        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    },
                     modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
                 ) { Text(stringResource(R.string.image_pick)) }
             }
@@ -124,7 +135,8 @@ internal fun ImageToolScreen(
             if (state.isBatch) {
                 item {
                     Text(
-                        stringResource(R.string.image_quota_left, remainingBatches) + "\n" + stringResource(R.string.image_batch_background),
+                        stringResource(R.string.image_quota_left, remainingBatches) + "\n" +
+                            stringResource(R.string.image_batch_background),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -156,14 +168,24 @@ private fun QuotaCard(actions: ImageToolActions) {
 @Composable
 private fun Options(state: ImageToolUiState, actions: ImageToolActions) {
     val o = state.options
-    Column(Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
+    Column(
+        Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+    ) {
         when (state.tool) {
             ImageTool.RESIZE -> {
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
-                    NumberField(o.width, { v -> actions.onOptions { it.copy(width = v) } }, stringResource(R.string.image_width), Modifier.weight(1f))
-                    NumberField(o.height, { v -> actions.onOptions { it.copy(height = v) } }, stringResource(R.string.image_height), Modifier.weight(1f))
+                    NumberField(o.width, { v ->
+                        actions.onOptions { it.copy(width = v) }
+                    }, stringResource(R.string.image_width), Modifier.weight(1f))
+                    NumberField(o.height, { v ->
+                        actions.onOptions { it.copy(height = v) }
+                    }, stringResource(R.string.image_height), Modifier.weight(1f))
                 }
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
+                ) {
                     Text(stringResource(R.string.image_keep_aspect), Modifier.weight(1f))
                     Switch(o.keepAspect, { v -> actions.onOptions { it.copy(keepAspect = v) } })
                 }
@@ -173,7 +195,9 @@ private fun Options(state: ImageToolUiState, actions: ImageToolActions) {
                 val file = state.files.firstOrNull()
                 if (state.files.size > 1) Text(stringResource(R.string.image_crop_single_only))
                 Text(stringResource(R.string.image_aspect), style = MaterialTheme.typography.titleSmall)
-                ChipRow(CROP_ASPECTS, o.cropAspect, { aspectLabel(it) }) { a -> actions.onOptions { it.copy(cropAspect = a) } }
+                ChipRow(CROP_ASPECTS, o.cropAspect, {
+                    aspectLabel(it)
+                }) { a -> actions.onOptions { it.copy(cropAspect = a) } }
                 if (file != null && info != null && state.files.size == 1) {
                     val imageAspect = info.width.toFloat() / info.height
                     CropBox(
@@ -184,20 +208,29 @@ private fun Options(state: ImageToolUiState, actions: ImageToolActions) {
                     )
                 }
             }
-            ImageTool.ROTATE -> ChipRow(listOf(90, 180, 270), o.degrees, { "$it°" }) { d -> actions.onOptions { it.copy(degrees = d) } }
+            ImageTool.ROTATE -> ChipRow(listOf(90, 180, 270), o.degrees, {
+                "$it°"
+            }) { d -> actions.onOptions { it.copy(degrees = d) } }
             ImageTool.COMPRESS -> {
-                NumberField(o.targetKb, { v -> actions.onOptions { it.copy(targetKb = v) } }, stringResource(R.string.image_target_kb))
+                NumberField(o.targetKb, { v ->
+                    actions.onOptions { it.copy(targetKb = v) }
+                }, stringResource(R.string.image_target_kb))
                 QualitySlider(o.quality, actions)
             }
             ImageTool.CONVERT -> {
                 Text(stringResource(R.string.image_format), style = MaterialTheme.typography.titleSmall)
-                ChipRow(ImageFormat.entries, o.format, { it.displayName() }) { f -> actions.onOptions { it.copy(format = f) } }
+                ChipRow(ImageFormat.entries, o.format, {
+                    it.displayName()
+                }) { f -> actions.onOptions { it.copy(format = f) } }
                 if (o.format == ImageFormat.HEIC && !actions.canEncode(ImageFormat.HEIC)) {
                     Text(stringResource(R.string.image_heic_unavailable), color = MaterialTheme.colorScheme.error)
                 }
                 if (o.format.supportsQuality) QualitySlider(o.quality, actions)
             }
-            ImageTool.STRIP_EXIF -> Text(stringResource(R.string.image_strip_note), style = MaterialTheme.typography.bodyMedium)
+            ImageTool.STRIP_EXIF -> Text(
+                stringResource(R.string.image_strip_note),
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
     }
 }
@@ -205,7 +238,14 @@ private fun Options(state: ImageToolUiState, actions: ImageToolActions) {
 @Composable
 private fun QualitySlider(quality: Int, actions: ImageToolActions) {
     Text(stringResource(R.string.image_quality, quality))
-    Slider(value = quality.toFloat(), onValueChange = { v -> actions.onOptions { it.copy(quality = v.toInt()) } }, valueRange = 10f..100f)
+    Slider(
+        value = quality.toFloat(),
+        onValueChange = { v ->
+            actions.onOptions { it.copy(quality = v.toInt()) }
+        },
+        valueRange =
+        10f..100f,
+    )
 }
 
 @Composable
@@ -238,7 +278,10 @@ private fun <T> ChipRow(values: List<T>, selected: T, label: @Composable (T) -> 
 private fun JobSection(state: ImageToolUiState, actions: ImageToolActions) {
     val context = LocalContext.current
     val adSlots = LocalAdSlots.current
-    Column(Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
+    Column(
+        Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+    ) {
         when (val job = state.job) {
             is JobState.Running -> JobProgressCard(job.progress, actions.onCancel)
             is JobState.Success -> if (!state.resultRevealed) {
@@ -279,7 +322,9 @@ private fun Results(state: ImageToolUiState, actions: ImageToolActions) {
     outcome.images.forEachIndexed { index, image ->
         ListItem(
             headlineContent = { Text(image.file.displayName) },
-            supportingContent = { Text("${formatBytes(image.file.sizeBytes)} · ${image.file.width} × ${image.file.height}") },
+            supportingContent = {
+                Text("${formatBytes(image.file.sizeBytes)} · ${image.file.width} × ${image.file.height}")
+            },
             trailingContent = {
                 OutlinedButton(onClick = {
                     pendingSave = index
@@ -314,8 +359,8 @@ private fun toolLabel(tool: ImageTool): String = stringResource(
 private fun aspectLabel(aspect: Float?): String = when (aspect) {
     null -> stringResource(R.string.image_aspect_free)
     1f -> "1:1"
-    4f / 3f -> "4:3"
-    3f / 4f -> "3:4"
+    ASPECT_4_3 -> "4:3"
+    ASPECT_3_4 -> "3:4"
     else -> "16:9"
 }
 

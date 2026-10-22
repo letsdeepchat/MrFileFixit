@@ -34,12 +34,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.share.shareFiles
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.feature.pdf.R
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import com.mrfilefixit.core.ui.R as CoreR
 
 @Serializable
 data object PdfRoute
@@ -53,7 +53,9 @@ fun NavGraphBuilder.pdfScreen() {
 fun PdfListDetail(modifier: Modifier = Modifier) {
     val navigator = rememberListDetailPaneScaffoldNavigator<String>()
     val scope = rememberCoroutineScope()
-    val selected = navigator.currentDestination?.contentKey?.let { key -> PdfTool.entries.firstOrNull { it.name == key } }
+    val selected = navigator.currentDestination?.contentKey?.let { key ->
+        PdfTool.entries.firstOrNull { it.name == key }
+    }
     NavigableListDetailPaneScaffold(
         navigator = navigator,
         modifier = modifier,
@@ -124,7 +126,9 @@ private fun PdfToolRoute(tool: PdfTool) {
             onRun = viewModel::onRun,
             onCancel = viewModel::onCancel,
             onRevealed = viewModel::onResultRevealed,
-            onSave = { index, uri -> viewModel.state.value.outputs.getOrNull(index)?.let { viewModel.onSave(it, uri) } },
+            onSave = { index, uri ->
+                viewModel.state.value.outputs.getOrNull(index)?.let { viewModel.onSave(it, uri) }
+            },
             onShareAll = viewModel::onShareAll,
             onReset = viewModel::onReset,
         )

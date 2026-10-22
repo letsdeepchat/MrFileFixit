@@ -1,6 +1,8 @@
 package com.mrfilefixit.core.processing.image
 
+import android.content.ContentResolver
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import com.mrfilefixit.core.domain.dispatchers.DispatcherProvider
 import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.file.OutputFile
@@ -33,14 +35,12 @@ import com.mrfilefixit.core.domain.security.InputLimits
 import com.mrfilefixit.core.processing.io.mapEngineError
 import com.mrfilefixit.core.processing.io.newOutputFile
 import com.mrfilefixit.core.processing.io.readAllLimited
-import android.content.ContentResolver
-import android.graphics.Canvas
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 import kotlin.coroutines.coroutineContext
 import kotlin.math.sqrt
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
 
 /**
  * Android image engine.
@@ -107,7 +107,8 @@ internal class AndroidImageProcessor @Inject constructor(
                 val top = renderPart(request.top, request.topCrop, request.width, topHeight, request.output)
                 progress.report(PROGRESS_DECODED / 2)
                 val canvasBitmap = top.use { topBitmap ->
-                    val bottom = renderPart(request.bottom, request.bottomCrop, request.width, bottomHeight, request.output)
+                    val bottom =
+                        renderPart(request.bottom, request.bottomCrop, request.width, bottomHeight, request.output)
                     bottom.use { bottomBitmap ->
                         Bitmap.createBitmap(request.width, request.height, Bitmap.Config.ARGB_8888).also { out ->
                             Canvas(out).apply {
@@ -119,7 +120,9 @@ internal class AndroidImageProcessor @Inject constructor(
                     }
                 }
                 progress.report(PROGRESS_DECODED)
-                canvasBitmap.use { encodeToFile(it, request.outputDir, request.outputBaseName, request.output, progress) }
+                canvasBitmap.use {
+                    encodeToFile(it, request.outputDir, request.outputBaseName, request.output, progress)
+                }
             }
         }
 
@@ -216,12 +219,23 @@ internal class AndroidImageProcessor @Inject constructor(
                 progress.report(PROGRESS_DECODED + (1f - PROGRESS_DECODED) * (attempt + 1) / (MAX_DOWNSCALES + 1))
                 when (outcome) {
                     is QualitySearch.Outcome.Found ->
-                        return success(write(outcome.attempt.payload, current, outputDir, baseName, format, outcome.attempt.quality, false))
+                        return success(
+                            write(
+                                outcome.attempt.payload,
+                                current,
+                                outputDir,
+                                baseName,
+                                format,
+                                outcome.attempt.quality,
+                                false,
+                            ),
+                        )
 
                     is QualitySearch.Outcome.BelowMinimum -> {
                         val best = outcome.best
                         return if (target.allowPadding && format == ImageFormat.JPEG) {
-                            val padTo = target.minBytes + minOf(PAD_HEADROOM_BYTES, (target.maxBytes - target.minBytes) / 2)
+                            val padTo =
+                                target.minBytes + minOf(PAD_HEADROOM_BYTES, (target.maxBytes - target.minBytes) / 2)
                             val padded = JpegSegments.padToSize(best.payload, padTo)
                             success(write(padded, current, outputDir, baseName, format, best.quality, padded = true))
                         } else {
@@ -232,7 +246,11 @@ internal class AndroidImageProcessor @Inject constructor(
                     is QualitySearch.Outcome.AboveMaximum -> {
                         if (!target.allowDownscale || attempt >= MAX_DOWNSCALES) {
                             return failure(
-                                AppError.TargetSizeUnreachable(outcome.smallest.sizeBytes, target.minBytes, target.maxBytes),
+                                AppError.TargetSizeUnreachable(
+                                    outcome.smallest.sizeBytes,
+                                    target.minBytes,
+                                    target.maxBytes,
+                                ),
                             )
                         }
                         val ratio = sqrt(target.maxBytes.toDouble() / outcome.smallest.sizeBytes) * DOWNSCALE_SAFETY
@@ -263,7 +281,14 @@ internal class AndroidImageProcessor @Inject constructor(
         val file = newOutputFile(request.outputDir, request.outputBaseName, format.extension)
         file.writeBytes(stripped)
         return ProcessedImage(
-            OutputFile(file.absolutePath, file.name, format.mimeType, file.length(), raw.uprightWidth, raw.uprightHeight),
+            OutputFile(
+                file.absolutePath,
+                file.name,
+                format.mimeType,
+                file.length(),
+                raw.uprightWidth,
+                raw.uprightHeight,
+            ),
             format,
             quality = null,
             padded = false,
@@ -283,7 +308,14 @@ internal class AndroidImageProcessor @Inject constructor(
         val file = newOutputFile(outputDir, baseName, format.extension)
         file.writeBytes(bytes)
         return ProcessedImage(
-            file = OutputFile(file.absolutePath, file.name, format.mimeType, file.length(), bitmap.width, bitmap.height),
+            file = OutputFile(
+                file.absolutePath,
+                file.name,
+                format.mimeType,
+                file.length(),
+                bitmap.width,
+                bitmap.height,
+            ),
             format = format,
             quality = quality.takeIf { format.supportsQuality },
             padded = padded,

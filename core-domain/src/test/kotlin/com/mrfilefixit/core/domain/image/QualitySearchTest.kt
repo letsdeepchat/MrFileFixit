@@ -31,7 +31,10 @@ class QualitySearchTest {
     fun `finds highest fitting quality within eight encodes`(min: Long, max: Long, perQ: Long) = runTest {
         var calls = 0
         val encode = linear(perQ)
-        val outcome = QualitySearch.search(min, max) { q -> calls++; encode(q) }
+        val outcome = QualitySearch.search(min, max) { q ->
+            calls++
+            encode(q)
+        }
         outcome as QualitySearch.Outcome.Found
         val expected = (max / perQ).toInt().coerceAtMost(100)
         assertEquals(expected, outcome.attempt.quality)

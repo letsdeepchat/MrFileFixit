@@ -7,11 +7,11 @@ import com.mrfilefixit.app.logging.ReleaseTree
 import com.mrfilefixit.core.domain.dispatchers.ApplicationScope
 import com.mrfilefixit.core.domain.file.TempFileStore
 import dagger.hilt.android.HiltAndroidApp
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 @HiltAndroidApp
 class MffApplication : Application(), Configuration.Provider {

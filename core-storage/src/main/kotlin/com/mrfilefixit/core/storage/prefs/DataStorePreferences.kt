@@ -19,12 +19,12 @@ import com.mrfilefixit.core.domain.result.AppResult
 import com.mrfilefixit.core.domain.result.failure
 import com.mrfilefixit.core.domain.result.success
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /** Single DataStore file in app-private storage; excluded from backup by data_extraction_rules. */
 private val Context.settingsStore: DataStore<Preferences> by preferencesDataStore(name = "settings")

@@ -12,9 +12,15 @@ interface ImageProcessor {
     /** Reads dimensions, format and EXIF orientation from the header only. */
     suspend fun readInfo(source: FileRef): AppResult<ImageInfo>
 
-    suspend fun process(request: ImageRequest, progress: ProgressReporter = ProgressReporter.NONE): AppResult<ProcessedImage>
+    suspend fun process(
+        request: ImageRequest,
+        progress: ProgressReporter = ProgressReporter.NONE,
+    ): AppResult<ProcessedImage>
 
-    suspend fun composite(request: CompositeRequest, progress: ProgressReporter = ProgressReporter.NONE): AppResult<ProcessedImage>
+    suspend fun composite(
+        request: CompositeRequest,
+        progress: ProgressReporter = ProgressReporter.NONE,
+    ): AppResult<ProcessedImage>
 
     /** Whether this device can encode [format] (HEIC needs a hardware HEVC encoder). */
     fun canEncode(format: ImageFormat): Boolean

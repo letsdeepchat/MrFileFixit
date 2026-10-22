@@ -14,8 +14,8 @@ import com.mrfilefixit.core.ui.ads.AdSlots
 import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.theme.MffTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

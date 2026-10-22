@@ -40,10 +40,10 @@ import com.mrfilefixit.app.BuildConfig
 import com.mrfilefixit.app.MainViewModel
 import com.mrfilefixit.app.R
 import com.mrfilefixit.core.domain.prefs.ThemeMode
+import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.theme.Dimens
-import com.mrfilefixit.core.ui.R as CoreR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,7 +57,10 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: MainViewModel = hiltViewModel(
                 title = { Text(stringResource(R.string.nav_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(CoreR.string.action_back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(CoreR.string.action_back),
+                        )
                     }
                 },
             )
@@ -86,7 +89,9 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: MainViewModel = hiltViewModel(
                         Modifier
                             .fillMaxWidth()
                             .heightIn(min = Dimens.MinTouchTarget)
-                            .selectable(prefs.themeMode == mode, role = Role.RadioButton) { viewModel.setThemeMode(mode) },
+                            .selectable(prefs.themeMode == mode, role = Role.RadioButton) {
+                                viewModel.setThemeMode(mode)
+                            },
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(selected = prefs.themeMode == mode, onClick = null)

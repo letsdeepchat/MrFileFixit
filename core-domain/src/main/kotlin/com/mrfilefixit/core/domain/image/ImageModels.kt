@@ -97,7 +97,7 @@ sealed interface ImageOp {
     /** Scale by a percentage, e.g. 50 halves both sides. */
     data class Scale(val percent: Int) : ImageOp {
         init {
-            require(percent in 1..400) { "Scale must be 1..400%" }
+            require(percent in 1..MAX_SCALE_PERCENT) { "Scale must be 1..$MAX_SCALE_PERCENT%" }
         }
     }
 }
@@ -179,3 +179,5 @@ data class ProcessedImage(
     val quality: Int?,
     val padded: Boolean,
 )
+
+private const val MAX_SCALE_PERCENT = 400

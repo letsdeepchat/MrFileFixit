@@ -18,9 +18,9 @@ import com.mrfilefixit.core.domain.result.Result
 import com.mrfilefixit.feature.image.R
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.io.File
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import java.io.File
 
 /**
  * Runs large image batches so they survive the app going to the background. The worker is a

@@ -10,17 +10,17 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.mrfilefixit.core.domain.exam.SpecCheck
 import com.mrfilefixit.core.domain.exam.SpecReport
+import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.ImageInfo
-import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.image.NormalizedRect
+import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.feature.exam.R
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import com.mrfilefixit.core.ui.R as CoreR
 
 @RunWith(AndroidJUnit4::class)
 class ExamScreensTest {
@@ -80,19 +80,24 @@ class ExamScreensTest {
         var fixed = false
         compose.setContent {
             MffTheme(dynamicColor = false) {
-                ExamFlowScreen(state, object : ExamFlowActions {
-                    override fun onPick(key: SlotKey, uri: String) = Unit
-                    override fun onCrop(key: SlotKey, rect: NormalizedRect) = Unit
-                    override fun onRotate(key: SlotKey) = Unit
-                    override fun onFix(key: SlotKey) { fixed = true }
-                    override fun onCancel(key: SlotKey) = Unit
-                    override fun onReset(key: SlotKey) = Unit
-                    override fun onRevealed(key: SlotKey) = Unit
-                    override fun onSave(key: SlotKey, destination: String) = Unit
-                    override fun onShare(key: SlotKey) = Unit
-                    override fun onMakeComposite() = Unit
-                    override fun onRetryLoad() = Unit
-                })
+                ExamFlowScreen(
+                    state,
+                    object : ExamFlowActions {
+                        override fun onPick(key: SlotKey, uri: String) = Unit
+                        override fun onCrop(key: SlotKey, rect: NormalizedRect) = Unit
+                        override fun onRotate(key: SlotKey) = Unit
+                        override fun onFix(key: SlotKey) {
+                            fixed = true
+                        }
+                        override fun onCancel(key: SlotKey) = Unit
+                        override fun onReset(key: SlotKey) = Unit
+                        override fun onRevealed(key: SlotKey) = Unit
+                        override fun onSave(key: SlotKey, destination: String) = Unit
+                        override fun onShare(key: SlotKey) = Unit
+                        override fun onMakeComposite() = Unit
+                        override fun onRetryLoad() = Unit
+                    },
+                )
             }
         }
         compose.onNodeWithText(context.getString(R.string.exam_your_file)).assertIsDisplayed()

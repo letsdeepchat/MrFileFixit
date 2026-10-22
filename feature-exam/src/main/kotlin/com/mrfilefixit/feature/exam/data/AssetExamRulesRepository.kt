@@ -12,11 +12,11 @@ import com.mrfilefixit.core.domain.result.flatMap
 import com.mrfilefixit.core.domain.result.runCatchingAppFlat
 import com.mrfilefixit.core.domain.result.success
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /** Reads `assets/exam_rules.json` once per process and keeps the parsed profiles in memory. */
 @Singleton

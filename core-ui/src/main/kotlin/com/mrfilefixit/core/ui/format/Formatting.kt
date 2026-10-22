@@ -31,8 +31,11 @@ fun formatBytes(bytes: Long): String {
             "${format.format(bytes / MIB)} MB"
         }
         else -> {
-            format.maximumFractionDigits = if (bytes < 10 * KIB) 1 else 0
+            format.maximumFractionDigits = if (bytes < ONE_DECIMAL_BELOW) 1 else 0
             "${format.format(bytes / KIB)} KB"
         }
     }
 }
+
+/** Below 10 KiB show one decimal ("9.8 KB"); above, whole numbers are precise enough. */
+private const val ONE_DECIMAL_BELOW = 10 * KIB

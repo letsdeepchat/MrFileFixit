@@ -45,6 +45,7 @@ import com.mrfilefixit.core.domain.file.OutputFile
 import com.mrfilefixit.core.domain.job.JobState
 import com.mrfilefixit.core.domain.ocr.OcrScript
 import com.mrfilefixit.core.domain.scan.ScanCapture
+import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.ErrorCard
 import com.mrfilefixit.core.ui.components.JobProgressCard
@@ -54,7 +55,6 @@ import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.feature.scan.R
-import com.mrfilefixit.core.ui.R as CoreR
 
 internal class ScanActions(
     val onCaptured: (ScanCapture) -> Unit,
@@ -84,11 +84,22 @@ private fun scannerClient(): GmsDocumentScanner = GmsDocumentScanning.getClient(
 @Composable
 internal fun ScanScreen(state: ScanUiState, actions: ScanActions, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val scanLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-        if (result.resultCode != Activity.RESULT_OK) return@rememberLauncherForActivityResult
-        val scan = GmsDocumentScanningResult.fromActivityResultIntent(result.data) ?: return@rememberLauncherForActivityResult
-        actions.onCaptured(ScanCapture(scan.pdf?.uri?.toString(), scan.pages.orEmpty().map { it.imageUri.toString() }))
-    }
+    val scanLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            val scan = result.data
+                ?.takeIf { result.resultCode == Activity.RESULT_OK }
+                ?.let(GmsDocumentScanningResult::fromActivityResultIntent)
+            if (scan != null) {
+                actions.onCaptured(
+                    ScanCapture(
+                        scan.pdf?.uri?.toString(),
+                        scan.pages.orEmpty().map {
+                            it.imageUri.toString()
+                        },
+                    ),
+                )
+            }
+        }
     val ocrPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         actions.onPickOcr(uris.map { it.toString() })
     }
@@ -99,7 +110,13 @@ internal fun ScanScreen(state: ScanUiState, actions: ScanActions, modifier: Modi
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         item {
-            Text(stringResource(R.string.scan_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
+            Text(
+                stringResource(R.string.scan_title),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.semantics {
+                    heading()
+                },
+            )
             Text(stringResource(R.string.scan_intro), style = MaterialTheme.typography.bodyMedium)
         }
         item {
@@ -108,7 +125,9 @@ internal fun ScanScreen(state: ScanUiState, actions: ScanActions, modifier: Modi
                     onClick = {
                         val activity = context.findActivity() ?: return@Button
                         scannerClient().getStartScanIntent(activity)
-                            .addOnSuccessListener { sender -> scanLauncher.launch(IntentSenderRequest.Builder(sender).build()) }
+                            .addOnSuccessListener { sender ->
+                                scanLauncher.launch(IntentSenderRequest.Builder(sender).build())
+                            }
                             .addOnFailureListener { actions.onScannerUnavailable() }
                     },
                     modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
@@ -127,7 +146,10 @@ internal fun ScanScreen(state: ScanUiState, actions: ScanActions, modifier: Modi
 
 @Composable
 private fun ScanSection(state: ScanUiState, actions: ScanActions) {
-    Column(Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
+    Column(
+        Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+    ) {
         when (val job = state.scan) {
             is JobState.Running -> {
                 Text(stringResource(R.string.scan_importing))
@@ -161,7 +183,9 @@ private fun ScanOutputs(pdf: OutputFile?, pages: List<OutputFile>, actions: Scan
                         pendingSave = output
                         saver.launch(output.displayName)
                     }) { Text(stringResource(CoreR.string.action_save)) }
-                    FilledTonalButton(onClick = { actions.onShare(output) }) { Text(stringResource(CoreR.string.action_share)) }
+                    FilledTonalButton(onClick = {
+                        actions.onShare(output)
+                    }) { Text(stringResource(CoreR.string.action_share)) }
                 }
             },
         )
@@ -175,7 +199,10 @@ private fun ScanOutputs(pdf: OutputFile?, pages: List<OutputFile>, actions: Scan
 private fun OcrSection(state: ScanUiState, actions: ScanActions) {
     val context = LocalContext.current
     val adSlots = LocalAdSlots.current
-    Column(Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
+    Column(
+        Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+    ) {
         if (state.ocrFiles.isNotEmpty()) Text(stringResource(R.string.scan_ocr_files, state.ocrFiles.size))
         Text(stringResource(R.string.scan_script), style = MaterialTheme.typography.titleSmall)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
@@ -217,15 +244,25 @@ private fun TextResult(text: String, pageCount: Int, actions: ScanActions) {
     Text(stringResource(R.string.scan_text_result, pageCount), style = MaterialTheme.typography.titleSmall)
     Card(Modifier.fillMaxWidth()) {
         SelectionContainer {
-            Text(text.ifBlank { stringResource(R.string.scan_no_text) }, Modifier.padding(Dimens.SpaceM), style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text.ifBlank {
+                    stringResource(R.string.scan_no_text)
+                },
+                Modifier.padding(Dimens.SpaceM),
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
     }
     if (text.isNotBlank()) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
-            FilledTonalButton(onClick = { actions.onCopyText(text) }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
+            FilledTonalButton(onClick = {
+                actions.onCopyText(text)
+            }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
                 Text(stringResource(R.string.scan_copy))
             }
-            OutlinedButton(onClick = { actions.onShareText(text) }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
+            OutlinedButton(onClick = {
+                actions.onShareText(text)
+            }, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
                 Text(stringResource(R.string.scan_share_text))
             }
         }

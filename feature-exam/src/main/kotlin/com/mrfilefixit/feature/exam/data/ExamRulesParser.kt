@@ -11,8 +11,8 @@ import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.AppResult
 import com.mrfilefixit.core.domain.result.runCatchingApp
-import kotlinx.serialization.json.Json
 import java.time.LocalDate
+import kotlinx.serialization.json.Json
 
 /**
  * Parses and validates the bundled rules file. Pure Kotlin, so golden tests run on the JVM.

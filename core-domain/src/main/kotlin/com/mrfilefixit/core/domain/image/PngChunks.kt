@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber") // Byte offsets and marker values from the file-format specification.
+
 package com.mrfilefixit.core.domain.image
 
 import java.io.ByteArrayOutputStream

@@ -12,7 +12,13 @@ class ImagePlanTest {
     @Test
     fun `canonical order is accepted and rotations are summed`() {
         val plan = ImagePlan.from(
-            listOf(ImageOp.Rotate(90), ImageOp.Rotate(270), ImageOp.Rotate(90), ImageOp.Crop(rect), ImageOp.Resize(10, 20)),
+            listOf(
+                ImageOp.Rotate(90),
+                ImageOp.Rotate(270),
+                ImageOp.Rotate(90),
+                ImageOp.Crop(rect),
+                ImageOp.Resize(10, 20),
+            ),
         )
         assertEquals(ImagePlan(90, rect, ImageOp.Resize(10, 20), null), plan)
     }
@@ -55,13 +61,28 @@ class ImagePlanTest {
 
     @Test
     fun `geometry for fit, fill and pad`() {
-        val fit = OutputGeometry.compute(4000, 2000, ImagePlan(0, NormalizedRect.FULL, ImageOp.Resize(1000, 1000, ResizeMode.FIT), null))
+        val fit = OutputGeometry.compute(
+            4000,
+            2000,
+            ImagePlan(0, NormalizedRect.FULL, ImageOp.Resize(1000, 1000, ResizeMode.FIT), null),
+        )
         assertEquals(1000 to 500, fit.canvasWidth to fit.canvasHeight)
 
-        val pad = OutputGeometry.compute(4000, 2000, ImagePlan(0, NormalizedRect.FULL, ImageOp.Resize(1000, 1000, ResizeMode.PAD), null))
-        assertEquals(listOf(1000, 1000, 0, 250, 1000, 500), listOf(pad.canvasWidth, pad.canvasHeight, pad.drawLeft, pad.drawTop, pad.drawWidth, pad.drawHeight))
+        val pad = OutputGeometry.compute(
+            4000,
+            2000,
+            ImagePlan(0, NormalizedRect.FULL, ImageOp.Resize(1000, 1000, ResizeMode.PAD), null),
+        )
+        assertEquals(
+            listOf(1000, 1000, 0, 250, 1000, 500),
+            listOf(pad.canvasWidth, pad.canvasHeight, pad.drawLeft, pad.drawTop, pad.drawWidth, pad.drawHeight),
+        )
 
-        val fill = OutputGeometry.compute(4000, 2000, ImagePlan(0, NormalizedRect.FULL, ImageOp.Resize(1000, 1000, ResizeMode.FILL), null))
+        val fill = OutputGeometry.compute(
+            4000,
+            2000,
+            ImagePlan(0, NormalizedRect.FULL, ImageOp.Resize(1000, 1000, ResizeMode.FILL), null),
+        )
         assertRect(NormalizedRect(0.25f, 0f, 0.75f, 1f), fill.fillCrop)
 
         val scaled = OutputGeometry.compute(4000, 2000, ImagePlan(0, NormalizedRect.FULL, null, 25))

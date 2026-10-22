@@ -31,6 +31,7 @@ import com.mrfilefixit.core.domain.exam.ExamProfile
 import com.mrfilefixit.core.domain.exam.IntBounds
 import com.mrfilefixit.core.domain.exam.VerificationStatus
 import com.mrfilefixit.core.domain.image.ImageFormat
+import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.ads.BannerPlacement
 import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.ErrorCard
@@ -39,7 +40,6 @@ import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.feature.exam.R
-import com.mrfilefixit.core.ui.R as CoreR
 
 @Composable
 internal fun ExamPickerScreen(
@@ -114,7 +114,10 @@ private fun ExamList(profiles: List<ExamProfile>, selectedId: String?, onSelect:
 @Composable
 internal fun VerificationChip(profile: ExamProfile) {
     val label = when (profile.verification) {
-        VerificationStatus.VERIFIED -> stringResource(CoreR.string.verification_verified, profile.lastVerified.orEmpty())
+        VerificationStatus.VERIFIED -> stringResource(
+            CoreR.string.verification_verified,
+            profile.lastVerified.orEmpty(),
+        )
         VerificationStatus.UNVERIFIED -> stringResource(CoreR.string.verification_unverified)
     }
     SuggestionChip(onClick = {}, enabled = false, label = { Text(label) })
@@ -144,8 +147,26 @@ internal val PreviewProfiles = listOf(
         lastVerified = null,
         verification = VerificationStatus.UNVERIFIED,
         documents = listOf(
-            DocumentSpec(DocumentKind.PHOTO, setOf(ImageFormat.JPEG), 20, 50, IntBounds.exactly(200), IntBounds.exactly(230), 200, 230),
-            DocumentSpec(DocumentKind.SIGNATURE, setOf(ImageFormat.JPEG), 10, 20, IntBounds.exactly(140), IntBounds.exactly(60), 140, 60),
+            DocumentSpec(
+                DocumentKind.PHOTO,
+                setOf(ImageFormat.JPEG),
+                20,
+                50,
+                IntBounds.exactly(200),
+                IntBounds.exactly(230),
+                200,
+                230,
+            ),
+            DocumentSpec(
+                DocumentKind.SIGNATURE,
+                setOf(ImageFormat.JPEG),
+                10,
+                20,
+                IntBounds.exactly(140),
+                IntBounds.exactly(60),
+                140,
+                60,
+            ),
         ),
     ),
     ExamProfile(
@@ -157,7 +178,16 @@ internal val PreviewProfiles = listOf(
         lastVerified = null,
         verification = VerificationStatus.UNVERIFIED,
         documents = listOf(
-            DocumentSpec(DocumentKind.PHOTO, setOf(ImageFormat.JPEG), 20, 300, IntBounds(350, 1000), IntBounds(350, 1000), 450, 550),
+            DocumentSpec(
+                DocumentKind.PHOTO,
+                setOf(ImageFormat.JPEG),
+                20,
+                300,
+                IntBounds(350, 1000),
+                IntBounds(350, 1000),
+                450,
+                550,
+            ),
         ),
     ),
 )

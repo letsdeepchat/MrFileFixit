@@ -6,10 +6,10 @@ import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 /** Google UMP consent. Ads are requested only when [canRequestAds] is true. */
 @Singleton
@@ -36,7 +36,9 @@ internal class ConsentManager @Inject constructor(@ApplicationContext context: C
         }
         if (updated) {
             suspendCancellableCoroutine { cont ->
-                UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { if (cont.isActive) cont.resume(Unit) }
+                UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) {
+                    if (cont.isActive) cont.resume(Unit)
+                }
             }
         }
         return canRequestAds

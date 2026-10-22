@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber") // Byte offsets and marker values from the file-format specification.
+
 package com.mrfilefixit.core.domain.image
 
 import java.io.ByteArrayOutputStream
@@ -42,12 +44,19 @@ object JpegSegments {
             if (bytes.u(pos) != MARKER) return null
             val marker = bytes.u(pos + 1)
             when {
-                marker == MARKER -> { pos++; continue } // fill byte
+                marker == MARKER -> {
+                    pos++
+                    continue
+                } // fill byte
                 marker == SOS || marker == EOI -> {
                     out.write(bytes, pos, bytes.size - pos) // entropy-coded data to the end
                     return out.toByteArray()
                 }
-                marker == TEM || marker in RST0..RST7 -> { out.write(bytes, pos, 2); pos += 2; continue }
+                marker == TEM || marker in RST0..RST7 -> {
+                    out.write(bytes, pos, 2)
+                    pos += 2
+                    continue
+                }
             }
             if (pos + 3 >= bytes.size) return null
             val length = (bytes.u(pos + 2) shl 8) or bytes.u(pos + 3)

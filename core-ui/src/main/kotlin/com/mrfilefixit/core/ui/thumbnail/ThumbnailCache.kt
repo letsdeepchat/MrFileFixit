@@ -25,9 +25,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.exifinterface.media.ExifInterface
+import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.IOException
 
 /**
  * Small in-memory thumbnail cache (1/8 of the heap). Keys include the requested size so a list and a
@@ -69,12 +69,23 @@ object ThumbnailCache {
             var sample = 1
             while (bounds.outWidth / (sample * 2) >= sizePx && bounds.outHeight / (sample * 2) >= sizePx) sample *= 2
             val options = BitmapFactory.Options().apply { inSampleSize = sample }
-            val decoded = resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) } ?: return null
+            val decoded =
+                resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) } ?: return null
             val rotation = resolver.openInputStream(uri)?.use { ExifInterface(it).rotationDegrees } ?: 0
             if (rotation == 0) {
                 decoded
             } else {
-                Bitmap.createBitmap(decoded, 0, 0, decoded.width, decoded.height, Matrix().apply { postRotate(rotation.toFloat()) }, true)
+                Bitmap.createBitmap(
+                    decoded,
+                    0,
+                    0,
+                    decoded.width,
+                    decoded.height,
+                    Matrix().apply {
+                        postRotate(rotation.toFloat())
+                    },
+                    true,
+                )
                     .also { if (it !== decoded) decoded.recycle() }
             }
         }

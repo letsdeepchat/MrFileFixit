@@ -6,11 +6,11 @@ import com.mrfilefixit.core.domain.prefs.ThemeMode
 import com.mrfilefixit.core.domain.prefs.UserPreferences
 import com.mrfilefixit.core.domain.prefs.UserPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(

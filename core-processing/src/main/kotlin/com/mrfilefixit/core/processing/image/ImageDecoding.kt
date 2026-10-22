@@ -12,8 +12,8 @@ import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.domain.result.Result
 import com.mrfilefixit.core.domain.security.InputLimits
-import com.mrfilefixit.core.processing.io.InputRejectedException
 import com.mrfilefixit.core.processing.io.CorruptImageException
+import com.mrfilefixit.core.processing.io.InputRejectedException
 import com.mrfilefixit.core.processing.io.UnsupportedImageException
 import com.mrfilefixit.core.processing.io.openLimited
 import java.io.IOException

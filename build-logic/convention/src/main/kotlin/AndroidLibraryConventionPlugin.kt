@@ -1,9 +1,9 @@
 import com.android.build.api.dsl.LibraryExtension
+import com.mrfilefixit.buildlogic.NETWORK_ALLOWED_MODULES
 import com.mrfilefixit.buildlogic.configureAndroidLibrary
 import com.mrfilefixit.buildlogic.configureDetekt
 import com.mrfilefixit.buildlogic.configureJUnit5
 import com.mrfilefixit.buildlogic.configureKotlin
-import com.mrfilefixit.buildlogic.NETWORK_ALLOWED_MODULES
 import com.mrfilefixit.buildlogic.configureNetworkIsolation
 import com.mrfilefixit.buildlogic.libs
 import com.mrfilefixit.buildlogic.pluginId

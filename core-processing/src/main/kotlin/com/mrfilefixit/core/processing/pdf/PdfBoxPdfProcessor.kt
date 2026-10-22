@@ -47,11 +47,11 @@ import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException
 import com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy
 import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
 
 /**
  * PDF engine. Structure operations (merge, split, pages, rotate, encrypt) use pdfbox-android with
@@ -78,7 +78,16 @@ internal class PdfBoxPdfProcessor @Inject constructor(
                 ?: return@runCatchingAppFlat failure(AppError.FileNotFound)
             descriptor.use { fd ->
                 try {
-                    PdfRenderer(fd).use { success(PdfInfo(it.pageCount, encrypted = false, sizeBytes = source.sizeBytes ?: 0)) }
+                    PdfRenderer(fd).use {
+                        success(
+                            PdfInfo(
+                                it.pageCount,
+                                encrypted = false,
+                                sizeBytes =
+                                source.sizeBytes ?: 0,
+                            ),
+                        )
+                    }
                 } catch (_: SecurityException) {
                     success(PdfInfo(pageCount = 0, encrypted = true, sizeBytes = source.sizeBytes ?: 0))
                 }
@@ -134,7 +143,12 @@ internal class PdfBoxPdfProcessor @Inject constructor(
         val src = copyToJob(op.source, op.outputDir, "split-src")
         return openDocument(src, null).use { doc ->
             val pageCount = doc.numberOfPages
-            if (op.ranges.any { it.first < 1 || it.last > pageCount }) throw InputRejectedException(AppError.InvalidPageSelection(pageCount))
+            if (op.ranges.any {
+                    it.first < 1 || it.last > pageCount
+                }
+            ) {
+                throw InputRejectedException(AppError.InvalidPageSelection(pageCount))
+            }
             op.ranges.mapIndexed { index, range ->
                 coroutineContext.ensureActive()
                 progress.step(index, op.ranges.size)
@@ -227,11 +241,14 @@ internal class PdfBoxPdfProcessor @Inject constructor(
         val src = copyToJob(op.source, op.outputDir, "render-src")
         val wanted = op.pages.toSet()
         val outputs = mutableListOf<OutputFile>()
-        forEachRenderedPage(src, op.dpi, progress, include = { it + 1 in wanted || wanted.isEmpty() }) { index, bitmap, _, _ ->
+        forEachRenderedPage(src, op.dpi, progress, include = {
+            it + 1 in wanted || wanted.isEmpty()
+        }) { index, bitmap, _, _ ->
             val bytes = encoding.encode(bitmap, op.format, IMAGE_QUALITY, File(op.outputDir))
             val file = newOutputFile(op.outputDir, "${op.outputBaseName}-${index + 1}", op.format.extension)
             file.writeBytes(bytes)
-            outputs += OutputFile(file.absolutePath, file.name, op.format.mimeType, file.length(), bitmap.width, bitmap.height)
+            outputs +=
+                OutputFile(file.absolutePath, file.name, op.format.mimeType, file.length(), bitmap.width, bitmap.height)
         }
         src.delete()
         return outputs
@@ -254,7 +271,15 @@ internal class PdfBoxPdfProcessor @Inject constructor(
                         if (turned) region.width else region.height,
                         ImagePlan(0, NormalizedRect.FULL, null, null),
                     )
-                    ImageRendering.render(region, raw.exifRotation, raw.flipped, 0, geometry, ImageFormat.JPEG, Color.WHITE)
+                    ImageRendering.render(
+                        region,
+                        raw.exifRotation,
+                        raw.flipped,
+                        0,
+                        geometry,
+                        ImageFormat.JPEG,
+                        Color.WHITE,
+                    )
                 }
                 upright.use { bitmap ->
                     val pageBox = PdfLayout.pageBox(op.pageSize, bitmap.width, bitmap.height)
