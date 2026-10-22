@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Common actions -->
+    <string name="action_cancel">Cancel</string>
+    <string name="action_retry">Try again</string>
+    <string name="action_save">Save</string>
+    <string name="action_share">Share</string>
+    <string name="action_choose_file">Choose file</string>
+    <string name="action_choose_image">Choose image</string>
+    <string name="action_rotate">Rotate 90°</string>
+    <string name="action_reset">Start over</string>
+    <string name="action_open_source">Open official site</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_back">Back</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_move_up">Move up</string>
+    <string name="action_move_down">Move down</string>
+    <string name="share_chooser_title">Share file</string>
+
+    <!-- Job progress -->
+    <string name="job_working">Working…</string>
+    <string name="job_progress_percent">%1$d%% done</string>
+    <string name="job_cancelled">Cancelled. Nothing was saved.</string>
+    <string name="job_done">Done</string>
+
+    <!-- Exam disclaimer (shown on every exam screen) -->
+    <string name="disclaimer_title">Check the official notice</string>
+    <string name="disclaimer_body">These sizes are community-maintained samples, not official rules. Always verify the photo and signature requirements against the official notification of your exam before you submit.</string>
+    <string name="verification_unverified">Not verified</string>
+    <string name="verification_verified">Verified on %1$s</string>
+
+    <!-- Spec checklist -->
+    <string name="check_format">Format</string>
+    <string name="check_file_size">File size</string>
+    <string name="check_width">Width</string>
+    <string name="check_height">Height</string>
+    <string name="check_passed">Passed</string>
+    <string name="check_failed">Failed</string>
+    <string name="check_row_description">%1$s: %2$s. Yours: %3$s. Required: %4$s.</string>
+    <string name="range_kb">%1$s–%2$s KB</string>
+    <string name="range_px">%1$s–%2$s px</string>
+    <string name="exact_px">%1$s px</string>
+    <string name="at_least_px">at least %1$s px</string>
+    <string name="at_most_px">at most %1$s px</string>
+    <string name="value_kb">%1$s KB</string>
+    <string name="value_px">%1$s px</string>
+    <string name="format_unknown">Unknown</string>
+
+    <!-- Errors. Never include file names. -->
+    <string name="error_file_too_large">This file is %1$s. The limit is %2$s.</string>
+    <string name="error_dimensions_too_large">This image is too large to process safely (%1$d × %2$d px).</string>
+    <string name="error_too_many_pages">This PDF has %1$d pages. The limit is %2$d.</string>
+    <string name="error_too_many_files">You picked %1$d files. The limit is %2$d.</string>
+    <string name="error_unsupported_format">This file type is not supported.</string>
+    <string name="error_corrupt">This file looks damaged or incomplete.</string>
+    <string name="error_empty">This file is empty.</string>
+    <string name="error_password_required">This PDF is password-protected. Unlock it first.</string>
+    <string name="error_wrong_password">That password is not correct.</string>
+    <string name="error_invalid_pages">Enter pages between 1 and %1$d, for example 1-3, 5.</string>
+    <string name="error_target_unreachable">Could not reach %1$s–%2$s (got %3$s). Try a different photo or crop.</string>
+    <string name="error_not_found">The file is no longer available. Pick it again.</string>
+    <string name="error_permission">The app lost access to this file. Pick it again.</string>
+    <string name="error_storage_full">Your phone is out of storage.</string>
+    <string name="error_out_of_memory">Not enough memory for this file. Close other apps and try again.</string>
+    <string name="error_feature_unavailable">Your device does not support this.</string>
+    <string name="error_quota">You have used today\'s free batch jobs.</string>
+    <string name="error_unexpected">Something went wrong. Please try again.</string>
+
+    <!-- Accessibility -->
+    <string name="cd_thumbnail">Preview of the selected file</string>
+    <string name="cd_crop_area">Crop area. Drag to move, pinch to zoom.</string>
+    <string name="cd_pass_icon">Passed</string>
+    <string name="cd_fail_icon">Failed</string>
+    <string name="cd_info_icon">Information</string>
+</resources>

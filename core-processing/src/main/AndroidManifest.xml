@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- No permissions: processing never touches the network or shared storage directly. -->
+<manifest />

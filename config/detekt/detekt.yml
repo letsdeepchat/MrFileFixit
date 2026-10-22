@@ -1,0 +1,124 @@
+# Builds on detekt's default config (buildUponDefaultConfig = true). Only overrides live here.
+config:
+  validation: true
+  warningsAsErrors: true
+
+complexity:
+  LongParameterList:
+    functionThreshold: 8
+    # UI "actions" holders bundle one callback per user intent, so they are allowed a few more.
+    constructorThreshold: 13
+    ignoreDefaultParameters: true
+    # Hilt constructors list dependencies; splitting them only hides the coupling.
+    ignoreAnnotated: ['Composable', 'Inject', 'AssistedInject']
+  LongMethod:
+    threshold: 80
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    thresholdInObjects: 15
+    thresholdInFiles: 20
+    thresholdInClasses: 15
+    thresholdInInterfaces: 15
+    ignorePrivate: true
+  CyclomaticComplexMethod:
+    # Byte-level parsers and engine entry points read better as one guarded function.
+    threshold: 21
+    ignoreSimpleWhenEntries: true
+    ignoreAnnotated: ['Composable']
+  NestedBlockDepth:
+    # Nested `use {}` blocks for files, decoders and PDF pages count as depth.
+    threshold: 6
+  ComplexCondition:
+    threshold: 5
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable', 'Test', 'ParameterizedTest']
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][A-Za-z0-9_]*'
+  MatchingDeclarationName:
+    active: false
+
+style:
+  MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreEnums: true
+    # Right angles, percentages, KiB and "centre" are self-explanatory in image code.
+    ignoreNumbers: ['-1', '0', '1', '2', '4', '90', '180', '270', '360', '100', '1024', '0.5']
+    ignoreAnnotated: ['Preview', 'AllPreviews', 'FontScalePreviews', 'ThemePreviews', 'DevicePreviews']
+    excludes: ['**/test/**', '**/androidTest/**', '**/theme/**']
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview', 'AllPreviews', 'FontScalePreviews', 'ThemePreviews', 'DevicePreviews']
+  ForbiddenComment:
+    active: false
+  ReturnCount:
+    # Input parsers reject malformed data with early returns; that is clearer than nested ifs.
+    max: 5
+    excludeGuardClauses: true
+    excludes: ['**/test/**']
+  ThrowsCount:
+    max: 3
+    excludeGuardClauses: true
+    excludes: ['**/test/**']
+  LoopWithTooManyJumpStatements:
+    maxJumpCount: 2
+  ForbiddenImport:
+    active: true
+    # Processing code must never touch the network. AdMob (core-ads) is the only network consumer,
+    # and it goes through the Mobile Ads SDK, so these imports are banned project-wide.
+    imports:
+      - value: 'java.net.URL'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'java.net.HttpURLConnection'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'java.net.Socket'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'javax.net.*'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'okhttp3.*'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'retrofit2.*'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'io.ktor.*'
+        reason: 'No network access outside the Mobile Ads SDK.'
+      - value: 'kotlinx.coroutines.GlobalScope'
+        reason: 'Use an injected or lifecycle-bound scope.'
+  ForbiddenMethodCall:
+    active: true
+    methods:
+      - value: 'kotlin.io.println'
+        reason: 'Use AppLogger; release builds must not log.'
+      - value: 'android.util.Log.d'
+        reason: 'Use AppLogger; release builds must not log.'
+      - value: 'android.util.Log.i'
+        reason: 'Use AppLogger; release builds must not log.'
+
+potential-bugs:
+  UnsafeCallOnNullableType:
+    active: true   # bans !!
+
+exceptions:
+  TooGenericExceptionCaught:
+    # Data-layer boundaries catch everything and map it to AppError on purpose.
+    excludes: ['**/core-processing/**', '**/core-storage/**', '**/core-ads/**', '**/result/**']
+  SwallowedException:
+    excludes: ['**/core-processing/**', '**/core-storage/**', '**/core-ads/**']
+
+formatting:
+  android: true
+  autoCorrect: true
+  ImportOrdering:
+    # Same layout as ktlint 1.x android_studio style (see .editorconfig): plain lexicographic.
+    layout: '*'
+
+  MaximumLineLength:
+    maxLineLength: 120
+  TrailingCommaOnCallSite:
+    active: true
+    useTrailingCommaOnCallSite: true
+  TrailingCommaOnDeclarationSite:
+    active: true
+    useTrailingCommaOnDeclarationSite: true
+  FunctionNaming:
+    ignoreWhenAnnotatedWith: ['Composable']

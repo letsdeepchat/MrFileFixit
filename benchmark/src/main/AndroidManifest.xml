@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Needed by the benchmark library to talk to the app under test; never part of the shipped app. -->
+    <queries>
+        <package android:name="com.mrfilefixit.app" />
+    </queries>
+</manifest>

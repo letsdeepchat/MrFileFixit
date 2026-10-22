@@ -1,68 +1,76 @@
-# 📄 MrFileFixit
+# Mr File Fixit
 
-**MrFileFixit** is a professional-grade, local-first file utility workshop. It provides a suite of high-performance tools for images, PDFs, and document processing—all running entirely in your browser with 100% privacy.
+A free, fully offline Android app for fixing files for government exam forms and everyday paperwork:
+resize and compress photos and signatures to exam specs, PDF tools, image tools, and a document scanner.
+All processing happens on the device. No uploads, no backend, no logging of file content.
 
-![GitHub License](https://img.shields.io/github/license/letsdeepchat/mr-file-fixit?style=flat-square)
-![Privacy First](https://img.shields.io/badge/Privacy-100%25%20Local-emerald?style=flat-square)
+> **Disclaimer.** Exam profiles bundled with the app are community-maintained samples. They are **not official**.
+> Always verify the photo and signature requirements against the official notification of your exam before submitting.
 
-## 🌟 Features
+## Modules
 
-### 🖼️ Image Workshop
-- **Resize & Crop**: Scale images with aspect ratio preservation.
-- **Compression**: Reduce file size with lossless and lossy modes.
-- **Target Size (KB)**: Auto-optimize images to hit a specific file size limit (e.g., exactly 50KB).
-- **Background Removal**: AI-powered background stripping running locally via WASM.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture diagram, module graph, and design rules.
 
-### 📄 PDF Suite
-- **Merge PDF**: Combine multiple documents into a single professional file.
-- **Split PDF**: Extract specific page ranges or split a document into individual pages.
+| Module | Type | Purpose |
+| --- | --- | --- |
+| `app` | Android application | Navigation shell, DI wiring, adaptive layout |
+| `feature-exam` | Android library | Exam profile picker, photo/signature flow, live spec checker |
+| `feature-pdf` | Android library | Merge, split, extract, reorder, rotate, delete, compress, image↔PDF, watermark, page numbers, password |
+| `feature-image` | Android library | Resize, crop, rotate, compress, convert, batch, strip EXIF |
+| `feature-scan` | Android library | ML Kit document scanner and on-device OCR |
+| `core-ui` | Android library | Material 3 theme, components, previews, ad slots |
+| `core-domain` | Pure Kotlin (JVM) | Result types, job pipeline, use cases, processor interfaces, pure algorithms |
+| `core-processing` | Android library | Image, PDF and OCR engines |
+| `core-ads` | Android library | AdMob, UMP consent, frequency capping (the only network user) |
+| `core-storage` | Android library | SAF, temp files, FileProvider sharing, DataStore |
+| `benchmark` | Android test | Baseline Profile generator and Macrobenchmark startup tests |
 
-### 🔍 OCR Scanner
-- **Optical Character Recognition**: Extract text from images and scans using the Tesseract engine.
-- **Local Processing**: No data is sent to external servers for analysis.
+## Build
 
-## 🛡️ Privacy First
-MrFileFixit uses **Local-First Architecture**. Your files never leave your computer. 
-- All processing happens in your browser's RAM/GPU.
-- No database, no uploads, no cloud logging.
-- Offline-ready functionality.
+```bash
+./gradlew assembleDebug          # debug build, AdMob test IDs
+./gradlew check                  # unit tests, Detekt, Android Lint, network isolation check
+./gradlew :app:bundleRelease     # release bundle (needs ADMOB_* properties and signing, see below)
+```
 
-## 🛠️ Tech Stack
-- **Framework**: React 19 + TypeScript
-- **Bundler**: Vite
-- **Styling**: Tailwind CSS
-- **Core Libraries**:
-  - `pdf-lib` & `pdfjs-dist`: Advanced PDF manipulation.
-  - `tesseract.js`: Browser-side OCR engine.
-  - `@imgly/background-removal`: WASM-based background removal.
-  - `jspdf`: PDF generation from images.
+Release builds read secrets from Gradle properties or environment variables, never from source:
 
-## 🚀 Getting Started
+| Property | Purpose |
+| --- | --- |
+| `ADMOB_APP_ID` | AdMob application ID |
+| `ADMOB_BANNER_ID`, `ADMOB_INTERSTITIAL_ID`, `ADMOB_REWARDED_ID` | Ad unit IDs |
+| `MFF_KEYSTORE_PATH`, `MFF_KEYSTORE_PASSWORD`, `MFF_KEY_ALIAS`, `MFF_KEY_PASSWORD` | Release signing |
 
-### Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn
+## Exam rules
 
-### Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/mr-file-fixit.git
-   ```
-2. Navigate to the project folder:
-   ```bash
-   cd mr-file-fixit
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Start the development server:
-   ```bash
-   npm run dev
-   ```
+Exam profiles live in `feature-exam/src/main/assets/exam_rules.json` and follow
+[`docs/exam-rules.schema.json`](docs/exam-rules.schema.json). Each profile carries a `sourceUrl` and a
+`lastVerified` date. To update a profile, edit the JSON, update `lastVerified`, and run
+`./gradlew :feature-exam:testDebugUnitTest` (golden tests guard the parsed result).
 
-## ⚖️ License
-Distributed under the MIT License. See `LICENSE` for more information.
+## Verification status
 
----
-Built with ❤️ for privacy by [@letsdeepchat](https://github.com/letsdeepchat)
+This code was written in a cloud sandbox that could not reach Google's Maven repository (`dl.google.com` /
+`maven.google.com` returned 403). That decides what could and could not be checked:
+
+| Checked | How | Result |
+| --- | --- | --- |
+| Pure Kotlin code (all of `core-domain`, exam rules parser, PDF layout, ad pacing) | Compiled with Kotlin 2.4.21, `allWarningsAsErrors`, run with JUnit 5 + MockK on a plain JVM | 106 tests pass |
+| Style | ktlint 1.7.1 (`android_studio`) and detekt 1.23.8 + formatting, using this repo's config | Zero findings |
+| Exam rules JSON | Validated against `docs/exam-rules.schema.json` | Valid |
+| CI / Dependabot YAML | Parsed | Valid |
+
+| **Not** checked yet | Why |
+| --- | --- |
+| Android modules compile (`app`, `feature-*`, `core-ui`, `core-processing`, `core-storage`, `core-ads`) | Needs AGP and AndroidX from Google Maven |
+| Android Lint, Compose UI tests, Macrobenchmark | Same, plus an emulator/device |
+| Library versions listed as unverified at the top of `gradle/libs.versions.toml` (AGP, Compose BOM, AndroidX, Play services, ML Kit) | Could not query Google Maven; pinned to the newest versions known to the author. Dependabot will propose corrections |
+
+The first CI run (`.github/workflows/ci.yml`) is the real compile check. Expect a small number of API-signature
+fixes there.
+
+## Docs
+
+* [Architecture](docs/ARCHITECTURE.md)
+* [Security and privacy](docs/SECURITY.md)
+* [Performance checklist](docs/PERFORMANCE.md)

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="exam_title">परीक्षा फ़ॉर्म</string>
+    <string name="exam_picker_heading">अपनी परीक्षा चुनें</string>
+    <string name="exam_picker_empty">फ़ोटो और हस्ताक्षर के नियम देखने के लिए कोई परीक्षा चुनें।</string>
+    <string name="exam_category_SSC">SSC</string>
+    <string name="exam_category_UPSC">UPSC</string>
+    <string name="exam_category_IBPS">बैंकिंग (IBPS)</string>
+    <string name="exam_category_RRB">रेलवे (RRB)</string>
+    <string name="exam_category_NEET">NEET</string>
+    <string name="exam_category_STATE_PSC">राज्य PSC</string>
+    <string name="exam_category_OTHER">अन्य</string>
+    <string name="exam_source">स्रोत: %1$s</string>
+    <string name="exam_doc_PHOTO">फ़ोटो</string>
+    <string name="exam_doc_SIGNATURE">हस्ताक्षर</string>
+    <string name="exam_doc_LEFT_THUMB">बाएँ अंगूठे का निशान</string>
+    <string name="exam_doc_DECLARATION">हस्तलिखित घोषणा</string>
+    <string name="exam_doc_OTHER">दस्तावेज़</string>
+    <string name="exam_requirements">ज़रूरी: %1$s, %2$s, %3$s × %4$s</string>
+    <string name="exam_your_file">आपकी फ़ाइल अभी</string>
+    <string name="exam_fix_button">सही साइज़ में बदलें</string>
+    <string name="exam_result_heading">अपलोड के लिए तैयार</string>
+    <string name="exam_result_failed_heading">कुछ जाँच अभी भी गलत हैं</string>
+    <string name="exam_padded_note">पूरी क्वालिटी पर भी इमेज न्यूनतम साइज़ से छोटी थी, इसलिए फ़ाइल में खाली पैडिंग जोड़ी गई। तस्वीर में कोई बदलाव नहीं हुआ।</string>
+    <string name="exam_composite_title">फ़ोटो और हस्ताक्षर एक इमेज में</string>
+    <string name="exam_composite_body">इस परीक्षा में ऊपर फ़ोटो और नीचे हस्ताक्षर वाली एक इमेज माँगी गई है। पहले दोनों तैयार करें।</string>
+    <string name="exam_composite_button">संयुक्त इमेज बनाएँ</string>
+    <string name="exam_crop_hint">सही जगह के लिए खींचें और पिंच करें। फ़्रेम ज़रूरी आकार का है।</string>
+    <string name="exam_saved">सेव हो गया</string>
+    <string name="cd_exam_verified_badge">सत्यापन स्थिति: %1$s</string>
+</resources>

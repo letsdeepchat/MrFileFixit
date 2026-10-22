@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_cancel">रद्द करें</string>
+    <string name="action_retry">फिर से कोशिश करें</string>
+    <string name="action_save">सेव करें</string>
+    <string name="action_share">शेयर करें</string>
+    <string name="action_choose_file">फ़ाइल चुनें</string>
+    <string name="action_choose_image">इमेज चुनें</string>
+    <string name="action_rotate">90° घुमाएँ</string>
+    <string name="action_reset">फिर से शुरू करें</string>
+    <string name="action_open_source">आधिकारिक साइट खोलें</string>
+    <string name="action_dismiss">बंद करें</string>
+    <string name="action_back">वापस</string>
+    <string name="action_remove">हटाएँ</string>
+    <string name="action_move_up">ऊपर ले जाएँ</string>
+    <string name="action_move_down">नीचे ले जाएँ</string>
+    <string name="share_chooser_title">फ़ाइल शेयर करें</string>
+
+    <string name="job_working">काम चल रहा है…</string>
+    <string name="job_progress_percent">%1$d%% पूरा</string>
+    <string name="job_cancelled">रद्द किया गया। कुछ भी सेव नहीं हुआ।</string>
+    <string name="job_done">हो गया</string>
+
+    <string name="disclaimer_title">आधिकारिक सूचना ज़रूर देखें</string>
+    <string name="disclaimer_body">ये साइज़ समुदाय द्वारा बनाए गए नमूने हैं, आधिकारिक नियम नहीं। आवेदन जमा करने से पहले अपनी परीक्षा की आधिकारिक अधिसूचना से फ़ोटो और हस्ताक्षर की शर्तें हमेशा मिलाएँ।</string>
+    <string name="verification_unverified">सत्यापित नहीं</string>
+    <string name="verification_verified">%1$s को सत्यापित</string>
+
+    <string name="check_format">फ़ॉर्मैट</string>
+    <string name="check_file_size">फ़ाइल साइज़</string>
+    <string name="check_width">चौड़ाई</string>
+    <string name="check_height">ऊँचाई</string>
+    <string name="check_passed">सही</string>
+    <string name="check_failed">गलत</string>
+    <string name="check_row_description">%1$s: %2$s। आपका: %3$s। ज़रूरी: %4$s।</string>
+    <string name="range_kb">%1$s–%2$s KB</string>
+    <string name="range_px">%1$s–%2$s px</string>
+    <string name="exact_px">%1$s px</string>
+    <string name="at_least_px">कम से कम %1$s px</string>
+    <string name="at_most_px">ज़्यादा से ज़्यादा %1$s px</string>
+    <string name="value_kb">%1$s KB</string>
+    <string name="value_px">%1$s px</string>
+    <string name="format_unknown">अज्ञात</string>
+
+    <string name="error_file_too_large">यह फ़ाइल %1$s की है। सीमा %2$s है।</string>
+    <string name="error_dimensions_too_large">यह इमेज सुरक्षित रूप से प्रोसेस करने के लिए बहुत बड़ी है (%1$d × %2$d px)।</string>
+    <string name="error_too_many_pages">इस PDF में %1$d पेज हैं। सीमा %2$d है।</string>
+    <string name="error_too_many_files">आपने %1$d फ़ाइलें चुनीं। सीमा %2$d है।</string>
+    <string name="error_unsupported_format">यह फ़ाइल टाइप सपोर्टेड नहीं है।</string>
+    <string name="error_corrupt">यह फ़ाइल खराब या अधूरी लगती है।</string>
+    <string name="error_empty">यह फ़ाइल खाली है।</string>
+    <string name="error_password_required">यह PDF पासवर्ड से सुरक्षित है। पहले इसे अनलॉक करें।</string>
+    <string name="error_wrong_password">पासवर्ड सही नहीं है।</string>
+    <string name="error_invalid_pages">1 से %1$d के बीच पेज लिखें, जैसे 1-3, 5।</string>
+    <string name="error_target_unreachable">%1$s–%2$s तक नहीं पहुँच सके (मिला %3$s)। कोई दूसरी फ़ोटो या क्रॉप आज़माएँ।</string>
+    <string name="error_not_found">फ़ाइल अब उपलब्ध नहीं है। उसे फिर से चुनें।</string>
+    <string name="error_permission">ऐप के पास अब इस फ़ाइल की अनुमति नहीं है। उसे फिर से चुनें।</string>
+    <string name="error_storage_full">आपके फ़ोन की स्टोरेज भर गई है।</string>
+    <string name="error_out_of_memory">इस फ़ाइल के लिए मेमोरी कम है। दूसरे ऐप बंद करके फिर कोशिश करें।</string>
+    <string name="error_feature_unavailable">आपका डिवाइस यह सपोर्ट नहीं करता।</string>
+    <string name="error_quota">आज के मुफ़्त बैच जॉब खत्म हो गए हैं।</string>
+    <string name="error_unexpected">कुछ गलत हो गया। कृपया फिर से कोशिश करें।</string>
+
+    <string name="cd_thumbnail">चुनी गई फ़ाइल का प्रीव्यू</string>
+    <string name="cd_crop_area">क्रॉप एरिया। खिसकाने के लिए खींचें, ज़ूम के लिए पिंच करें।</string>
+    <string name="cd_pass_icon">सही</string>
+    <string name="cd_fail_icon">गलत</string>
+    <string name="cd_info_icon">जानकारी</string>
+</resources>

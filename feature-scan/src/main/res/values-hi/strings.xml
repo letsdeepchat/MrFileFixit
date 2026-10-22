@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="scan_title">स्कैन और OCR</string>
+    <string name="scan_intro">कैमरे से काग़ज़ी दस्तावेज़ स्कैन करें, या टेक्स्ट पढ़ने के लिए कोई इमेज या PDF चुनें। सब कुछ इसी फ़ोन पर प्रोसेस होता है।</string>
+    <string name="scan_start">दस्तावेज़ स्कैन करें</string>
+    <string name="scan_pick_ocr">टेक्स्ट के लिए इमेज या PDF चुनें</string>
+    <string name="scan_pages">%1$d पेज स्कैन हुए</string>
+    <string name="scan_pdf">स्कैन की गई PDF</string>
+    <string name="scan_page">पेज %1$d</string>
+    <string name="scan_ocr_files">टेक्स्ट पहचान के लिए %1$d फ़ाइलें</string>
+    <string name="scan_script">टेक्स्ट की भाषा</string>
+    <string name="scan_script_LATIN">अंग्रेज़ी / लैटिन</string>
+    <string name="scan_script_DEVANAGARI">हिंदी / देवनागरी</string>
+    <string name="scan_recognize">टेक्स्ट पहचानें</string>
+    <string name="scan_text_result">पहचाना गया टेक्स्ट (%1$d पेज)</string>
+    <string name="scan_no_text">कोई टेक्स्ट नहीं मिला।</string>
+    <string name="scan_copy">टेक्स्ट कॉपी करें</string>
+    <string name="scan_copied">टेक्स्ट कॉपी हो गया</string>
+    <string name="scan_share_text">टेक्स्ट शेयर करें</string>
+    <string name="scan_importing">स्कैन सेव हो रहा है…</string>
+</resources>
