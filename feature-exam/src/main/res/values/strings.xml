@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="exam_title">Exam forms</string>
+    <string name="exam_picker_heading">Pick your exam</string>
+    <string name="exam_picker_empty">Select an exam to see its photo and signature rules.</string>
+    <string name="exam_category_SSC">SSC</string>
+    <string name="exam_category_UPSC">UPSC</string>
+    <string name="exam_category_IBPS">Banking (IBPS)</string>
+    <string name="exam_category_RRB">Railways (RRB)</string>
+    <string name="exam_category_NEET">NEET</string>
+    <string name="exam_category_STATE_PSC">State PSC</string>
+    <string name="exam_category_OTHER">Other</string>
+    <string name="exam_source">Source: %1$s</string>
+    <string name="exam_doc_PHOTO">Photograph</string>
+    <string name="exam_doc_SIGNATURE">Signature</string>
+    <string name="exam_doc_LEFT_THUMB">Left thumb impression</string>
+    <string name="exam_doc_DECLARATION">Handwritten declaration</string>
+    <string name="exam_doc_OTHER">Document</string>
+    <string name="exam_requirements">Required: %1$s, %2$s, %3$s × %4$s</string>
+    <string name="exam_your_file">Your file now</string>
+    <string name="exam_fix_button">Fix to fit</string>
+    <string name="exam_result_heading">Ready to upload</string>
+    <string name="exam_result_failed_heading">Some checks still fail</string>
+    <string name="exam_padded_note">The image was below the minimum size even at full quality, so empty padding was added to the file. The picture itself is unchanged.</string>
+    <string name="exam_composite_title">Photo and signature in one image</string>
+    <string name="exam_composite_body">This exam asks for one image with the photo above the signature. Prepare both first.</string>
+    <string name="exam_composite_button">Make combined image</string>
+    <string name="exam_crop_hint">Drag and pinch to position. The frame matches the required shape.</string>
+    <string name="exam_saved">Saved</string>
+    <string name="cd_exam_verified_badge">Verification status: %1$s</string>
+</resources>

@@ -1,0 +1,38 @@
+package com.mrfilefixit.core.ui.format
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.core.os.ConfigurationCompat
+import java.text.NumberFormat
+import java.util.Locale
+
+private const val KIB = 1024.0
+private const val MIB = KIB * KIB
+
+/** Locale-aware number formatting (Devanagari digits stay Latin, as Indian forms expect). */
+@Composable
+@ReadOnlyComposable
+fun currentLocale(): Locale =
+    ConfigurationCompat.getLocales(LocalConfiguration.current)[0] ?: Locale.getDefault()
+
+@Composable
+@ReadOnlyComposable
+fun formatNumber(value: Number): String = NumberFormat.getInstance(currentLocale()).format(value)
+
+/** KB with one decimal under 10 KB, whole numbers above; MB above 1 MB. 1 KB = 1024 bytes, as exam portals use. */
+@Composable
+@ReadOnlyComposable
+fun formatBytes(bytes: Long): String {
+    val format = NumberFormat.getInstance(currentLocale())
+    return when {
+        bytes >= MIB -> {
+            format.maximumFractionDigits = 1
+            "${format.format(bytes / MIB)} MB"
+        }
+        else -> {
+            format.maximumFractionDigits = if (bytes < 10 * KIB) 1 else 0
+            "${format.format(bytes / KIB)} KB"
+        }
+    }
+}

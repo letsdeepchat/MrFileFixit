@@ -11,3 +11,7 @@ class SaveOutputUseCase @Inject constructor(private val repository: FileReposito
 class ShareOutputUseCase @Inject constructor(private val repository: FileRepository) {
     suspend operator fun invoke(output: OutputFile): AppResult<String> = repository.shareUri(output)
 }
+
+class DescribeFileUseCase @Inject constructor(private val repository: FileRepository) {
+    suspend operator fun invoke(uri: String): AppResult<FileRef> = repository.describe(uri)
+}
