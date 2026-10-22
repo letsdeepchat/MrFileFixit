@@ -107,7 +107,6 @@ dependencies {
     implementation(libs.androidx.compose.material3.navigation.suite)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
-
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.ext.junit)
