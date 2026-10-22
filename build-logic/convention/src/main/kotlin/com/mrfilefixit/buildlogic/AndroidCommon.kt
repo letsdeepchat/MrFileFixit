@@ -39,7 +39,11 @@ internal fun ApplicationExtension.configureAndroidApplication() {
         sourceCompatibility = JAVA_VERSION
         targetCompatibility = JAVA_VERSION
     }
-    lint { configureZeroWarningLint() }
+    lint {
+        configureZeroWarningLint()
+        // The app run sees every module, so unused-resource checks are accurate only here.
+        checkDependencies = true
+    }
     packaging {
         resources.excludes += setOf("/META-INF/{AL2.0,LGPL2.1}", "/META-INF/LICENSE*", "/META-INF/NOTICE*")
     }
@@ -59,6 +63,8 @@ internal fun LibraryExtension.configureAndroidLibrary() {
     lint {
         configureZeroWarningLint()
         targetSdk = Sdk.TARGET
+        // A library cannot see which of its resources other modules use; :app checks this with dependencies.
+        disable += "UnusedResources"
     }
     testOptions {
         targetSdk = Sdk.TARGET

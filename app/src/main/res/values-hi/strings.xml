@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_home">होम</string>
+    <string name="nav_exam">परीक्षा फ़ॉर्म</string>
+    <string name="nav_pdf">PDF टूल</string>
+    <string name="nav_image">इमेज टूल</string>
+    <string name="nav_scan">स्कैन</string>
+    <string name="nav_settings">सेटिंग</string>
+    <string name="home_title">आप क्या ठीक करना चाहते हैं?</string>
+    <string name="home_offline_note">सब कुछ आपके फ़ोन पर ही होता है। आपकी फ़ाइलें कभी अपलोड नहीं होतीं।</string>
+    <string name="home_exam_body">फ़ोटो और हस्ताक्षर को परीक्षा के नियमों के अनुसार बदलें</string>
+    <string name="home_pdf_body">जोड़ें, बाँटें, छोटा करें, पासवर्ड लगाएँ और भी बहुत कुछ</string>
+    <string name="home_image_body">इमेज का साइज़ बदलें, क्रॉप करें, फ़ॉर्मैट बदलें</string>
+    <string name="home_scan_body">दस्तावेज़ स्कैन करके PDF बनाएँ और टेक्स्ट कॉपी करें</string>
+    <string name="settings_theme">थीम</string>
+    <string name="settings_theme_system">सिस्टम के अनुसार</string>
+    <string name="settings_theme_light">लाइट</string>
+    <string name="settings_theme_dark">डार्क</string>
+    <string name="settings_dynamic_color">वॉलपेपर के रंग इस्तेमाल करें</string>
+    <string name="settings_privacy_title">गोपनीयता</string>
+    <string name="settings_privacy_body">फ़ाइलें केवल इसी डिवाइस पर प्रोसेस होती हैं और टूल से बाहर निकलने पर ऐप के कैश से हटा दी जाती हैं। ऐप इंटरनेट का उपयोग केवल विज्ञापन दिखाने के लिए करता है। एक्सपोर्ट करते समय फ़ोटो की लोकेशन और अन्य मेटाडेटा हटा दिया जाता है।</string>
+    <string name="settings_ads_privacy">विज्ञापन गोपनीयता विकल्प</string>
+    <string name="settings_version">वर्शन %1$s</string>
+</resources>

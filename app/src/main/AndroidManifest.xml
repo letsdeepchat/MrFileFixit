@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      No storage permissions: files come in through the Storage Access Framework and the photo picker,
+      and go out through FileProvider or "Save as". INTERNET is merged in by the Mobile Ads SDK (core-ads),
+      the only component that uses the network.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Make sure no library sneaks in broad storage access. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
+
+    <application
+        android:name=".MffApplication"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="true"
+        android:theme="@style/Theme.MrFileFixit"
+        tools:targetApi="36">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboardHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
+
+        <!-- WorkManager is initialised on demand with the Hilt worker factory. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
+        <!-- Batch jobs run as a foreground service only while a job is running. -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync|mediaProcessing"
+            tools:node="merge" />
+    </application>
+</manifest>

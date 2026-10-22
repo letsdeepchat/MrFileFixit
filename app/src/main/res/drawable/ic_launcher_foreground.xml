@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A document with a check mark: "file fixed". -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M38,30h22l12,12v34a2,2 0,0 1,-2 2H38a2,2 0,0 1,-2 -2V32a2,2 0,0 1,2 -2z" />
+    <path
+        android:fillColor="#FFB3E5DD"
+        android:pathData="M60,30v10a2,2 0,0 0,2 2h10z" />
+    <path
+        android:fillColor="#FF006A60"
+        android:pathData="M45.5,61.5l5,5l12,-12l-2.8,-2.8l-9.2,9.2l-2.2,-2.2z" />
+</vector>

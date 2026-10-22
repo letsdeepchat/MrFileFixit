@@ -13,6 +13,14 @@ enum class BannerPlacement { HOME, EXAM_PICKER, FILE_LIST }
  * never depend on the ads SDK.
  */
 interface AdSlots {
+    /** Gathers UMP consent (showing the form if required) and only then initialises the ads SDK. */
+    suspend fun initialize(activity: Activity)
+
+    /** True when the user must be able to reopen the consent form (shown in Settings). */
+    val privacyOptionsRequired: Boolean
+
+    fun showPrivacyOptions(activity: Activity)
+
     @Composable
     fun Banner(placement: BannerPlacement, modifier: Modifier)
 
@@ -27,6 +35,12 @@ interface AdSlots {
 }
 
 object NoAds : AdSlots {
+    override suspend fun initialize(activity: Activity) = Unit
+
+    override val privacyOptionsRequired: Boolean = false
+
+    override fun showPrivacyOptions(activity: Activity) = Unit
+
     @Composable
     override fun Banner(placement: BannerPlacement, modifier: Modifier) = Unit
 

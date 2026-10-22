@@ -2,6 +2,7 @@ package com.mrfilefixit.feature.exam.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -95,7 +96,8 @@ class ExamScreensTest {
             }
         }
         compose.onNodeWithText(context.getString(R.string.exam_your_file)).assertIsDisplayed()
-        compose.onAllNodesWithText(context.getString(CoreR.string.check_failed), substring = true)
+        // Each checklist row is a single TalkBack node whose description carries the verdict.
+        compose.onAllNodesWithContentDescription(context.getString(CoreR.string.check_failed), substring = true)
             .fetchSemanticsNodes().let { assertEquals(3, it.size) }
         compose.onNodeWithText(context.getString(R.string.exam_fix_button)).performClick()
         assertEquals(true, fixed)
