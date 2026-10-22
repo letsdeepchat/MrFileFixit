@@ -32,8 +32,8 @@ documentfile = "1.1.0"
 hilt = "2.60.1"
 hilt-androidx = "1.2.0"
 # Google Play services / ML Kit / Ads
-play-services-ads = "24.6.0"
-ump = "3.2.0"
+play-services-ads = "25.5.0"
+ump = "4.0.0"
 mlkit-document-scanner = "16.0.0"
 mlkit-text-recognition = "16.0.1"
 # PDF
