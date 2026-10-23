@@ -114,11 +114,26 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
+      # The Play Store bundle needs the upload keystore and real AdMob IDs. Until those secrets exist the
+      # job skips the bundle instead of failing, and the tag still ships the tester APK below.
+      - name: Check release secrets
+        id: secrets
+        env:
+          KEYSTORE_B64: ${{ secrets.MFF_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Release secrets are not set, so no Play Store bundle was built."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Decode keystore
+        if: steps.secrets.outputs.configured == 'true'
         env:
           KEYSTORE_B64: ${{ secrets.MFF_KEYSTORE_B64 }}
         run: echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
       - name: Build release bundle
+        if: steps.secrets.outputs.configured == 'true'
         env:
           MFF_KEYSTORE_PATH: ${{ runner.temp }}/release.jks
           MFF_KEYSTORE_PASSWORD: ${{ secrets.MFF_KEYSTORE_PASSWORD }}
@@ -130,6 +145,33 @@ jobs:
           ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
         run: ./gradlew :app:bundleRelease
       - uses: actions/upload-artifact@v4
+        if: steps.secrets.outputs.configured == 'true'
         with:
           name: app-release-bundle
           path: app/build/outputs/bundle/release/*.aab
+
+  tester-apk:
+    name: Tester APK on the GitHub release
+    runs-on: ubuntu-latest
+    needs: [rules, check]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      # A debug build: debug-signed so it installs by sideloading, shows only Google's test ads, and
+      # installs as com.mrfilefixit.app.debug next to any Play Store copy.
+      - run: ./gradlew :app:assembleDebug
+      - name: Publish pre-release with the APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          apk="MrFileFixit-${GITHUB_REF_NAME}-tester.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "$apk"
+          gh release create "$GITHUB_REF_NAME" "$apk" --prerelease --title "Mr File Fixit $GITHUB_REF_NAME (tester build)" \
+            --notes "Tester build for sideloading. It is debug-signed and shows Google's test ads only. Not the Play Store release."
