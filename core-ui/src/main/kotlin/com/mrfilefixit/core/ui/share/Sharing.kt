@@ -6,13 +6,14 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 
 /**
  * Opens the share sheet for one FileProvider URI with a read-only grant limited to that URI.
  * The grant goes through ClipData so it reaches the chosen target, and nothing else is granted.
  */
 fun Context.shareFile(uri: String, mimeType: String, chooserTitle: String) {
-    val contentUri = Uri.parse(uri)
+    val contentUri = uri.toUri()
     val send = Intent(Intent.ACTION_SEND).apply {
         type = mimeType
         putExtra(Intent.EXTRA_STREAM, contentUri)

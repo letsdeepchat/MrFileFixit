@@ -1,10 +1,10 @@
 package com.mrfilefixit.core.processing.ocr
 
 import android.content.ContentResolver
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.pdf.PdfRenderer
-import android.net.Uri
+import androidx.core.graphics.createBitmap
+import androidx.core.net.toUri
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
@@ -92,34 +92,31 @@ internal class MlKitOcrProcessor @Inject constructor(
         recognizer: TextRecognizer,
         source: FileRef,
         progress: ProgressReporter,
-    ): List<String> {
-        val descriptor = resolver.openFileDescriptor(Uri.parse(source.uri), "r") ?: return emptyList()
-        return descriptor.use { fd ->
-            PdfRenderer(fd).use { renderer ->
-                val pageCount = renderer.pageCount
-                val check = limits.checkPageCount(pageCount)
-                if (check is Result.Failure) throw InputRejectedException(check.error)
-                (0 until pageCount).map { index ->
-                    coroutineContext.ensureActive()
-                    val text = renderer.openPage(index).use { page ->
-                        val scale = MAX_SIDE.toFloat() / maxOf(page.width, page.height)
-                        val bitmap = Bitmap.createBitmap(
+    ): List<String> = resolver.openFileDescriptor(source.uri.toUri(), "r")?.use { fd ->
+        PdfRenderer(fd).use { renderer ->
+            val pageCount = renderer.pageCount
+            val check = limits.checkPageCount(pageCount)
+            if (check is Result.Failure) throw InputRejectedException(check.error)
+            (0 until pageCount).map { index ->
+                coroutineContext.ensureActive()
+                val text = renderer.openPage(index).use { page ->
+                    val scale = MAX_SIDE.toFloat() / maxOf(page.width, page.height)
+                    val bitmap =
+                        createBitmap(
                             (page.width * scale).toInt().coerceAtLeast(1),
                             (page.height * scale).toInt().coerceAtLeast(1),
-                            Bitmap.Config.ARGB_8888,
                         )
-                        bitmap.use {
-                            it.eraseColor(Color.WHITE)
-                            page.render(it, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                            recognizer.process(InputImage.fromBitmap(it, 0)).await().text
-                        }
+                    bitmap.use {
+                        it.eraseColor(Color.WHITE)
+                        page.render(it, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                        recognizer.process(InputImage.fromBitmap(it, 0)).await().text
                     }
-                    progress.step(index, pageCount)
-                    text
                 }
+                progress.step(index, pageCount)
+                text
             }
         }
-    }
+    } ?: emptyList()
 
     private companion object {
         const val MAX_SIDE = 2048

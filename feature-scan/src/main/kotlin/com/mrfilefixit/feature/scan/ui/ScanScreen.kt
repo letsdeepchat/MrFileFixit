@@ -34,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -170,7 +171,10 @@ private fun ScanOutputs(pdf: OutputFile?, pages: List<OutputFile>, actions: Scan
         if (uri != null && output != null) actions.onSave(output, uri.toString())
         pendingSave = null
     }
-    Text(stringResource(R.string.scan_pages, pages.size), style = MaterialTheme.typography.titleSmall)
+    Text(
+        pluralStringResource(R.plurals.scan_pages, pages.size, pages.size),
+        style = MaterialTheme.typography.titleSmall,
+    )
     val rows = listOfNotNull(pdf?.let { stringResource(R.string.scan_pdf) to it }) +
         pages.mapIndexed { index, page -> stringResource(R.string.scan_page, index + 1) to page }
     rows.forEach { (label, output) ->
@@ -203,7 +207,11 @@ private fun OcrSection(state: ScanUiState, actions: ScanActions) {
         Modifier.widthIn(max = Dimens.CardMaxWidth).fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
     ) {
-        if (state.ocrFiles.isNotEmpty()) Text(stringResource(R.string.scan_ocr_files, state.ocrFiles.size))
+        if (state.ocrFiles.isNotEmpty()) {
+            Text(
+                pluralStringResource(R.plurals.scan_ocr_files, state.ocrFiles.size, state.ocrFiles.size),
+            )
+        }
         Text(stringResource(R.string.scan_script), style = MaterialTheme.typography.titleSmall)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
             OcrScript.entries.forEach { script ->
@@ -241,7 +249,10 @@ private fun OcrSection(state: ScanUiState, actions: ScanActions) {
 
 @Composable
 private fun TextResult(text: String, pageCount: Int, actions: ScanActions) {
-    Text(stringResource(R.string.scan_text_result, pageCount), style = MaterialTheme.typography.titleSmall)
+    Text(
+        pluralStringResource(R.plurals.scan_text_result, pageCount, pageCount),
+        style = MaterialTheme.typography.titleSmall,
+    )
     Card(Modifier.fillMaxWidth()) {
         SelectionContainer {
             Text(

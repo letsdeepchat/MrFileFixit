@@ -5,6 +5,7 @@ import android.media.MediaCodecInfo
 import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.heifwriter.HeifWriter
 import com.mrfilefixit.core.domain.image.ImageFormat
 import java.io.ByteArrayOutputStream
@@ -22,7 +23,11 @@ internal class ImageEncoding @Inject constructor() {
 
     /** Encodes [bitmap]; [scratchDir] is only used for HEIC, which HeifWriter can only write to a file. */
     fun encode(bitmap: Bitmap, format: ImageFormat, quality: Int, scratchDir: File): ByteArray = when (format) {
-        ImageFormat.HEIC -> encodeHeic(bitmap, quality, scratchDir)
+        ImageFormat.HEIC -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            encodeHeic(bitmap, quality, scratchDir)
+        } else {
+            error("HEIC encoding needs API 28")
+        }
         else -> ByteArrayOutputStream(bitmap.byteCount / ESTIMATED_RATIO).use { out ->
             check(bitmap.compress(compressFormat(format), quality, out)) { "Encoder refused bitmap" }
             out.toByteArray()
@@ -41,8 +46,8 @@ internal class ImageEncoding @Inject constructor() {
         ImageFormat.HEIC -> error("HEIC is encoded with HeifWriter")
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     private fun encodeHeic(bitmap: Bitmap, quality: Int, scratchDir: File): ByteArray {
-        check(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { "HEIC encoding needs API 28" }
         val temp = File.createTempFile("heic", ".tmp", scratchDir)
         try {
             HeifWriter.Builder(temp.absolutePath, bitmap.width, bitmap.height, HeifWriter.INPUT_MODE_BITMAP)

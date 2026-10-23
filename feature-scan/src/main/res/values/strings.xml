@@ -4,15 +4,24 @@
     <string name="scan_intro">Scan paper documents with your camera, or pick an image or PDF to read its text. Everything is processed on this phone.</string>
     <string name="scan_start">Scan document</string>
     <string name="scan_pick_ocr">Pick image or PDF for text</string>
-    <string name="scan_pages">%1$d scanned pages</string>
+    <plurals name="scan_pages">
+        <item quantity="one">%1$d scanned page</item>
+        <item quantity="other">%1$d scanned pages</item>
+    </plurals>
     <string name="scan_pdf">Scanned PDF</string>
     <string name="scan_page">Page %1$d</string>
-    <string name="scan_ocr_files">%1$d files for text recognition</string>
+    <plurals name="scan_ocr_files">
+        <item quantity="one">%1$d file for text recognition</item>
+        <item quantity="other">%1$d files for text recognition</item>
+    </plurals>
     <string name="scan_script">Text language</string>
     <string name="scan_script_LATIN">English / Latin</string>
     <string name="scan_script_DEVANAGARI">Hindi / Devanagari</string>
     <string name="scan_recognize">Recognize text</string>
-    <string name="scan_text_result">Recognized text (%1$d pages)</string>
+    <plurals name="scan_text_result">
+        <item quantity="one">Recognized text (%1$d page)</item>
+        <item quantity="other">Recognized text (%1$d pages)</item>
+    </plurals>
     <string name="scan_no_text">No text was found.</string>
     <string name="scan_copy">Copy text</string>
     <string name="scan_copied">Text copied</string>

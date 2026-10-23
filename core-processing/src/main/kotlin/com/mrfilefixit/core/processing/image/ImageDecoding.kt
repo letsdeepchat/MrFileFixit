@@ -5,8 +5,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.BitmapRegionDecoder
 import android.graphics.Rect
-import android.net.Uri
 import android.os.Build
+import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.NormalizedRect
@@ -46,7 +46,7 @@ internal class ImageDecoding @Inject constructor(
     fun readRawInfo(uri: String): RawImageInfo {
         val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         resolver.openLimited(uri, limits.maxFileBytes).use { BitmapFactory.decodeStream(it, null, options) }
-        val mime = options.outMimeType ?: resolver.getType(Uri.parse(uri))
+        val mime = options.outMimeType ?: resolver.getType(uri.toUri())
         if (options.outWidth <= 0 || options.outHeight <= 0) {
             val format = ImageFormat.fromMimeType(mime)
             if (format == null || (format == ImageFormat.HEIC && Build.VERSION.SDK_INT < Build.VERSION_CODES.P)) {
@@ -67,7 +67,7 @@ internal class ImageDecoding @Inject constructor(
             mimeType = mime,
             exifRotation = exif?.rotationDegrees ?: 0,
             flipped = exif?.isFlipped ?: false,
-            hasExif = exif?.hasAttributes() ?: false,
+            hasExif = exif?.let { e -> METADATA_TAGS.any(e::hasAttribute) } ?: false,
         )
     }
 
@@ -142,5 +142,19 @@ internal class ImageDecoding @Inject constructor(
     private companion object {
         const val HEAP_FRACTION = 4
         const val BYTES_PER_PIXEL = 4L
+
+        /** Tags whose presence means the export would carry metadata worth stripping. */
+        val METADATA_TAGS = listOf(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.TAG_DATETIME,
+            ExifInterface.TAG_DATETIME_ORIGINAL,
+            ExifInterface.TAG_MAKE,
+            ExifInterface.TAG_MODEL,
+            ExifInterface.TAG_SOFTWARE,
+            ExifInterface.TAG_GPS_LATITUDE,
+            ExifInterface.TAG_GPS_LONGITUDE,
+            ExifInterface.TAG_ARTIST,
+            ExifInterface.TAG_IMAGE_UNIQUE_ID,
+        )
     }
 }

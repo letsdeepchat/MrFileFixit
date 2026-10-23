@@ -5,8 +5,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.pdf.PdfRenderer
-import android.net.Uri
 import android.os.ParcelFileDescriptor
+import androidx.core.graphics.createBitmap
+import androidx.core.net.toUri
 import com.mrfilefixit.core.domain.dispatchers.DispatcherProvider
 import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.file.OutputFile
@@ -74,9 +75,7 @@ internal class PdfBoxPdfProcessor @Inject constructor(
     override suspend fun info(source: FileRef): AppResult<PdfInfo> = withContext(dispatchers.io) {
         runCatchingAppFlat(::mapEngineError) {
             limits.checkFileSize(source.sizeBytes).throwIfFailure()
-            val descriptor = resolver.openFileDescriptor(Uri.parse(source.uri), "r")
-                ?: return@runCatchingAppFlat failure(AppError.FileNotFound)
-            descriptor.use { fd ->
+            resolver.openFileDescriptor(source.uri.toUri(), "r")?.use { fd ->
                 try {
                     PdfRenderer(fd).use {
                         success(
@@ -91,7 +90,7 @@ internal class PdfBoxPdfProcessor @Inject constructor(
                 } catch (_: SecurityException) {
                     success(PdfInfo(pageCount = 0, encrypted = true, sizeBytes = source.sizeBytes ?: 0))
                 }
-            }
+            } ?: failure(AppError.FileNotFound)
         }
     }
 
@@ -100,6 +99,7 @@ internal class PdfBoxPdfProcessor @Inject constructor(
             runCatchingAppFlat(::mapPdfError) {
                 pdfBoxReady
                 File(operation.outputDir).mkdirs()
+                val processor = this@PdfBoxPdfProcessor
                 val outputs = when (operation) {
                     is PdfOperation.Merge -> listOf(merge(operation, progress))
                     is PdfOperation.Split -> split(operation, progress)
@@ -108,8 +108,8 @@ internal class PdfBoxPdfProcessor @Inject constructor(
                     is PdfOperation.Compress -> listOf(compress(operation, progress))
                     is PdfOperation.ImagesToPdf -> listOf(imagesToPdf(operation, progress))
                     is PdfOperation.ToImages -> toImages(operation, progress)
-                    is PdfOperation.Watermark -> listOf(PdfStamping.watermark(this, operation, progress))
-                    is PdfOperation.PageNumbers -> listOf(PdfStamping.pageNumbers(this, operation, progress))
+                    is PdfOperation.Watermark -> listOf(PdfStamping.watermark(processor, operation, progress))
+                    is PdfOperation.PageNumbers -> listOf(PdfStamping.pageNumbers(processor, operation, progress))
                     is PdfOperation.Protect -> listOf(protect(operation))
                     is PdfOperation.Unlock -> listOf(unlock(operation))
                 }
@@ -319,7 +319,7 @@ internal class PdfBoxPdfProcessor @Inject constructor(
                         val w = (page.width * scale).toInt().coerceAtLeast(1)
                         val h = (page.height * scale).toInt().coerceAtLeast(1)
                         limits.checkDimensions(w, h).throwIfFailure()
-                        Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).use { bitmap ->
+                        createBitmap(w, h).use { bitmap ->
                             bitmap.eraseColor(Color.WHITE)
                             page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
                             block(index, bitmap, page.width.toFloat(), page.height.toFloat())

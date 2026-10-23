@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.mrfilefixit.core.domain.exam.SpecCheck
@@ -104,7 +105,8 @@ class ExamScreensTest {
         // Each checklist row is a single TalkBack node whose description carries the verdict.
         compose.onAllNodesWithContentDescription(context.getString(CoreR.string.check_failed), substring = true)
             .fetchSemanticsNodes().let { assertEquals(3, it.size) }
-        compose.onNodeWithText(context.getString(R.string.exam_fix_button)).performClick()
+        // The crop box pushes the actions below the fold on small screens (the CI emulator is 320x640 dp).
+        compose.onNodeWithText(context.getString(R.string.exam_fix_button)).performScrollTo().performClick()
         assertEquals(true, fixed)
     }
 }

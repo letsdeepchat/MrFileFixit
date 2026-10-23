@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Shared by every Android module (see build-logic AndroidCommon.kt). Keep each ignore narrow and explained. -->
+<lint>
+    <!--
+      Bouncy Castle (pulled in by pdfbox-android for PDF encryption) ships an accept-all trust manager
+      for its own TLS tooling. The app never reaches it: processing modules have no network access,
+      which verifyNetworkIsolation enforces. The check stays on for our own code.
+    -->
+    <issue id="TrustAllX509TrustManager">
+        <ignore path="**/bcpkix-*.jar" />
+        <ignore path="**/org.bouncycastle/**" />
+    </issue>
+</lint>

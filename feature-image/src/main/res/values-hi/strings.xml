@@ -2,7 +2,10 @@
 <resources>
     <string name="image_title">इमेज टूल</string>
     <string name="image_pick">इमेज चुनें</string>
-    <string name="image_selected">%1$d इमेज चुनी गईं</string>
+    <plurals name="image_selected">
+        <item quantity="one">%1$d इमेज चुनी गई</item>
+        <item quantity="other">%1$d इमेज चुनी गईं</item>
+    </plurals>
     <string name="image_tool">टूल</string>
     <string name="image_tool_RESIZE">साइज़ बदलें</string>
     <string name="image_tool_CROP">क्रॉप करें</string>
@@ -21,8 +24,14 @@
     <string name="image_strip_note">लोकेशन, कैमरा और तारीख की जानकारी हटाता है। JPEG और PNG बिना दोबारा कम्प्रेस किए साफ़ होते हैं।</string>
     <string name="image_crop_single_only">क्रॉप एक बार में एक ही इमेज पर काम करता है।</string>
     <string name="image_run">प्रोसेस करें</string>
-    <string name="image_done">%1$d इमेज तैयार</string>
-    <string name="image_some_failed">%1$d फ़ाइलें प्रोसेस नहीं हो सकीं।</string>
+    <plurals name="image_done">
+        <item quantity="one">%1$d इमेज तैयार</item>
+        <item quantity="other">%1$d इमेज तैयार</item>
+    </plurals>
+    <plurals name="image_some_failed">
+        <item quantity="one">%1$d फ़ाइल प्रोसेस नहीं हो सकी।</item>
+        <item quantity="other">%1$d फ़ाइलें प्रोसेस नहीं हो सकीं।</item>
+    </plurals>
     <string name="image_batch_background">बड़े बैच नोटिफ़िकेशन के साथ बैकग्राउंड में चलते रहते हैं।</string>
     <string name="image_quota_left">आज बचे मुफ़्त बैच जॉब: %1$d</string>
     <string name="image_quota_empty">आज के मुफ़्त बैच जॉब खत्म हो गए। एक इमेज हमेशा मुफ़्त है।</string>

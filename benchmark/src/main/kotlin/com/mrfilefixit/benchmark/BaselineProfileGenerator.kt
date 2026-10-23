@@ -6,7 +6,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** Run with `./gradlew :app:generateReleaseBaselineProfile` on an API 28+ device. */
+/**
+ * Run with `./gradlew :benchmark:connectedBenchmarkAndroidTest` on an API 28+ device, then copy the
+ * generated `*-baseline-prof.txt` to `app/src/main/baseline-prof.txt`.
+ * (The androidx.baselineprofile Gradle plugin is not used until a release supporting AGP 9 is pinned.)
+ */
 @RunWith(AndroidJUnit4::class)
 class BaselineProfileGenerator {
     @get:Rule

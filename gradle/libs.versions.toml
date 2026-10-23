@@ -154,7 +154,6 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-baselineprofile = { id = "androidx.baselineprofile", version.ref = "benchmark" }
 
 # Convention plugins (defined in build-logic)
 mff-android-application = { id = "mrfilefixit.android.application" }

@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.Paint
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.withClip
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.domain.image.OutputGeometry
@@ -24,7 +26,7 @@ internal object ImageRendering {
         format: ImageFormat,
         backgroundArgb: Int,
     ): Bitmap {
-        val output = Bitmap.createBitmap(geometry.canvasWidth, geometry.canvasHeight, Bitmap.Config.ARGB_8888)
+        val output = createBitmap(geometry.canvasWidth, geometry.canvasHeight)
         val canvas = Canvas(output)
         if (format == ImageFormat.JPEG || geometry.drawWidth != geometry.canvasWidth ||
             geometry.drawHeight != geometry.canvasHeight
@@ -48,15 +50,14 @@ internal object ImageRendering {
             postScale(geometry.drawWidth / visibleW, geometry.drawHeight / visibleH)
             postTranslate(geometry.drawLeft + geometry.drawWidth / 2f, geometry.drawTop + geometry.drawHeight / 2f)
         }
-        canvas.save()
-        canvas.clipRect(
+        canvas.withClip(
             geometry.drawLeft,
             geometry.drawTop,
             geometry.drawLeft + geometry.drawWidth,
             geometry.drawTop + geometry.drawHeight,
-        )
-        canvas.drawBitmap(region, matrix, paint)
-        canvas.restore()
+        ) {
+            drawBitmap(region, matrix, paint)
+        }
         return output
     }
 

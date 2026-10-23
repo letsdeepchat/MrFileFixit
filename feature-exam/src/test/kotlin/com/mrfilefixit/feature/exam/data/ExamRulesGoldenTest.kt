@@ -29,7 +29,7 @@ class ExamRulesGoldenTest {
     fun `bundled rules match golden snapshot`() {
         val rendered = render(parseBundled())
         if (System.getProperty("golden.update") == "true") {
-            goldenFile.parentFile.mkdirs()
+            goldenFile.parentFile?.mkdirs()
             goldenFile.writeText(rendered)
         }
         assertEquals(goldenFile.readText(), rendered)

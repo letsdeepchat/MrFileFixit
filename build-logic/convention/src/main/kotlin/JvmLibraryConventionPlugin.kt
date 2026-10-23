@@ -4,10 +4,10 @@ import com.mrfilefixit.buildlogic.configureKotlin
 import com.mrfilefixit.buildlogic.configureNetworkIsolation
 import com.mrfilefixit.buildlogic.libs
 import com.mrfilefixit.buildlogic.pluginId
-import org.gradle.api.JavaPluginExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.kotlin.dsl.configure
 
 /** Pure Kotlin module. Used by core-domain so the domain layer cannot depend on Android. */

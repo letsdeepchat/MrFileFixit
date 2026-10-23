@@ -2,9 +2,9 @@ package com.mrfilefixit.core.storage.files
 
 import android.content.ContentResolver
 import android.content.Context
-import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import com.mrfilefixit.core.domain.dispatchers.DispatcherProvider
 import com.mrfilefixit.core.domain.file.DestinationUri
 import com.mrfilefixit.core.domain.file.FileRef
@@ -34,7 +34,7 @@ internal class SafFileRepository @Inject constructor(
 
     override suspend fun describe(uri: String): AppResult<FileRef> = withContext(dispatchers.io) {
         runCatchingApp {
-            val parsed = Uri.parse(uri)
+            val parsed = uri.toUri()
             require(parsed.scheme == ContentResolver.SCHEME_CONTENT) { "Only content:// URIs are accepted" }
             var name: String? = null
             var size: Long? = null
@@ -60,9 +60,9 @@ internal class SafFileRepository @Inject constructor(
             runCatchingAppFlat {
                 val file = jobFile(output) ?: return@runCatchingAppFlat failure(AppError.FileNotFound)
                 // "wt" truncates: overwriting a longer file must not leave its tail behind.
-                val stream = resolver.openOutputStream(Uri.parse(destination.value), "wt")
+                resolver.openOutputStream(destination.value.toUri(), "wt")
+                    ?.use { out -> file.inputStream().use { it.copyTo(out) } }
                     ?: return@runCatchingAppFlat failure(AppError.PermissionDenied)
-                stream.use { out -> file.inputStream().use { it.copyTo(out) } }
                 success(Unit)
             }
         }
@@ -82,7 +82,7 @@ internal class SafFileRepository @Inject constructor(
         maxBytes: Long,
     ): AppResult<OutputFile> = withContext(dispatchers.io) {
         runCatchingAppFlat {
-            val parsed = Uri.parse(uri)
+            val parsed = uri.toUri()
             val allowed = when (parsed.scheme) {
                 ContentResolver.SCHEME_CONTENT -> true
                 ContentResolver.SCHEME_FILE -> parsed.path?.let { isInsideAppStorage(File(it)) } == true
@@ -92,9 +92,8 @@ internal class SafFileRepository @Inject constructor(
             val dir = File(jobDir).canonicalFile
             if (!isInsideJobs(dir)) return@runCatchingAppFlat failure(AppError.PermissionDenied)
             val target = uniqueFile(dir, FilenameSanitizer.sanitize(baseName).ifBlank { "scan" }, format.extension)
-            val input = resolver.openInputStream(parsed) ?: return@runCatchingAppFlat failure(AppError.FileNotFound)
             var copied = 0L
-            input.use { source ->
+            resolver.openInputStream(parsed)?.use { source ->
                 target.outputStream().use { out ->
                     val buffer = ByteArray(BUFFER_BYTES)
                     while (true) {
@@ -109,7 +108,7 @@ internal class SafFileRepository @Inject constructor(
                         out.write(buffer, 0, read)
                     }
                 }
-            }
+            } ?: return@runCatchingAppFlat failure(AppError.FileNotFound)
             if (copied == 0L) {
                 target.delete()
                 return@runCatchingAppFlat failure(AppError.EmptyFile)

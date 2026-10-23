@@ -16,7 +16,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply(libs.pluginId("android-library"))
         extensions.configure<LibraryExtension> {
-            configureAndroidLibrary()
+            configureAndroidLibrary(rootDir.resolve("config/lint/lint.xml"))
         }
         configureKotlin()
         configureJUnit5()
