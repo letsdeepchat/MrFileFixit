@@ -24,8 +24,26 @@ internal val LightColors = lightColorScheme(
     tertiary = Saffron40,
 )
 
+// Dark surfaces: near-black base with lifted containers and a cool border stroke for cards.
+private val Surface0 = Color(0xFF121212)
+private val SurfaceLowest = Color(0xFF0D0D0D)
+private val SurfaceLow = Color(0xFF1A1A1A)
+private val Surface1 = Color(0xFF1E1E1E)
+private val SurfaceHigh = Color(0xFF252830)
+private val SurfaceHighest = Color(0xFF2E313A)
+private val BorderStroke = Color(0xFF2A2E39)
+
 internal val DarkColors = darkColorScheme(
     primary = Teal80,
     secondary = Slate80,
     tertiary = Saffron80,
+    background = Surface0,
+    surface = Surface0,
+    surfaceVariant = BorderStroke,
+    surfaceContainerLowest = SurfaceLowest,
+    surfaceContainerLow = SurfaceLow,
+    surfaceContainer = Surface1,
+    surfaceContainerHigh = SurfaceHigh,
+    surfaceContainerHighest = SurfaceHighest,
+    outlineVariant = BorderStroke,
 )

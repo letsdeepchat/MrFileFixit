@@ -6,8 +6,6 @@
     <string name="action_retry">Try again</string>
     <string name="action_save">Save</string>
     <string name="action_share">Share</string>
-    <string name="action_choose_file">Choose file</string>
-    <string name="action_choose_image">Choose image</string>
     <string name="action_rotate">Rotate 90°</string>
     <string name="action_reset">Start over</string>
     <string name="action_open_source">Open official site</string>
@@ -16,6 +14,10 @@
     <string name="action_remove">Remove</string>
     <string name="action_move_up">Move up</string>
     <string name="action_move_down">Move down</string>
+    <string name="action_clear_all">Clear all</string>
+    <string name="action_add_more">Add more</string>
+    <string name="action_change">Change</string>
+    <string name="action_clear_search">Clear search</string>
     <string name="share_chooser_title">Share file</string>
 
     <!-- Job progress -->
@@ -26,9 +28,11 @@
 
     <!-- Exam disclaimer (shown on every exam screen) -->
     <string name="disclaimer_title">Check the official notice</string>
-    <string name="disclaimer_body">These sizes are community-maintained samples, not official rules. Always verify the photo and signature requirements against the official notification of your exam before you submit.</string>
-    <string name="verification_unverified">Not verified</string>
-    <string name="verification_verified">Verified on %1$s</string>
+    <string name="disclaimer_body">These sizes are collected from public guides and official pages, but they are not official rules and they change every year. Always verify the photo, signature and document requirements against the official notification of your exam before you submit.</string>
+    <string name="verification_community">Community sourced</string>
+    <string name="verification_verified">Checked on official page, %1$s</string>
+    <string name="last_verified">Last checked: %1$s</string>
+    <string name="last_verified_never">Not yet checked against an official notice</string>
 
     <!-- Spec checklist -->
     <string name="check_format">Format</string>
@@ -79,4 +83,8 @@
     <string name="cd_pass_icon">Passed</string>
     <string name="cd_fail_icon">Failed</string>
     <string name="cd_info_icon">Information</string>
+
+    <!-- Upload zones -->
+    <string name="upload_limit_hint">Max file size %1$s</string>
+    <string name="cd_drag_handle">Drag to reorder</string>
 </resources>

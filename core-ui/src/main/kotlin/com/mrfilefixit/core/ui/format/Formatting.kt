@@ -5,6 +5,10 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.os.ConfigurationCompat
 import java.text.NumberFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.time.format.FormatStyle
 import java.util.Locale
 
 private const val KIB = 1024.0
@@ -39,3 +43,12 @@ fun formatBytes(bytes: Long): String {
 
 /** Below 10 KiB show one decimal ("9.8 KB"); above, whole numbers are precise enough. */
 private const val ONE_DECIMAL_BELOW = 10 * KIB
+
+/** An ISO date (yyyy-MM-dd) in the user's locale, e.g. "24 Oct 2026". Falls back to the raw text. */
+@Composable
+@ReadOnlyComposable
+fun formatIsoDate(iso: String): String = try {
+    LocalDate.parse(iso).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(currentLocale()))
+} catch (_: DateTimeParseException) {
+    iso
+}
