@@ -47,8 +47,10 @@ private const val ONE_DECIMAL_BELOW = 10 * KIB
 /** An ISO date (yyyy-MM-dd) in the user's locale, e.g. "24 Oct 2026". Falls back to the raw text. */
 @Composable
 @ReadOnlyComposable
-fun formatIsoDate(iso: String): String = try {
-    LocalDate.parse(iso).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(currentLocale()))
+fun formatIsoDate(iso: String): String = formatIsoDate(iso, currentLocale())
+
+internal fun formatIsoDate(iso: String, locale: Locale): String = try {
+    LocalDate.parse(iso).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))
 } catch (_: DateTimeParseException) {
     iso
 }
