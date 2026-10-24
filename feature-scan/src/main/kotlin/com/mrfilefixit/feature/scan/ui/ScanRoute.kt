@@ -1,8 +1,6 @@
 package com.mrfilefixit.feature.scan.ui
 
 import android.os.Build
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -10,8 +8,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
@@ -74,8 +70,5 @@ private fun ScanRouteContent(viewModel: ScanViewModel = hiltViewModel()) {
             onReset = viewModel::onReset,
         )
     }
-    Box(Modifier.fillMaxSize()) {
-        ScanScreen(state, actions)
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
-    }
+    ScanScreen(state, actions, snackbarHost = { SnackbarHost(snackbar) })
 }
