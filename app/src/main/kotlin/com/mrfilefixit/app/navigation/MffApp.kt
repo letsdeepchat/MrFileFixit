@@ -47,8 +47,8 @@ data object SettingsRoute
 enum class TopLevelDestination(val route: Any, val icon: ImageVector, @StringRes val label: Int) {
     HOME(HomeRoute, Icons.Filled.Home, R.string.nav_home),
     EXAM(ExamRoute, Icons.Filled.Badge, R.string.nav_exam),
-    PDF(PdfRoute, Icons.Filled.PictureAsPdf, R.string.nav_pdf),
-    IMAGE(ImageRoute, Icons.Filled.Image, R.string.nav_image),
+    PDF(PdfRoute(), Icons.Filled.PictureAsPdf, R.string.nav_pdf),
+    IMAGE(ImageRoute(), Icons.Filled.Image, R.string.nav_image),
     SCAN(ScanRoute, Icons.Filled.DocumentScanner, R.string.nav_scan),
 }
 
@@ -83,7 +83,14 @@ fun MffApp() {
                     onOpenSettings = { navController.navigate(SettingsRoute) { launchSingleTop = true } },
                 )
             }
-            examScreen()
+            examScreen(
+                onPrepareInImageTools = { examId, kind ->
+                    navController.navigateToTool(ImageRoute(examId = examId, document = kind.name))
+                },
+                onCompressPdf = { minKb, maxKb ->
+                    navController.navigateToTool(PdfRoute(tool = PDF_COMPRESS, minKb = minKb, maxKb = maxKb))
+                },
+            )
             pdfScreen()
             imageScreen()
             scanScreen()
@@ -91,6 +98,19 @@ fun MffApp() {
         }
     }
 }
+
+/**
+ * Opens a tool tab with arguments (from an exam). Unlike [navigateTopLevel] it does not restore the
+ * tab's saved state, so the new arguments win; Back returns to the start destination.
+ */
+private fun NavHostController.navigateToTool(route: Any) {
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+    }
+}
+
+private const val PDF_COMPRESS = "COMPRESS"
 
 private fun NavHostController.navigateTopLevel(destination: TopLevelDestination) {
     navigate(destination.route) {

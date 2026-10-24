@@ -13,18 +13,11 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -40,32 +33,17 @@ import com.mrfilefixit.app.BuildConfig
 import com.mrfilefixit.app.MainViewModel
 import com.mrfilefixit.app.R
 import com.mrfilefixit.core.domain.prefs.ThemeMode
-import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.ads.LocalAdSlots
+import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.theme.Dimens
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(onBack: () -> Unit, viewModel: MainViewModel = hiltViewModel()) {
     val prefs by viewModel.preferences.collectAsStateWithLifecycle()
     val adSlots = LocalAdSlots.current
     val context = LocalContext.current
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.nav_settings)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(CoreR.string.action_back),
-                        )
-                    }
-                },
-            )
-        },
-    ) { padding ->
+    ToolScaffold(title = stringResource(R.string.nav_settings), onBack = onBack) { padding ->
         Column(
             Modifier
                 .fillMaxSize()
