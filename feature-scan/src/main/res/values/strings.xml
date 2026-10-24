@@ -30,4 +30,10 @@
     <string name="scan_storage_title">Extract Text from Storage</string>
     <string name="scan_storage_subtitle">Select existing JPG, PNG, or PDF to extract text</string>
     <string name="scan_privacy">Everything is processed locally on this device. Your documents never leave your phone.</string>
+    <string name="scan_filter_title">Enhance scan</string>
+    <string name="scan_filter_DOCUMENT_CLEAN">Document clean</string>
+    <string name="scan_filter_MAGIC_COLOR">Magic colour</string>
+    <string name="scan_filter_GRAYSCALE">Grayscale</string>
+    <string name="scan_filter_ORIGINAL">Original</string>
+    <string name="scan_enhancing">Enhancing pages…</string>
 </resources>

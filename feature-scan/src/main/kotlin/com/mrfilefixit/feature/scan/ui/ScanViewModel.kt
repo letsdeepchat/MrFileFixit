@@ -20,10 +20,12 @@ import com.mrfilefixit.core.domain.result.Result
 import com.mrfilefixit.core.domain.result.collectAll
 import com.mrfilefixit.core.domain.result.flatMap
 import com.mrfilefixit.core.domain.result.fold
+import com.mrfilefixit.core.domain.scan.EnhanceScanUseCase
 import com.mrfilefixit.core.domain.scan.ImportScanUseCase
 import com.mrfilefixit.core.domain.scan.RecognizeTextUseCase
 import com.mrfilefixit.core.domain.scan.ScanCapture
 import com.mrfilefixit.core.domain.scan.ScanDocument
+import com.mrfilefixit.core.domain.scan.ScanFilter
 import com.mrfilefixit.core.domain.scan.asSource
 import com.mrfilefixit.core.domain.security.InputLimits
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,15 +41,26 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class ScanUiState(
+    /** Copying the scanner's output into our job directory. Its result is the unfiltered scan. */
     val scan: JobState<ScanDocument> = JobState.Idle,
+    val filter: ScanFilter = ScanFilter.DOCUMENT_CLEAN,
+    /** The scan re-rendered with [filter]. Idle for [ScanFilter.ORIGINAL]. */
+    val enhanced: JobState<ScanDocument> = JobState.Idle,
     /** Files picked for OCR. When empty, OCR reads the scanned pages instead. */
     val ocrFiles: List<FileRef> = emptyList(),
     val script: OcrScript = OcrScript.LATIN,
     val ocr: JobState<OcrResult> = JobState.Idle,
-    val ocrRevealed: Boolean = false,
     val inputError: AppError? = null,
 ) {
-    val document: ScanDocument? get() = (scan as? JobState.Success)?.value
+    val original: ScanDocument? get() = (scan as? JobState.Success)?.value
+
+    /** What the user sees, shares and runs OCR on. Falls back to the original if enhancing failed. */
+    val document: ScanDocument? get() = when {
+        filter == ScanFilter.ORIGINAL -> original
+        enhanced is JobState.Success -> enhanced.value
+        enhanced is JobState.Failed || enhanced is JobState.Cancelled -> original
+        else -> null
+    }
     val canRecognize: Boolean get() = ocr !is JobState.Running &&
         (ocrFiles.isNotEmpty() || document?.pages?.isNotEmpty() == true)
 }
@@ -61,6 +74,7 @@ sealed interface ScanEffect {
 @HiltViewModel
 class ScanViewModel @Inject constructor(
     private val importScan: ImportScanUseCase,
+    private val enhanceScan: EnhanceScanUseCase,
     private val recognizeText: RecognizeTextUseCase,
     private val describeFile: DescribeFileUseCase,
     private val saveOutput: SaveOutputUseCase,
@@ -78,14 +92,22 @@ class ScanViewModel @Inject constructor(
     val effects: Flow<ScanEffect> = effectChannel.receiveAsFlow()
 
     private val scanRunner = JobRunner<ScanDocument>(viewModelScope)
+    private val enhanceRunner = JobRunner<ScanDocument>(viewModelScope)
     private val ocrRunner = JobRunner<OcrResult>(viewModelScope)
     private var jobId: String? = null
 
     init {
-        viewModelScope.launch { scanRunner.state.collect { job -> mutableState.update { it.copy(scan = job) } } }
+        viewModelScope.launch {
+            scanRunner.state.collect { job ->
+                mutableState.update { it.copy(scan = job) }
+                // Enhance as soon as the scan is in: clean pages are what most people want to share.
+                if (job is JobState.Success) enhance(state.value.filter)
+            }
+        }
+        viewModelScope.launch { enhanceRunner.state.collect { job -> mutableState.update { it.copy(enhanced = job) } } }
         viewModelScope.launch {
             ocrRunner.state.collect { job ->
-                mutableState.update { it.copy(ocr = job, ocrRevealed = it.ocrRevealed && job is JobState.Success) }
+                mutableState.update { it.copy(ocr = job) }
             }
         }
     }
@@ -95,6 +117,8 @@ class ScanViewModel @Inject constructor(
         val id = jobIds.next()
         discardOutputs()
         ocrRunner.reset()
+        enhanceRunner.cancel()
+        enhanceRunner.reset()
         mutableState.update { it.copy(inputError = null, ocrFiles = emptyList()) }
         scanRunner.start(cleanup = {
             if (scanRunner.state.value !is JobState.Success) tempFiles.deleteJobDir(id)
@@ -102,6 +126,28 @@ class ScanViewModel @Inject constructor(
             tempFiles.createJobDir(id).flatMap { dir ->
                 jobId = id
                 importScan(capture, dir, SCAN_BASE_NAME, progress)
+            }
+        }
+    }
+
+    /** Re-renders the scan with [filter]. The unfiltered pages are kept, so filters can be switched freely. */
+    fun onFilterSelected(filter: ScanFilter) {
+        if (filter == state.value.filter) return
+        mutableState.update { it.copy(filter = filter) }
+        ocrRunner.reset()
+        enhance(filter)
+    }
+
+    private fun enhance(filter: ScanFilter) {
+        val original = state.value.original ?: return
+        val id = jobId ?: return
+        enhanceRunner.cancel()
+        enhanceRunner.reset()
+        if (filter == ScanFilter.ORIGINAL) return
+        enhanceRunner.start { progress ->
+            // The scan's own job directory: it already exists, and is deleted with the scan.
+            tempFiles.createJobDir(id).flatMap { dir ->
+                enhanceScan(original, filter, dir, "$SCAN_BASE_NAME-${filter.name.lowercase()}", progress)
             }
         }
     }
@@ -129,16 +175,14 @@ class ScanViewModel @Inject constructor(
         val s = state.value
         if (!s.canRecognize) return
         val sources = s.ocrFiles.ifEmpty { s.document?.pages.orEmpty().map { it.asSource() } }
-        mutableState.update { it.copy(ocrRevealed = false) }
         ocrRunner.start { progress -> recognizeText(sources, s.script, progress) }
     }
 
     fun onCancel() {
         scanRunner.cancel()
+        enhanceRunner.cancel()
         ocrRunner.cancel()
     }
-
-    fun onOcrRevealed() = mutableState.update { it.copy(ocrRevealed = true) }
 
     fun onSave(output: OutputFile, destination: String) {
         viewModelScope.launch {
@@ -158,9 +202,10 @@ class ScanViewModel @Inject constructor(
     fun onReset() {
         onCancel()
         scanRunner.reset()
+        enhanceRunner.reset()
         ocrRunner.reset()
         discardOutputs()
-        mutableState.update { ScanUiState(script = it.script) }
+        mutableState.update { ScanUiState(script = it.script, filter = it.filter) }
     }
 
     private fun discardOutputs() {

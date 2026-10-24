@@ -132,7 +132,6 @@ private fun PdfToolRoute(tool: PdfTool, sizeTarget: KbTarget?, onBack: (() -> Un
             onOptions = viewModel::onOptionsChanged,
             onRun = viewModel::onRun,
             onCancel = viewModel::onCancel,
-            onRevealed = viewModel::onResultRevealed,
             onSave = { index, uri ->
                 viewModel.state.value.outputs.getOrNull(index)?.let { viewModel.onSave(it, uri) }
             },

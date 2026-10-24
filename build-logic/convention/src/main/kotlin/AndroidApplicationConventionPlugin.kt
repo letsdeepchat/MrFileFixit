@@ -3,6 +3,7 @@ import com.mrfilefixit.buildlogic.configureAndroidApplication
 import com.mrfilefixit.buildlogic.configureDetekt
 import com.mrfilefixit.buildlogic.configureJUnit5
 import com.mrfilefixit.buildlogic.configureKotlin
+import com.mrfilefixit.buildlogic.configureNetworkIsolation
 import com.mrfilefixit.buildlogic.libs
 import com.mrfilefixit.buildlogic.pluginId
 import org.gradle.api.Plugin
@@ -21,5 +22,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         configureKotlin()
         configureJUnit5()
         configureDetekt()
+        // The whole app is offline, so the aggregate classpath is checked too, not only each library.
+        configureNetworkIsolation("releaseRuntimeClasspath")
     }
 }

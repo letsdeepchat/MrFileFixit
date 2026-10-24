@@ -29,7 +29,9 @@
     <string name="pdf_compress_LOW">हल्का (सबसे अच्छी क्वालिटी)</string>
     <string name="pdf_compress_MEDIUM">मध्यम</string>
     <string name="pdf_compress_HIGH">ज़्यादा (सबसे छोटी फ़ाइल)</string>
-    <string name="pdf_compress_note">पेज इमेज में बदल दिए जाते हैं, इसलिए टेक्स्ट सेलेक्ट नहीं हो पाएगा।</string>
+    <string name="pdf_compress_note">टेक्स्ट सेलेक्ट करने लायक रहता है: सिर्फ़ PDF के अंदर की तस्वीरें छोटी की जाती हैं। ज़्यादा कम्प्रेशन में, अगर फ़ाइल छोटी करने का यही तरीका हो, तो पेज इमेज में बदले जा सकते हैं। नतीजा कभी भी मूल फ़ाइल से बड़ा नहीं होता।</string>
+    <string name="pdf_compress_grayscale">इमेज को ग्रेस्केल में बदलें</string>
+    <string name="pdf_compress_grayscale_hint">रंगीन स्कैन में और जगह बचती है</string>
     <string name="pdf_page_size">पेज साइज़</string>
     <string name="pdf_page_size_A4">A4</string>
     <string name="pdf_page_size_LETTER">लेटर</string>

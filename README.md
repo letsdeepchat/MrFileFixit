@@ -3,6 +3,7 @@
 A free, fully offline Android app for fixing files for government exam forms and everyday paperwork:
 resize and compress photos and signatures to exam specs, PDF tools, image tools, and a document scanner.
 All processing happens on the device. No uploads, no backend, no logging of file content.
+Every feature is free: no ads, no accounts, no sign-in, no premium tier and no usage limits.
 
 > **Disclaimer.** Exam profiles bundled with the app are community-maintained samples. They are **not official**.
 > Always verify the photo and signature requirements against the official notification of your exam before submitting.
@@ -18,28 +19,30 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture diagram, m
 | `feature-pdf` | Android library | Merge, split, extract, reorder, rotate, delete, compress, image↔PDF, watermark, page numbers, password |
 | `feature-image` | Android library | Resize, crop, rotate, compress, convert, batch, strip EXIF |
 | `feature-scan` | Android library | ML Kit document scanner and on-device OCR |
-| `core-ui` | Android library | Material 3 theme, components, previews, ad slots |
+| `core-ui` | Android library | Material 3 theme, components, previews |
 | `core-domain` | Pure Kotlin (JVM) | Result types, job pipeline, use cases, processor interfaces, pure algorithms |
-| `core-processing` | Android library | Image, PDF and OCR engines |
-| `core-ads` | Android library | AdMob, UMP consent, frequency capping (the only network user) |
+| `core-processing` | Android library | Image, PDF (compressor), OCR and scan-filter engines |
 | `core-storage` | Android library | SAF, temp files, FileProvider sharing, DataStore |
 | `benchmark` | Android test | Baseline Profile generator and Macrobenchmark startup tests |
 
 ## Build
 
 ```bash
-./gradlew assembleDebug          # debug build, AdMob test IDs
+./gradlew assembleDebug          # debug build
 ./gradlew check                  # unit tests, Detekt, Android Lint, network isolation check
-./gradlew :app:bundleRelease     # release bundle (needs ADMOB_* properties and signing, see below)
+./gradlew :app:bundleRelease     # release bundle (signed only if an upload keystore is configured)
 ```
 
-Release builds read secrets from Gradle properties or environment variables, never from source:
+Signing is optional and never in source. If these Gradle properties or environment variables are set, the
+release bundle is signed with them; otherwise it is built unsigned:
 
 | Property | Purpose |
 | --- | --- |
-| `ADMOB_APP_ID` | AdMob application ID |
-| `ADMOB_BANNER_ID`, `ADMOB_INTERSTITIAL_ID`, `ADMOB_REWARDED_ID` | Ad unit IDs |
 | `MFF_KEYSTORE_PATH`, `MFF_KEYSTORE_PASSWORD`, `MFF_KEY_ALIAS`, `MFF_KEY_PASSWORD` | Release signing |
+
+Tester builds: pushing a `v*` tag (or running CI from the Actions tab with a version) publishes a debug-signed
+APK on the GitHub release for sideloading. See [docs/PLAY_STORE.md](docs/PLAY_STORE.md) for the Play Console
+checklist, data-safety answers and privacy policy.
 
 ## Exam rules
 
@@ -61,14 +64,14 @@ This code was written in a cloud sandbox that could not reach Google's Maven rep
 
 | Checked | How | Result |
 | --- | --- | --- |
-| Pure Kotlin code (all of `core-domain`, exam rules parser, PDF layout, ad pacing) | Compiled with Kotlin 2.4.21, `allWarningsAsErrors`, run with JUnit 5 + MockK on a plain JVM | 112 tests pass |
+| Pure Kotlin code (all of `core-domain`, exam rules parser, PDF layout) | Compiled with Kotlin 2.4.21, `allWarningsAsErrors`, run with JUnit 5 + MockK on a plain JVM | 112 tests pass |
 | Style | ktlint 1.7.1 (`android_studio`) and detekt 1.23.8 + formatting, using this repo's config | Zero findings |
 | Exam rules JSON | Validated against `docs/exam-rules.schema.json` | Valid |
 | CI / Dependabot YAML | Parsed | Valid |
 
 | **Not** checked yet | Why |
 | --- | --- |
-| Android modules compile (`app`, `feature-*`, `core-ui`, `core-processing`, `core-storage`, `core-ads`) | Needs AGP and AndroidX from Google Maven |
+| Android modules compile (`app`, `feature-*`, `core-ui`, `core-processing`, `core-storage`) | Needs AGP and AndroidX from Google Maven |
 | Android Lint, Compose UI tests, Macrobenchmark | Same, plus an emulator/device |
 | Library versions listed as unverified at the top of `gradle/libs.versions.toml` (AGP, Compose BOM, AndroidX, Play services, ML Kit) | Could not query Google Maven; pinned to the newest versions known to the author. Dependabot will propose corrections |
 

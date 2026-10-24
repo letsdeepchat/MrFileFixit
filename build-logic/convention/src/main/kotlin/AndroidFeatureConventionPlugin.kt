@@ -8,7 +8,7 @@ import org.gradle.kotlin.dsl.project
 
 /**
  * A feature module: Compose UI + ViewModels + Hilt.
- * Features see only core-ui and core-domain, never implementations or ads.
+ * Features see only core-ui and core-domain, never implementations.
  */
 class AndroidFeatureConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {

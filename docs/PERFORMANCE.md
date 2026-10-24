@@ -9,7 +9,7 @@
 | Temp file cleanup | `TempFileStore` | See docs/SECURITY.md |
 | Large batches off the UI process lifecycle | `BatchImageWorker` | Batches above 10 files run in WorkManager as expedited work; foreground service (`mediaProcessing` on 35+, `dataSync` below) only while running |
 | Cancellation | `JobRunner`, all engines | `ensureActive()` between pages/images, so Cancel stops within one unit of work |
-| Startup | `MffApplication`, `MainActivity` | WorkManager is initialised on demand (startup initializer removed); ads consent runs after the first frame; exam rules are parsed lazily on first use |
+| Startup | `MffApplication`, `MainActivity` | WorkManager is initialised on demand (startup initializer removed); no ads or consent SDK to initialise; exam rules are parsed lazily on first use |
 | Baseline Profiles | `:benchmark` | Run `BaselineProfileGenerator` on an API 28+ device and copy its output to `app/src/main/baseline-prof.txt` (picked up by AGP and installed by `profileinstaller`). The `androidx.baselineprofile` Gradle plugin 1.4.x rejects AGP 9 modules, so it is not applied until a compatible version is pinned |
 | Macrobenchmark | `:benchmark` `StartupBenchmark` | Cold start with/without profile, frame timing while switching tabs |
 | R8 full mode | `gradle.properties` | `android.enableR8.fullMode=true`; `minifyEnabled` and `shrinkResources` in release |

@@ -44,6 +44,6 @@ fun appErrorMessage(error: AppError): String = when (error) {
     AppError.StorageFull -> stringResource(R.string.error_storage_full)
     AppError.OutOfMemory -> stringResource(R.string.error_out_of_memory)
     is AppError.FeatureUnavailable -> stringResource(R.string.error_feature_unavailable)
-    is AppError.QuotaExceeded -> stringResource(R.string.error_quota)
+    AppError.AlreadyOptimized -> stringResource(R.string.error_already_optimized)
     is AppError.Unexpected -> stringResource(R.string.error_unexpected)
 }

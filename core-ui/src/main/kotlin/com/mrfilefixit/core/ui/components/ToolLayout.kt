@@ -62,7 +62,8 @@ import com.mrfilefixit.core.ui.theme.MffTheme
 
 /**
  * The app's one top bar. Tool screens pass [onBack] so users are never stranded in a sub-view; the
- * icon is auto-mirrored for RTL and the button keeps the 48 dp target.
+ * icon is auto-mirrored for RTL and the button keeps the 48 dp target. [titleContent] replaces the plain
+ * [title] text (the home screen shows the brand there); [title] is then still used as the heading for TalkBack.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,16 +72,24 @@ fun ToolTopAppBar(
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
+    titleContent: (@Composable () -> Unit)? = null,
 ) {
     TopAppBar(
         title = {
-            Text(
-                title,
-                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, fontWeight = FontWeight.SemiBold),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.semantics { heading() },
-            )
+            if (titleContent != null) {
+                Box(Modifier.semantics { heading() }) { titleContent() }
+            } else {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.semantics { heading() },
+                )
+            }
         },
         navigationIcon = {
             if (onBack != null) {
@@ -106,11 +115,12 @@ fun ToolScaffold(
     actions: @Composable RowScope.() -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
+    titleContent: (@Composable () -> Unit)? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
         modifier = modifier.imePadding(),
-        topBar = { ToolTopAppBar(title, onBack = onBack, actions = actions) },
+        topBar = { ToolTopAppBar(title, onBack = onBack, actions = actions, titleContent = titleContent) },
         bottomBar = bottomBar,
         snackbarHost = snackbarHost,
         content = content,

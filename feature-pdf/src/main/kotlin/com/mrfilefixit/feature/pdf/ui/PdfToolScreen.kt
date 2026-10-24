@@ -34,14 +34,12 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -56,8 +54,6 @@ import com.mrfilefixit.core.domain.pdf.Position
 import com.mrfilefixit.core.domain.result.Result
 import com.mrfilefixit.core.domain.security.InputLimits
 import com.mrfilefixit.core.ui.R as CoreR
-import com.mrfilefixit.core.ui.ads.BannerPlacement
-import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.CenteredEmptyState
 import com.mrfilefixit.core.ui.components.ChoiceGrid
 import com.mrfilefixit.core.ui.components.ErrorCard
@@ -72,7 +68,6 @@ import com.mrfilefixit.core.ui.components.UploadDropZone
 import com.mrfilefixit.core.ui.components.rememberListReorderState
 import com.mrfilefixit.core.ui.format.formatBytes
 import com.mrfilefixit.core.ui.preview.AllPreviews
-import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.feature.pdf.R
@@ -85,7 +80,6 @@ internal class PdfToolActions(
     val onOptions: ((PdfOptions) -> PdfOptions) -> Unit,
     val onRun: (CharArray?) -> Unit,
     val onCancel: () -> Unit,
-    val onRevealed: () -> Unit,
     val onSave: (Int, String) -> Unit,
     val onShareAll: () -> Unit,
     val onReset: () -> Unit,
@@ -232,11 +226,10 @@ internal fun Modifier.contentWidth(): Modifier = this.widthIn(max = Dimens.CardM
 /** Pinned primary action: "Merge 3 PDFs", "Split into 4 files"... or Share and Start over after a job. */
 @Composable
 private fun BottomActions(state: PdfToolUiState, actions: PdfToolActions, enabled: Boolean, onRun: () -> Unit) {
-    val showBanner = state.files.isNotEmpty()
     Column {
         when (state.job) {
             is JobState.Running -> Unit
-            is JobState.Success -> if (state.resultRevealed) {
+            is JobState.Success -> {
                 StickyActionBar {
                     Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
                         OutlinedButton(
@@ -271,8 +264,6 @@ private fun BottomActions(state: PdfToolUiState, actions: PdfToolActions, enable
                 }
             }
         }
-        // The file list is one of the three screens allowed to show a banner.
-        if (showBanner) LocalAdSlots.current.Banner(BannerPlacement.FILE_LIST, Modifier.fillMaxWidth())
     }
 }
 
@@ -300,20 +291,10 @@ private fun runHint(state: PdfToolUiState): String? = when {
 
 @Composable
 internal fun JobSection(state: PdfToolUiState, actions: PdfToolActions, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val adSlots = LocalAdSlots.current
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
         when (val job = state.job) {
             is JobState.Running -> JobProgressCard(job.progress, actions.onCancel)
-            is JobState.Success -> if (!state.resultRevealed) {
-                LaunchedEffect(job) {
-                    context.findActivity()?.let { adSlots.beforeResult(it) }
-                    actions.onRevealed()
-                }
-                JobProgressCard(1f, onCancel = {})
-            } else {
-                Results(state, actions)
-            }
+            is JobState.Success -> Results(state, actions)
             is JobState.Failed -> ErrorCard(job.error, onRetry = null)
             is JobState.Cancelled -> Text(stringResource(CoreR.string.job_cancelled))
             JobState.Idle -> Unit
@@ -407,6 +388,12 @@ private fun Options(
                 ChoiceGrid(CompressionLevel.entries, o.level, { compressionLabel(it) }, { l ->
                     actions.onOptions { it.copy(level = l) }
                 }, columns = 1)
+                SwitchRow(
+                    label = stringResource(R.string.pdf_compress_grayscale),
+                    checked = o.grayscale,
+                    onChecked = { g -> actions.onOptions { it.copy(grayscale = g) } },
+                    supporting = stringResource(R.string.pdf_compress_grayscale_hint),
+                )
                 Text(stringResource(R.string.pdf_compress_note), style = MaterialTheme.typography.bodySmall)
             }
             PdfTool.WATERMARK -> WatermarkOptions(o, actions)
@@ -567,7 +554,7 @@ private const val MIN_OPACITY = 0.1f
 
 private const val PREVIEW_SIZE = 1_200L
 private const val PREVIEW_PAGES = 4
-private val PreviewActions = PdfToolActions({}, {}, { _, _ -> }, {}, {}, {}, {}, { _, _ -> }, {}, {})
+private val PreviewActions = PdfToolActions({}, {}, { _, _ -> }, {}, {}, {}, { _, _ -> }, {}, {})
 
 @AllPreviews
 @Composable

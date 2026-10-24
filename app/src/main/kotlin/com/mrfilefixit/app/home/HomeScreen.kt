@@ -1,7 +1,9 @@
 package com.mrfilefixit.app.home
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -9,12 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -25,15 +29,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mrfilefixit.app.R
 import com.mrfilefixit.app.navigation.TopLevelDestination
-import com.mrfilefixit.core.ui.ads.BannerPlacement
-import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.IconBadge
 import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.preview.AllPreviews
@@ -52,12 +63,12 @@ fun HomeScreen(onOpen: (TopLevelDestination) -> Unit, onOpenSettings: () -> Unit
     ToolScaffold(
         title = stringResource(R.string.app_name),
         modifier = Modifier.testTag("home"),
+        titleContent = { BrandTitle() },
         actions = {
             IconButton(onClick = onOpenSettings) {
                 Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.nav_settings))
             }
         },
-        bottomBar = { LocalAdSlots.current.Banner(BannerPlacement.HOME, Modifier.fillMaxWidth()) },
     ) { padding ->
         // Adaptive grid: one column on phones, two or more on tablets and in landscape.
         LazyVerticalGrid(
@@ -89,6 +100,45 @@ fun HomeScreen(onOpen: (TopLevelDestination) -> Unit, onOpenSettings: () -> Unit
         }
     }
 }
+
+/**
+ * Brand mark: a gradient emblem next to "Mr File Fixit" in extra-bold, tightly tracked type, with
+ * "Fixit" picked out in the brand colour so the name reads as a logo rather than a screen title.
+ */
+@Composable
+private fun BrandTitle() {
+    val colors = MaterialTheme.colorScheme
+    val gradient = Brush.linearGradient(listOf(colors.primary, colors.tertiary))
+    val name = stringResource(R.string.app_name)
+    val accent = stringResource(R.string.brand_accent)
+    val accentStart = name.lastIndexOf(accent).takeIf { it >= 0 } ?: name.length
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier
+                .size(BRAND_EMBLEM.dp)
+                .clip(RoundedCornerShape(Dimens.ButtonCorner))
+                .background(gradient),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Filled.AutoFixHigh, contentDescription = null, tint = colors.onPrimary)
+        }
+        Text(
+            buildAnnotatedString {
+                append(name.substring(0, accentStart))
+                withStyle(SpanStyle(color = colors.primary)) { append(name.substring(accentStart)) }
+            },
+            style = BrandStyle.copy(color = colors.onSurface),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+private val BrandStyle = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.5).sp)
+private const val BRAND_EMBLEM = 36
 
 @Composable
 private fun ToolCard(destination: TopLevelDestination, body: Int, onClick: () -> Unit) {

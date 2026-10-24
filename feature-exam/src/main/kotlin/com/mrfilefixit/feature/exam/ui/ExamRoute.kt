@@ -149,7 +149,6 @@ private fun ExamFlowRoute(
             override fun onFix(key: SlotKey) = viewModel.onFix(key)
             override fun onCancel(key: SlotKey) = viewModel.onCancel(key)
             override fun onReset(key: SlotKey) = viewModel.onReset(key)
-            override fun onRevealed(key: SlotKey) = viewModel.onResultRevealed(key)
             override fun onSave(key: SlotKey, destination: String) = viewModel.onSave(key, destination)
             override fun onShare(key: SlotKey) = viewModel.onShare(key)
             override fun onMakeComposite() = viewModel.onMakeComposite()

@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -41,7 +43,6 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
@@ -65,8 +67,8 @@ import com.mrfilefixit.core.domain.file.OutputFile
 import com.mrfilefixit.core.domain.job.JobState
 import com.mrfilefixit.core.domain.ocr.OcrScript
 import com.mrfilefixit.core.domain.scan.ScanCapture
+import com.mrfilefixit.core.domain.scan.ScanFilter
 import com.mrfilefixit.core.ui.R as CoreR
-import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.ErrorCard
 import com.mrfilefixit.core.ui.components.JobProgressCard
 import com.mrfilefixit.core.ui.components.PrimaryActionButton
@@ -76,6 +78,7 @@ import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
+import com.mrfilefixit.core.ui.thumbnail.Thumbnail
 import com.mrfilefixit.feature.scan.R
 
 internal class ScanActions(
@@ -83,9 +86,9 @@ internal class ScanActions(
     val onScannerUnavailable: () -> Unit,
     val onPickOcr: (List<String>) -> Unit,
     val onScript: (OcrScript) -> Unit,
+    val onFilter: (ScanFilter) -> Unit,
     val onRecognize: () -> Unit,
     val onCancel: () -> Unit,
-    val onOcrRevealed: () -> Unit,
     val onSave: (OutputFile, String) -> Unit,
     val onShare: (OutputFile) -> Unit,
     val onCopyText: (String) -> Unit,
@@ -272,11 +275,56 @@ private fun ScanSection(state: ScanUiState, actions: ScanActions) {
                 JobProgressCard(job.progress, actions.onCancel)
             }
             is JobState.Failed -> ErrorCard(job.error, onRetry = null)
-            is JobState.Success -> ScanOutputs(job.value.pdf, job.value.pages, actions)
+            is JobState.Success -> {
+                if (job.value.pages.isNotEmpty()) FilterPicker(state.filter, actions.onFilter)
+                when (val enhanced = state.enhanced) {
+                    is JobState.Running -> {
+                        Text(stringResource(R.string.scan_enhancing))
+                        JobProgressCard(enhanced.progress, actions.onCancel)
+                    }
+                    is JobState.Failed -> ErrorCard(enhanced.error, onRetry = null)
+                    else -> Unit
+                }
+                state.document?.let { ScanOutputs(it.pdf, it.pages, actions) }
+            }
             else -> Unit
         }
     }
 }
+
+/**
+ * Post-scan look, applied to every page at full resolution: Document clean (default) removes shadows and
+ * whitens the paper, Magic colour keeps colour but evens out lighting, Grayscale keeps soft grey tones.
+ */
+@Composable
+private fun FilterPicker(selected: ScanFilter, onSelect: (ScanFilter) -> Unit) {
+    Text(stringResource(R.string.scan_filter_title), style = MaterialTheme.typography.titleSmall)
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+        verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+    ) {
+        ScanFilter.entries.forEach { filter ->
+            FilterChip(
+                selected = filter == selected,
+                onClick = { onSelect(filter) },
+                label = { Text(filterLabel(filter)) },
+                modifier = Modifier
+                    .heightIn(min = Dimens.MinTouchTarget)
+                    .testTag("scan_filter_${filter.name.lowercase()}"),
+            )
+        }
+    }
+}
+
+@Composable
+private fun filterLabel(filter: ScanFilter): String = stringResource(
+    when (filter) {
+        ScanFilter.DOCUMENT_CLEAN -> R.string.scan_filter_DOCUMENT_CLEAN
+        ScanFilter.MAGIC_COLOR -> R.string.scan_filter_MAGIC_COLOR
+        ScanFilter.GRAYSCALE -> R.string.scan_filter_GRAYSCALE
+        ScanFilter.ORIGINAL -> R.string.scan_filter_ORIGINAL
+    },
+)
 
 @Composable
 private fun ScanOutputs(pdf: OutputFile?, pages: List<OutputFile>, actions: ScanActions) {
@@ -290,6 +338,17 @@ private fun ScanOutputs(pdf: OutputFile?, pages: List<OutputFile>, actions: Scan
         pluralStringResource(R.plurals.scan_pages, pages.size, pages.size),
         style = MaterialTheme.typography.titleSmall,
     )
+    // Page previews, so the effect of the filter is visible before sharing.
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
+        itemsIndexed(pages, key = { _, page -> page.path }) { index, page ->
+            Thumbnail(
+                "file://${page.path}",
+                stringResource(R.string.scan_page, index + 1),
+                Dimens.ThumbnailSize,
+                contentScale = ContentScale.Fit,
+            )
+        }
+    }
     val rows = listOfNotNull(pdf?.let { stringResource(R.string.scan_pdf) to it }) +
         pages.mapIndexed { index, page -> stringResource(R.string.scan_page, index + 1) to page }
     rows.forEach { (label, output) ->
@@ -316,8 +375,6 @@ private fun ScanOutputs(pdf: OutputFile?, pages: List<OutputFile>, actions: Scan
 
 @Composable
 private fun OcrSection(state: ScanUiState, actions: ScanActions) {
-    val context = LocalContext.current
-    val adSlots = LocalAdSlots.current
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
         if (state.ocrFiles.isNotEmpty()) {
             Text(
@@ -337,15 +394,7 @@ private fun OcrSection(state: ScanUiState, actions: ScanActions) {
         }
         when (val job = state.ocr) {
             is JobState.Running -> JobProgressCard(job.progress, actions.onCancel)
-            is JobState.Success -> if (!state.ocrRevealed) {
-                LaunchedEffect(job) {
-                    context.findActivity()?.let { adSlots.beforeResult(it) }
-                    actions.onOcrRevealed()
-                }
-                JobProgressCard(1f, onCancel = {})
-            } else {
-                TextResult(job.value.text, job.value.pageCount, actions)
-            }
+            is JobState.Success -> TextResult(job.value.text, job.value.pageCount, actions)
             else -> {
                 if (job is JobState.Failed) ErrorCard(job.error, onRetry = null)
                 if (job is JobState.Cancelled) Text(stringResource(CoreR.string.job_cancelled))

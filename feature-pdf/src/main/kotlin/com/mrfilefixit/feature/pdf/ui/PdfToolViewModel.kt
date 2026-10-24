@@ -87,6 +87,7 @@ data class PdfOptions(
     val pages: String = "",
     val degrees: Int = 90,
     val level: CompressionLevel = CompressionLevel.MEDIUM,
+    val grayscale: Boolean = false,
     val pageSize: PageSize = PageSize.A4,
     val orientation: PageOrientation = PageOrientation.AUTO,
     val margin: PageMargin = PageMargin.SMALL,
@@ -111,11 +112,8 @@ data class PdfToolUiState(
     val options: PdfOptions = PdfOptions(),
     val inputError: AppError? = null,
     val job: JobState<List<OutputFile>> = JobState.Idle,
-    val resultRevealed: Boolean = false,
 ) {
-    val outputs: List<OutputFile> get() = (job as? JobState.Success)?.value.orEmpty().takeIf {
-        resultRevealed
-    }.orEmpty()
+    val outputs: List<OutputFile> get() = (job as? JobState.Success)?.value.orEmpty()
     val canRun: Boolean get() = when {
         files.isEmpty() -> false
         tool.multipleInputs -> files.size >= if (tool == PdfTool.MERGE) 2 else 1
@@ -168,9 +166,7 @@ class PdfToolViewModel @AssistedInject constructor(
     init {
         viewModelScope.launch {
             runner.state.collect { job ->
-                mutableState.update {
-                    it.copy(job = job, resultRevealed = it.resultRevealed && job is JobState.Success)
-                }
+                mutableState.update { it.copy(job = job) }
             }
         }
     }
@@ -240,7 +236,6 @@ class PdfToolViewModel @AssistedInject constructor(
         if (!s.canRun) return
         val id = jobIds.next()
         discardOutputs()
-        mutableState.update { it.copy(resultRevealed = false) }
         runner.start(cleanup = {
             if (runner.state.value !is JobState.Success) tempFiles.deleteJobDir(id)
         }) { progress ->
@@ -267,7 +262,7 @@ class PdfToolViewModel @AssistedInject constructor(
                 PdfOperation.SelectPages(first, (1..pageCount).filterNot { it in remove.toSet() }, dir, "$base-edited")
             }
             PdfTool.ROTATE -> pages().map { PdfOperation.Rotate(first, it.toSet(), o.degrees, dir, "$base-rotated") }
-            PdfTool.COMPRESS -> success(PdfOperation.Compress(first, o.level, dir, "$base-compressed"))
+            PdfTool.COMPRESS -> success(PdfOperation.Compress(first, o.level, dir, "$base-compressed", o.grayscale))
             PdfTool.IMAGES_TO_PDF -> success(
                 PdfOperation.ImagesToPdf(s.files, o.pageSize, o.margin.points, dir, "images", o.orientation),
             )
@@ -297,8 +292,6 @@ class PdfToolViewModel @AssistedInject constructor(
     }
 
     fun onCancel() = runner.cancel()
-
-    fun onResultRevealed() = mutableState.update { it.copy(resultRevealed = true) }
 
     fun onSave(output: OutputFile, destination: String) {
         viewModelScope.launch {

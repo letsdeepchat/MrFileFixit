@@ -29,7 +29,7 @@
     <string name="exam_category_DEFENCE">Defence</string>
     <string name="exam_category_ENTRANCE">NTA / Entrance</string>
     <string name="exam_category_TEACHING">Teaching</string>
-    <string name="exam_search_hint">Search exams, e.g. SSC CGL or GATE</string>
+    <string name="exam_search_hint">Search exams (e.g. SSC, UPSC, GATE)</string>
     <plurals name="exam_count">
         <item quantity="one">%1$d exam</item>
         <item quantity="other">%1$d exams</item>

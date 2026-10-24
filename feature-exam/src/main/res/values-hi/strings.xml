@@ -29,7 +29,7 @@
     <string name="exam_category_DEFENCE">रक्षा</string>
     <string name="exam_category_ENTRANCE">NTA / प्रवेश</string>
     <string name="exam_category_TEACHING">शिक्षण</string>
-    <string name="exam_search_hint">परीक्षा खोजें, जैसे SSC CGL या GATE</string>
+    <string name="exam_search_hint">परीक्षा खोजें (जैसे SSC, UPSC, GATE)</string>
     <plurals name="exam_count">
         <item quantity="one">%1$d परीक्षा</item>
         <item quantity="other">%1$d परीक्षाएँ</item>

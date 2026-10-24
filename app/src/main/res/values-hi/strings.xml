@@ -5,6 +5,9 @@
     <string name="nav_pdf">PDF टूल</string>
     <string name="nav_image">इमेज टूल</string>
     <string name="nav_scan">स्कैन</string>
+    <string name="nav_exam_short">परीक्षा</string>
+    <string name="nav_pdf_short">PDF</string>
+    <string name="nav_image_short">इमेज</string>
     <string name="nav_settings">सेटिंग</string>
     <string name="home_title">आप क्या ठीक करना चाहते हैं?</string>
     <string name="home_offline_note">सब कुछ आपके फ़ोन पर ही होता है। आपकी फ़ाइलें कभी अपलोड नहीं होतीं।</string>
@@ -18,7 +21,14 @@
     <string name="settings_theme_dark">डार्क</string>
     <string name="settings_dynamic_color">वॉलपेपर के रंग इस्तेमाल करें</string>
     <string name="settings_privacy_title">गोपनीयता</string>
-    <string name="settings_privacy_body">फ़ाइलें केवल इसी डिवाइस पर प्रोसेस होती हैं और टूल से बाहर निकलने पर ऐप के कैश से हटा दी जाती हैं। ऐप इंटरनेट का उपयोग केवल विज्ञापन दिखाने के लिए करता है। एक्सपोर्ट करते समय फ़ोटो की लोकेशन और अन्य मेटाडेटा हटा दिया जाता है।</string>
-    <string name="settings_ads_privacy">विज्ञापन गोपनीयता विकल्प</string>
+    <string name="settings_privacy_body">Mr File Fixit मुफ़्त है, इसमें कोई विज्ञापन, अकाउंट या साइन-इन नहीं है। आपकी फ़ाइलों के साथ यह होता है:</string>
+    <string name="privacy_offline_title">100% डिवाइस पर प्रोसेसिंग</string>
+    <string name="privacy_offline_body">इमेज कम्प्रेशन, क्रॉप, PDF टूल, स्कैन और टेक्स्ट पहचान सब कुछ आपके फ़ोन के प्रोसेसर पर ही चलता है।</string>
+    <string name="privacy_network_title">कुछ भी कहीं नहीं भेजा जाता</string>
+    <string name="privacy_network_body">ऐप में कोई विज्ञापन, एनालिटिक्स या सर्वर नहीं है, और यह आपके दस्तावेज़, फ़ोटो या निकाला गया टेक्स्ट कभी इंटरनेट पर नहीं भेजता। स्कैन और टेक्स्ट पहचान के लिए इस्तेमाल होने वाला Google का ऑन-डिवाइस ML Kit गुमनाम उपयोग आँकड़े भेज सकता है, जिनमें आपकी फ़ाइलें या टेक्स्ट कभी शामिल नहीं होते।</string>
+    <string name="privacy_cache_title">अस्थायी फ़ाइलें मिटा दी जाती हैं</string>
+    <string name="privacy_cache_body">काम की कॉपियाँ ऐप के निजी कैश में रहती हैं और टूल से बाहर निकलते ही हटा दी जाती हैं। ऐप बंद होने पर जो कुछ बचा रहे, वह अगली बार ऐप खुलने पर हटा दिया जाता है।</string>
+    <string name="privacy_metadata_title">मेटाडेटा हटा दिया जाता है</string>
+    <string name="privacy_metadata_body">एक्सपोर्ट करते समय इमेज से लोकेशन, कैमरा की जानकारी और अन्य EXIF डेटा हटा दिया जाता है।</string>
     <string name="settings_version">वर्शन %1$s</string>
 </resources>

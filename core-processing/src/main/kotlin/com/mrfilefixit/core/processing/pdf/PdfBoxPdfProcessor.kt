@@ -55,8 +55,8 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 /**
- * PDF engine. Structure operations (merge, split, pages, rotate, encrypt) use pdfbox-android with
- * temp-file-backed memory; rendering (compress, to-images) uses the platform [PdfRenderer], one page at a time.
+ * PDF engine. Structure operations (merge, split, pages, rotate, encrypt, compress) use pdfbox-android
+ * with temp-file-backed memory; rendering (to-images) uses the platform [PdfRenderer], one page at a time.
  *
  * Every source is first copied into the job directory (bounded by [InputLimits.maxFileBytes]) so both
  * libraries get a seekable file, and so the user's original is never opened for writing.
@@ -221,19 +221,18 @@ internal class PdfBoxPdfProcessor @Inject constructor(
 
     // region rendering operations (PdfRenderer, one page at a time)
 
-    /** Re-renders each page as a JPEG at the level's DPI. Lossy: text is no longer selectable. */
+    /** See [PdfCompressor]: images are downsampled, text stays text, and the result is always smaller. */
     private suspend fun compress(op: PdfOperation.Compress, progress: ProgressReporter): OutputFile {
         val src = copyToJob(op.source, op.outputDir, "compress-src")
-        val out = newOutputFile(op.outputDir, op.outputBaseName, PDF_EXT)
-        PDDocument(MemoryUsageSetting.setupTempFileOnly()).use { target ->
-            forEachRenderedPage(src, op.level.dpi, progress) { _, bitmap, widthPt, heightPt ->
-                val page = PDPage(PDRectangle(widthPt, heightPt))
-                target.addPage(page)
-                val image = JPEGFactory.createFromImage(target, bitmap, op.level.jpegQuality / PERCENT)
-                PDPageContentStream(target, page).use { it.drawImage(image, 0f, 0f, widthPt, heightPt) }
+        try {
+            val out = newOutputFile(op.outputDir, op.outputBaseName, PDF_EXT)
+            PdfCompressor(limits) { openDocument(it, null) }.compress(src, op.level, op.grayscale, out, progress)
+            val pages = ParcelFileDescriptor.open(out, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                PdfRenderer(fd).use { it.pageCount }
             }
-            target.save(out)
-            return out.toOutput(target.numberOfPages).also { src.delete() }
+            return out.toOutput(pages)
+        } finally {
+            src.delete()
         }
     }
 
@@ -371,7 +370,6 @@ internal class PdfBoxPdfProcessor @Inject constructor(
         private const val FULL_TURN = 360
         private const val HALF_TURN = 180
         private const val AES_256 = 256
-        private const val PERCENT = 100f
         private const val POINTS_PER_INCH = 72f
         private const val IMAGE_QUALITY = 90
         private const val IMAGE_TO_PDF_QUALITY = 0.85f

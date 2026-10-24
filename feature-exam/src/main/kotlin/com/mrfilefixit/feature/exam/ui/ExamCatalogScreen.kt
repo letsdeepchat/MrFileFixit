@@ -45,6 +45,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mrfilefixit.core.domain.exam.CertificateFormat
 import com.mrfilefixit.core.domain.exam.CertificateSpec
@@ -56,8 +57,6 @@ import com.mrfilefixit.core.domain.exam.IntBounds
 import com.mrfilefixit.core.domain.exam.VerificationStatus
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.ui.R as CoreR
-import com.mrfilefixit.core.ui.ads.BannerPlacement
-import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.ErrorCard
 import com.mrfilefixit.core.ui.components.ExamDisclaimerCard
 import com.mrfilefixit.core.ui.components.PillRow
@@ -80,7 +79,7 @@ internal class ExamCatalogActions(
 
 /**
  * "Pick your exam": persistent search and category pills above a scrollable list of exam cards. The
- * disclaimer is the first list item and is not dismissible.
+ * disclaimer is the first list item: collapsed to two lines so the exams stay above the fold, never dismissible.
  */
 @Composable
 internal fun ExamCatalogScreen(
@@ -98,7 +97,6 @@ internal fun ExamCatalogScreen(
                 is ExamPickerUiState.Loaded -> Catalog(state, selectedId, actions)
             }
         }
-        LocalAdSlots.current.Banner(BannerPlacement.EXAM_PICKER, Modifier.fillMaxWidth())
     }
 }
 
@@ -109,7 +107,10 @@ private fun Catalog(state: ExamPickerUiState.Loaded, selectedId: String?, action
         OutlinedTextField(
             value = state.query,
             onValueChange = actions.onQuery,
-            placeholder = { Text(stringResource(R.string.exam_search_hint)) },
+            // One line only: a wrapping hint would double the field's height.
+            placeholder = {
+                Text(stringResource(R.string.exam_search_hint), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            },
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
             trailingIcon = {
                 if (state.query.isNotEmpty()) {
@@ -146,7 +147,7 @@ private fun Catalog(state: ExamPickerUiState.Loaded, selectedId: String?, action
             ),
             verticalArrangement = Arrangement.spacedBy(Dimens.SpaceM),
         ) {
-            item(key = "disclaimer") { ExamDisclaimerCard() }
+            item(key = "disclaimer") { ExamDisclaimerCard(collapsible = true) }
             item(key = "count") {
                 Text(
                     pluralStringResource(R.plurals.exam_count, visible.size, visible.size),

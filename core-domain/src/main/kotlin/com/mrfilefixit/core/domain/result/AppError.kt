@@ -51,7 +51,8 @@ sealed interface AppError {
 
     data class FeatureUnavailable(val feature: Feature) : AppError
 
-    data class QuotaExceeded(val remaining: Int) : AppError
+    /** Compression could not make the file any smaller, so the original is kept as it is. */
+    data object AlreadyOptimized : AppError
 
     /** Anything else. [type] is the exception class name, never its message. */
     data class Unexpected(val type: String) : AppError

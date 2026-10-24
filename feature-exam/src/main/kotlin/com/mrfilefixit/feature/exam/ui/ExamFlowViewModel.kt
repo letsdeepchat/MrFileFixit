@@ -56,12 +56,10 @@ data class SlotUiState(
     val crop: NormalizedRect? = null,
     val rotation: Int = 0,
     val job: JobState<PreparedDocument> = JobState.Idle,
-    /** The interstitial gate ran (or was skipped) and the result may be shown. */
-    val resultRevealed: Boolean = false,
     val inputError: AppError? = null,
     val saved: Boolean = false,
 ) {
-    val result: PreparedDocument? get() = (job as? JobState.Success)?.value?.takeIf { resultRevealed }
+    val result: PreparedDocument? get() = (job as? JobState.Success)?.value
 }
 
 data class ExamFlowUiState(
@@ -137,9 +135,7 @@ class ExamFlowViewModel @AssistedInject constructor(
         JobRunner<PreparedDocument>(viewModelScope).also { runner ->
             viewModelScope.launch {
                 runner.state.collect { job ->
-                    updateSlot(key) { slot ->
-                        slot.copy(job = job, resultRevealed = slot.resultRevealed && job is JobState.Success)
-                    }
+                    updateSlot(key) { slot -> slot.copy(job = job) }
                 }
             }
         }
@@ -179,7 +175,7 @@ class ExamFlowViewModel @AssistedInject constructor(
         val source = slot.source ?: return
         val jobId = jobIds.next()
         discardJobDir(key)
-        updateSlot(key) { it.copy(resultRevealed = false, saved = false) }
+        updateSlot(key) { it.copy(saved = false) }
         runnerFor(key).start(cleanup = { cleanupIfNotSuccessful(key, jobId) }) { progress ->
             tempFiles.createJobDir(jobId).flatMap { dir ->
                 jobDirs[key] = jobId
@@ -204,7 +200,7 @@ class ExamFlowViewModel @AssistedInject constructor(
         val signature = current.slots[SlotKey.Document(DocumentKind.SIGNATURE)]?.source ?: return
         val jobId = jobIds.next()
         discardJobDir(SlotKey.Composite)
-        updateSlot(SlotKey.Composite) { it.copy(resultRevealed = false, saved = false) }
+        updateSlot(SlotKey.Composite) { it.copy(saved = false) }
         runnerFor(SlotKey.Composite).start(cleanup = { cleanupIfNotSuccessful(SlotKey.Composite, jobId) }) { progress ->
             tempFiles.createJobDir(jobId).flatMap { dir ->
                 jobDirs[SlotKey.Composite] = jobId
@@ -216,9 +212,6 @@ class ExamFlowViewModel @AssistedInject constructor(
     fun onCancel(key: SlotKey) {
         runners[key]?.cancel()
     }
-
-    /** Called by the UI after the post-job interstitial gate finished (shown, skipped or failed). */
-    fun onResultRevealed(key: SlotKey) = updateSlot(key) { it.copy(resultRevealed = true) }
 
     fun onReset(key: SlotKey) {
         runners[key]?.cancel()

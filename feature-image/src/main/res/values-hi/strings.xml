@@ -30,9 +30,6 @@
         <item quantity="other">%1$d फ़ाइलें प्रोसेस नहीं हो सकीं।</item>
     </plurals>
     <string name="image_batch_background">बड़े बैच नोटिफ़िकेशन के साथ बैकग्राउंड में चलते रहते हैं।</string>
-    <string name="image_quota_left">आज बचे मुफ़्त बैच जॉब: %1$d</string>
-    <string name="image_quota_empty">आज के मुफ़्त बैच जॉब खत्म हो गए। एक इमेज हमेशा मुफ़्त है।</string>
-    <string name="image_watch_ad">2 और बैच जॉब के लिए विज्ञापन देखें</string>
     <string name="image_heic_unavailable">इस डिवाइस पर HEIC आउटपुट सपोर्टेड नहीं है।</string>
     <string name="notification_channel_jobs">फ़ाइल जॉब</string>
     <string name="notification_job_running">इमेज प्रोसेस हो रही हैं…</string>
