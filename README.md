@@ -48,6 +48,12 @@ Exam profiles live in `feature-exam/src/main/assets/exam_rules.json` and follow
 `lastVerified` date. To update a profile, edit the JSON, update `lastVerified`, and run
 `./gradlew :feature-exam:testDebugUnitTest` (golden tests guard the parsed result).
 
+Schema v2 bundles 20 exams across SSC, UPSC, Banking, Railways, Defence, NTA/Entrance and Teaching, with an
+optional `certificates` list (PDF/JPG uploads with a KB window) and `background` / `ink` notes per document.
+`verification` is `community` unless a maintainer checked the values against the official notice page linked in
+`sourceUrl` on the `lastVerified` date; only then is it `verified`, and the app shows "Checked on official page"
+with that date. The in-app disclaimer is shown for every profile either way.
+
 ## Verification status
 
 This code was written in a cloud sandbox that could not reach Google's Maven repository (`dl.google.com` /
@@ -55,7 +61,7 @@ This code was written in a cloud sandbox that could not reach Google's Maven rep
 
 | Checked | How | Result |
 | --- | --- | --- |
-| Pure Kotlin code (all of `core-domain`, exam rules parser, PDF layout, ad pacing) | Compiled with Kotlin 2.4.21, `allWarningsAsErrors`, run with JUnit 5 + MockK on a plain JVM | 106 tests pass |
+| Pure Kotlin code (all of `core-domain`, exam rules parser, PDF layout, ad pacing) | Compiled with Kotlin 2.4.21, `allWarningsAsErrors`, run with JUnit 5 + MockK on a plain JVM | 112 tests pass |
 | Style | ktlint 1.7.1 (`android_studio`) and detekt 1.23.8 + formatting, using this repo's config | Zero findings |
 | Exam rules JSON | Validated against `docs/exam-rules.schema.json` | Valid |
 | CI / Dependabot YAML | Parsed | Valid |

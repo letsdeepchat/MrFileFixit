@@ -1,5 +1,7 @@
 package com.mrfilefixit.feature.exam.data
 
+import com.mrfilefixit.core.domain.exam.CertificateFormat
+import com.mrfilefixit.core.domain.exam.CertificateSpec
 import com.mrfilefixit.core.domain.exam.CompositeSpec
 import com.mrfilefixit.core.domain.exam.DocumentKind
 import com.mrfilefixit.core.domain.exam.DocumentSpec
@@ -21,7 +23,7 @@ import kotlinx.serialization.json.Json
  * showing users wrong numbers. At runtime the error maps to [AppError.Unexpected].
  */
 object ExamRulesParser {
-    const val SUPPORTED_SCHEMA_VERSION = 1
+    const val SUPPORTED_SCHEMA_VERSION = 2
     private const val HTTPS = "https://"
 
     private val json = Json {
@@ -45,6 +47,7 @@ object ExamRulesParser {
         lastVerified?.let { LocalDate.parse(it) } // throws on a malformed date
         return ExamProfile(
             id = id,
+            shortName = shortName,
             name = name,
             category = ExamCategory.valueOf(category),
             conductingBody = conductingBody,
@@ -52,7 +55,7 @@ object ExamRulesParser {
             lastVerified = lastVerified,
             verification = when (verification) {
                 "verified" -> VerificationStatus.VERIFIED
-                "unverified" -> VerificationStatus.UNVERIFIED
+                "community" -> VerificationStatus.COMMUNITY
                 else -> throw IllegalArgumentException("$id: bad verification '$verification'")
             },
             documents = documents.map { it.toDomain(id) }.also { docs ->
@@ -60,8 +63,21 @@ object ExamRulesParser {
             },
             composite = composite?.let { CompositeSpec(it.document.toDomain(id), it.photoFraction) },
             notes = notes,
+            certificates = certificates.map { it.toDomain(id) },
         )
     }
+
+    private fun CertificateDto.toDomain(profileId: String): CertificateSpec = CertificateSpec(
+        name = name,
+        formats = formats.map { format ->
+            requireNotNull(CertificateFormat.entries.firstOrNull { it.name.equals(format, ignoreCase = true) }) {
+                "$profileId/$name: unknown format '$format'"
+            }
+        }.toSet(),
+        minKb = sizeKb.min ?: 0,
+        maxKb = requireNotNull(sizeKb.max) { "$profileId/$name: sizeKb.max is required" },
+        notes = notes,
+    )
 
     private fun DocumentDto.toDomain(profileId: String): DocumentSpec {
         val sizeMin = sizeKb.min ?: 0
@@ -82,6 +98,8 @@ object ExamRulesParser {
             targetHeight = targetPx.height,
             kilobyteBytes = kilobyteBytes,
             notes = notes,
+            background = background,
+            ink = ink,
         )
     }
 }

@@ -1,107 +1,1674 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "profiles": [
     {
       "id": "ssc-cgl",
-      "name": "SSC Combined Graduate Level (CGL)",
+      "shortName": "SSC CGL",
+      "name": "Combined Graduate Level Examination",
       "category": "SSC",
       "conductingBody": "Staff Selection Commission",
       "sourceUrl": "https://ssc.gov.in/",
       "lastVerified": null,
-      "verification": "unverified",
-      "notes": "Sample values. Recent SSC applications may require a live photograph taken during the application; check the notice.",
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
       "documents": [
         {
           "kind": "photo",
-          "formats": ["jpeg"],
-          "sizeKb": { "min": 20, "max": 50 },
-          "widthPx": { "min": 100, "max": 500 },
-          "heightPx": { "min": 120, "max": 600 },
-          "targetPx": { "width": 350, "height": 450 },
-          "notes": "About 3.5 cm x 4.5 cm."
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 100,
+            "max": 600
+          },
+          "heightPx": {
+            "min": 120,
+            "max": 800
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 450
+          },
+          "notes": "About 3.5 cm x 4.5 cm. Recent SSC forms capture a live photo with the webcam or phone camera instead of an upload; use this only if the portal asks for a file. No cap, mask or spectacles.",
+          "background": "Plain, light"
         },
         {
           "kind": "signature",
-          "formats": ["jpeg"],
-          "sizeKb": { "min": 10, "max": 20 },
-          "widthPx": { "min": 140, "max": 600 },
-          "heightPx": { "min": 60, "max": 300 },
-          "targetPx": { "width": 400, "height": 200 },
-          "notes": "About 4.0 cm x 2.0 cm."
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 20
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 400,
+            "height": 200
+          },
+          "notes": "About 4.0 cm x 2.0 cm. Sign in running hand on white paper, not in capital letters.",
+          "ink": "Black or blue"
+        }
+      ]
+    },
+    {
+      "id": "ssc-chsl",
+      "shortName": "SSC CHSL",
+      "name": "Combined Higher Secondary Level Examination",
+      "category": "SSC",
+      "conductingBody": "Staff Selection Commission",
+      "sourceUrl": "https://ssc.gov.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 100,
+            "max": 600
+          },
+          "heightPx": {
+            "min": 120,
+            "max": 800
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 450
+          },
+          "notes": "About 3.5 cm x 4.5 cm. Recent SSC forms capture a live photo with the webcam or phone camera instead of an upload; use this only if the portal asks for a file. No cap, mask or spectacles.",
+          "background": "Plain, light"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 20
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 400,
+            "height": 200
+          },
+          "notes": "About 4.0 cm x 2.0 cm. Sign in running hand on white paper, not in capital letters.",
+          "ink": "Black or blue"
+        }
+      ]
+    },
+    {
+      "id": "ssc-gd",
+      "shortName": "SSC GD",
+      "name": "Constable (General Duty) Examination",
+      "category": "SSC",
+      "conductingBody": "Staff Selection Commission",
+      "sourceUrl": "https://ssc.gov.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 100,
+            "max": 600
+          },
+          "heightPx": {
+            "min": 120,
+            "max": 800
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 450
+          },
+          "notes": "About 3.5 cm x 4.5 cm. Recent SSC forms capture a live photo with the webcam or phone camera instead of an upload; use this only if the portal asks for a file. No cap, mask or spectacles.",
+          "background": "Plain, light"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 20
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 400,
+            "height": 200
+          },
+          "notes": "About 4.0 cm x 2.0 cm. Sign in running hand on white paper, not in capital letters.",
+          "ink": "Black or blue"
+        }
+      ]
+    },
+    {
+      "id": "ssc-mts",
+      "shortName": "SSC MTS",
+      "name": "Multi-Tasking (Non-Technical) Staff Examination",
+      "category": "SSC",
+      "conductingBody": "Staff Selection Commission",
+      "sourceUrl": "https://ssc.gov.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 100,
+            "max": 600
+          },
+          "heightPx": {
+            "min": 120,
+            "max": 800
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 450
+          },
+          "notes": "About 3.5 cm x 4.5 cm. Recent SSC forms capture a live photo with the webcam or phone camera instead of an upload; use this only if the portal asks for a file. No cap, mask or spectacles.",
+          "background": "Plain, light"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 20
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 400,
+            "height": 200
+          },
+          "notes": "About 4.0 cm x 2.0 cm. Sign in running hand on white paper, not in capital letters.",
+          "ink": "Black or blue"
         }
       ]
     },
     {
       "id": "upsc-cse",
-      "name": "UPSC Civil Services Examination",
+      "shortName": "UPSC CSE",
+      "name": "Civil Services Examination",
       "category": "UPSC",
       "conductingBody": "Union Public Service Commission",
       "sourceUrl": "https://upsconline.gov.in/",
       "lastVerified": null,
-      "verification": "unverified",
-      "notes": "Sample values.",
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
       "documents": [
         {
           "kind": "photo",
-          "formats": ["jpeg"],
-          "sizeKb": { "min": 20, "max": 300 },
-          "widthPx": { "min": 350, "max": 1000 },
-          "heightPx": { "min": 350, "max": 1000 },
-          "targetPx": { "width": 450, "height": 550 }
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 200
+          },
+          "widthPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "heightPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "targetPx": {
+            "width": 450,
+            "height": 550
+          },
+          "notes": "Recent colour photo, face about 75% of the frame, both ears visible. The portal also takes a live photo and matches it with this one. Recent notices asked for your name and the date of the photo printed on it.",
+          "background": "Plain white"
         },
         {
           "kind": "signature",
-          "formats": ["jpeg"],
-          "sizeKb": { "min": 20, "max": 300 },
-          "widthPx": { "min": 350, "max": 1000 },
-          "heightPx": { "min": 350, "max": 1000 },
-          "targetPx": { "width": 700, "height": 350 }
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 100
+          },
+          "widthPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "heightPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "targetPx": {
+            "width": 500,
+            "height": 700
+          },
+          "notes": "Three signatures one below the other on white paper, scanned as one image.",
+          "ink": "Black"
+        }
+      ],
+      "certificates": [
+        {
+          "name": "Photo ID card (Aadhaar, passport, voter ID or driving licence)",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 300
+          },
+          "notes": "The same ID must be carried to the exam."
+        }
+      ]
+    },
+    {
+      "id": "upsc-cds",
+      "shortName": "UPSC CDS",
+      "name": "Combined Defence Services Examination",
+      "category": "DEFENCE",
+      "conductingBody": "Union Public Service Commission",
+      "sourceUrl": "https://upsconline.gov.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 300
+          },
+          "widthPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "heightPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "targetPx": {
+            "width": 450,
+            "height": 550
+          },
+          "notes": "Recent colour photo. Recent notices asked for your name and the date of the photo printed on it, and a photo not older than 10 days at the start of the application.",
+          "background": "Plain white"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 300
+          },
+          "widthPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "heightPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "targetPx": {
+            "width": 700,
+            "height": 350
+          },
+          "notes": "Sign on white paper and scan only the signature.",
+          "ink": "Black"
+        }
+      ],
+      "certificates": [
+        {
+          "name": "Photo ID card (Aadhaar, passport, voter ID or driving licence)",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 300
+          },
+          "notes": "The same ID must be carried to the exam."
+        }
+      ]
+    },
+    {
+      "id": "upsc-nda",
+      "shortName": "UPSC NDA",
+      "name": "National Defence Academy and Naval Academy Examination",
+      "category": "DEFENCE",
+      "conductingBody": "Union Public Service Commission",
+      "sourceUrl": "https://upsconline.gov.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 300
+          },
+          "widthPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "heightPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "targetPx": {
+            "width": 450,
+            "height": 550
+          },
+          "notes": "Recent colour photo. Recent notices asked for your name and the date of the photo printed on it, and a photo not older than 10 days at the start of the application.",
+          "background": "Plain white"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 300
+          },
+          "widthPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "heightPx": {
+            "min": 350,
+            "max": 1000
+          },
+          "targetPx": {
+            "width": 700,
+            "height": 350
+          },
+          "notes": "Sign on white paper and scan only the signature.",
+          "ink": "Black"
+        }
+      ],
+      "certificates": [
+        {
+          "name": "Photo ID card (Aadhaar, passport, voter ID or driving licence)",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 300
+          },
+          "notes": "The same ID must be carried to the exam."
         }
       ]
     },
     {
       "id": "ibps-po",
-      "name": "IBPS Probationary Officer (PO)",
-      "category": "IBPS",
+      "shortName": "IBPS PO",
+      "name": "Probationary Officer / Management Trainee",
+      "category": "BANKING",
       "conductingBody": "Institute of Banking Personnel Selection",
       "sourceUrl": "https://www.ibps.in/",
       "lastVerified": null,
-      "verification": "unverified",
-      "notes": "Sample values.",
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
       "documents": [
         {
           "kind": "photo",
-          "formats": ["jpeg"],
-          "sizeKb": { "min": 20, "max": 50 },
-          "widthPx": { "min": 200, "max": 200 },
-          "heightPx": { "min": 230, "max": 230 },
-          "targetPx": { "width": 200, "height": 230 }
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 200,
+            "max": 200
+          },
+          "heightPx": {
+            "min": 230,
+            "max": 230
+          },
+          "targetPx": {
+            "width": 200,
+            "height": 230
+          },
+          "notes": "3.5 cm x 4.5 cm. No cap or dark glasses; religious headwear is fine if the face is visible. A live photo is also captured during registration.",
+          "background": "Light, preferably white"
         },
         {
           "kind": "signature",
-          "formats": ["jpeg"],
-          "sizeKb": { "min": 10, "max": 20 },
-          "widthPx": { "min": 140, "max": 140 },
-          "heightPx": { "min": 60, "max": 60 },
-          "targetPx": { "width": 140, "height": 60 },
-          "notes": "Black ink on white paper."
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 20
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 140
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 60
+          },
+          "targetPx": {
+            "width": 140,
+            "height": 60
+          },
+          "notes": "3.5 cm x 1.5 cm, signed on white paper, not in capital letters.",
+          "ink": "Black"
         },
         {
           "kind": "left_thumb",
-          "formats": ["jpeg"],
-          "sizeKb": { "min": 20, "max": 50 },
-          "widthPx": { "min": 240, "max": 240 },
-          "heightPx": { "min": 240, "max": 240 },
-          "targetPx": { "width": 240, "height": 240 }
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 240,
+            "max": 240
+          },
+          "heightPx": {
+            "min": 240,
+            "max": 240
+          },
+          "targetPx": {
+            "width": 240,
+            "height": 240
+          },
+          "notes": "3 cm x 3 cm, on white paper.",
+          "ink": "Blue or black"
         },
         {
           "kind": "declaration",
-          "formats": ["jpeg"],
-          "sizeKb": { "min": 50, "max": 100 },
-          "widthPx": { "min": 800, "max": 800 },
-          "heightPx": { "min": 400, "max": 400 },
-          "targetPx": { "width": 800, "height": 400 },
-          "notes": "Handwritten declaration in English, black ink."
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 100
+          },
+          "widthPx": {
+            "min": 800,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 400,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 800,
+            "height": 400
+          },
+          "notes": "10 cm x 5 cm. Write in English, in your own handwriting: \"I, (name of the candidate), hereby declare that all the information submitted by me in the application form is correct, true and valid. I will present the supporting documents as and when required.\" Not in capital letters.",
+          "ink": "Black"
+        }
+      ]
+    },
+    {
+      "id": "ibps-clerk",
+      "shortName": "IBPS Clerk",
+      "name": "Customer Service Associate (Clerk)",
+      "category": "BANKING",
+      "conductingBody": "Institute of Banking Personnel Selection",
+      "sourceUrl": "https://www.ibps.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 200,
+            "max": 200
+          },
+          "heightPx": {
+            "min": 230,
+            "max": 230
+          },
+          "targetPx": {
+            "width": 200,
+            "height": 230
+          },
+          "notes": "3.5 cm x 4.5 cm. No cap or dark glasses; religious headwear is fine if the face is visible. A live photo is also captured during registration.",
+          "background": "Light, preferably white"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 20
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 140
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 60
+          },
+          "targetPx": {
+            "width": 140,
+            "height": 60
+          },
+          "notes": "3.5 cm x 1.5 cm, signed on white paper, not in capital letters.",
+          "ink": "Black"
+        },
+        {
+          "kind": "left_thumb",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 240,
+            "max": 240
+          },
+          "heightPx": {
+            "min": 240,
+            "max": 240
+          },
+          "targetPx": {
+            "width": 240,
+            "height": 240
+          },
+          "notes": "3 cm x 3 cm, on white paper.",
+          "ink": "Blue or black"
+        },
+        {
+          "kind": "declaration",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 100
+          },
+          "widthPx": {
+            "min": 800,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 400,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 800,
+            "height": 400
+          },
+          "notes": "10 cm x 5 cm. Write in English, in your own handwriting: \"I, (name of the candidate), hereby declare that all the information submitted by me in the application form is correct, true and valid. I will present the supporting documents as and when required.\" Not in capital letters.",
+          "ink": "Black"
+        }
+      ]
+    },
+    {
+      "id": "sbi-po",
+      "shortName": "SBI PO",
+      "name": "Probationary Officer",
+      "category": "BANKING",
+      "conductingBody": "State Bank of India",
+      "sourceUrl": "https://sbi.co.in/web/careers",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced. SBI has used the same upload sizes as IBPS; check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 200,
+            "max": 200
+          },
+          "heightPx": {
+            "min": 230,
+            "max": 230
+          },
+          "targetPx": {
+            "width": 200,
+            "height": 230
+          },
+          "notes": "3.5 cm x 4.5 cm. No cap or dark glasses; religious headwear is fine if the face is visible. A live photo is also captured during registration.",
+          "background": "Light, preferably white"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 20
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 140
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 60
+          },
+          "targetPx": {
+            "width": 140,
+            "height": 60
+          },
+          "notes": "3.5 cm x 1.5 cm, signed on white paper, not in capital letters.",
+          "ink": "Black"
+        },
+        {
+          "kind": "left_thumb",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 240,
+            "max": 240
+          },
+          "heightPx": {
+            "min": 240,
+            "max": 240
+          },
+          "targetPx": {
+            "width": 240,
+            "height": 240
+          },
+          "notes": "3 cm x 3 cm, on white paper.",
+          "ink": "Blue or black"
+        },
+        {
+          "kind": "declaration",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 100
+          },
+          "widthPx": {
+            "min": 800,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 400,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 800,
+            "height": 400
+          },
+          "notes": "10 cm x 5 cm. Write in English, in your own handwriting: \"I, (name of the candidate), hereby declare that all the information submitted by me in the application form is correct, true and valid. I will present the supporting documents as and when required.\" Not in capital letters.",
+          "ink": "Black"
+        }
+      ]
+    },
+    {
+      "id": "sbi-clerk",
+      "shortName": "SBI Clerk",
+      "name": "Junior Associate (Customer Support and Sales)",
+      "category": "BANKING",
+      "conductingBody": "State Bank of India",
+      "sourceUrl": "https://sbi.co.in/web/careers",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced. SBI has used the same upload sizes as IBPS; check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 200,
+            "max": 200
+          },
+          "heightPx": {
+            "min": 230,
+            "max": 230
+          },
+          "targetPx": {
+            "width": 200,
+            "height": 230
+          },
+          "notes": "3.5 cm x 4.5 cm. No cap or dark glasses; religious headwear is fine if the face is visible. A live photo is also captured during registration.",
+          "background": "Light, preferably white"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 20
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 140
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 60
+          },
+          "targetPx": {
+            "width": 140,
+            "height": 60
+          },
+          "notes": "3.5 cm x 1.5 cm, signed on white paper, not in capital letters.",
+          "ink": "Black"
+        },
+        {
+          "kind": "left_thumb",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 240,
+            "max": 240
+          },
+          "heightPx": {
+            "min": 240,
+            "max": 240
+          },
+          "targetPx": {
+            "width": 240,
+            "height": 240
+          },
+          "notes": "3 cm x 3 cm, on white paper.",
+          "ink": "Blue or black"
+        },
+        {
+          "kind": "declaration",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 100
+          },
+          "widthPx": {
+            "min": 800,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 400,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 800,
+            "height": 400
+          },
+          "notes": "10 cm x 5 cm. Write in English, in your own handwriting: \"I, (name of the candidate), hereby declare that all the information submitted by me in the application form is correct, true and valid. I will present the supporting documents as and when required.\" Not in capital letters.",
+          "ink": "Black"
+        }
+      ]
+    },
+    {
+      "id": "rrb-ntpc",
+      "shortName": "RRB NTPC",
+      "name": "Non-Technical Popular Categories",
+      "category": "RAILWAYS",
+      "conductingBody": "Railway Recruitment Boards",
+      "sourceUrl": "https://www.rrbapply.gov.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 100
+          },
+          "widthPx": {
+            "min": 240,
+            "max": 600
+          },
+          "heightPx": {
+            "min": 320,
+            "max": 800
+          },
+          "targetPx": {
+            "width": 240,
+            "height": 320
+          },
+          "notes": "Recent RRB forms capture a live photo through the webcam or phone camera; upload a file only if the portal asks. Guides disagree on the size, so check the CEN. No name or date on the photo, not older than two months.",
+          "background": "Plain white or light"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 30,
+            "max": 49
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 200
+          },
+          "notes": "At least 140 x 60 px at 100 DPI or more, centred in a 35 mm x 20 mm box. Running hand, not capital letters.",
+          "ink": "Black"
+        }
+      ],
+      "certificates": [
+        {
+          "name": "SC/ST certificate for the free travel pass (if claiming)",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "max": 400
+          },
+          "notes": "Latest valid certificate as on the closing date."
+        }
+      ]
+    },
+    {
+      "id": "rrb-group-d",
+      "shortName": "RRB Group D",
+      "name": "Level 1 posts (Group D)",
+      "category": "RAILWAYS",
+      "conductingBody": "Railway Recruitment Boards",
+      "sourceUrl": "https://www.rrbapply.gov.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 100
+          },
+          "widthPx": {
+            "min": 240,
+            "max": 600
+          },
+          "heightPx": {
+            "min": 320,
+            "max": 800
+          },
+          "targetPx": {
+            "width": 240,
+            "height": 320
+          },
+          "notes": "Recent RRB forms capture a live photo through the webcam or phone camera; upload a file only if the portal asks. Guides disagree on the size, so check the CEN. No name or date on the photo, not older than two months.",
+          "background": "Plain white or light"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 30,
+            "max": 49
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 200
+          },
+          "notes": "At least 140 x 60 px at 100 DPI or more, centred in a 35 mm x 20 mm box. Running hand, not capital letters.",
+          "ink": "Black"
+        }
+      ],
+      "certificates": [
+        {
+          "name": "SC/ST certificate for the free travel pass (if claiming)",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "max": 400
+          },
+          "notes": "Latest valid certificate as on the closing date."
+        }
+      ]
+    },
+    {
+      "id": "rrb-alp",
+      "shortName": "RRB ALP",
+      "name": "Assistant Loco Pilot and Technicians",
+      "category": "RAILWAYS",
+      "conductingBody": "Railway Recruitment Boards",
+      "sourceUrl": "https://www.rrbapply.gov.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 100
+          },
+          "widthPx": {
+            "min": 240,
+            "max": 600
+          },
+          "heightPx": {
+            "min": 320,
+            "max": 800
+          },
+          "targetPx": {
+            "width": 240,
+            "height": 320
+          },
+          "notes": "Recent RRB forms capture a live photo through the webcam or phone camera; upload a file only if the portal asks. Guides disagree on the size, so check the CEN. No name or date on the photo, not older than two months.",
+          "background": "Plain white or light"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 30,
+            "max": 49
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 200
+          },
+          "notes": "At least 140 x 60 px at 100 DPI or more, centred in a 35 mm x 20 mm box. Running hand, not capital letters.",
+          "ink": "Black"
+        }
+      ],
+      "certificates": [
+        {
+          "name": "SC/ST certificate for the free travel pass (if claiming)",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "max": 400
+          },
+          "notes": "Latest valid certificate as on the closing date."
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "shortName": "GATE",
+      "name": "Graduate Aptitude Test in Engineering",
+      "category": "ENTRANCE",
+      "conductingBody": "IIT Madras for the organising IITs and IISc",
+      "sourceUrl": "https://gate2027.iitm.ac.in/photograph_and_signature",
+      "lastVerified": "2026-10-24",
+      "verification": "verified",
+      "notes": "Photo and signature checked against the GATE 2027 photograph and signature page. Category and other certificates are listed on the portal's required documents page.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 5,
+            "max": 600
+          },
+          "widthPx": {
+            "min": 200,
+            "max": 530
+          },
+          "heightPx": {
+            "min": 260,
+            "max": 690
+          },
+          "targetPx": {
+            "width": 420,
+            "height": 540
+          },
+          "notes": "Colour photo, frontal view, face filling 60 to 70% of the frame. Width to height ratio 0.66 to 0.89. Regular spectacles are fine, sunglasses are not.",
+          "background": "Plain white"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 3,
+            "max": 300
+          },
+          "widthPx": {
+            "min": 250,
+            "max": 580
+          },
+          "heightPx": {
+            "min": 80,
+            "max": 180
+          },
+          "targetPx": {
+            "width": 480,
+            "height": 150
+          },
+          "notes": "Height to width ratio 1 : 2.75 to 1 : 3.75. Signature fills 70 to 80% of the image.",
+          "ink": "Black or dark blue"
+        }
+      ]
+    },
+    {
+      "id": "neet-ug",
+      "shortName": "NEET UG",
+      "name": "National Eligibility cum Entrance Test (UG)",
+      "category": "ENTRANCE",
+      "conductingBody": "National Testing Agency",
+      "sourceUrl": "https://neet.nta.nic.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 200
+          },
+          "widthPx": {
+            "min": 100,
+            "max": 1000
+          },
+          "heightPx": {
+            "min": 120,
+            "max": 1400
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 450
+          },
+          "notes": "Passport size, face covering at least 80% of the frame, with your name and the date of the photo printed below it. No Polaroid or computer-made photos.",
+          "background": "Plain white"
+        },
+        {
+          "kind": "postcard_photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 200
+          },
+          "widthPx": {
+            "min": 300,
+            "max": 1800
+          },
+          "heightPx": {
+            "min": 400,
+            "max": 2400
+          },
+          "targetPx": {
+            "width": 600,
+            "height": 900
+          },
+          "notes": "Postcard size (4 x 6 inches), face covering at least 80% of the frame, same photo as the passport size one.",
+          "background": "Plain white"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 4,
+            "max": 30
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 400,
+            "height": 200
+          },
+          "notes": "Full running signature on plain white paper, not in capital letters.",
+          "ink": "Black ballpoint pen"
+        },
+        {
+          "kind": "left_thumb",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 200
+          },
+          "widthPx": {
+            "min": 150,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 150,
+            "max": 800
+          },
+          "targetPx": {
+            "width": 300,
+            "height": 300
+          },
+          "notes": "Left thumb impression on white paper. Recent forms also ask for both hands' finger and thumb impressions.",
+          "ink": "Blue or black"
+        }
+      ],
+      "certificates": [
+        {
+          "name": "Category certificate (SC/ST/OBC-NCL/EWS, if claiming)",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 300
+          }
+        },
+        {
+          "name": "PwBD certificate (if claiming)",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 300
+          }
+        },
+        {
+          "name": "Citizenship certificate or embassy proof (OCI/foreign nationals)",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 300
+          }
+        }
+      ]
+    },
+    {
+      "id": "jee-main",
+      "shortName": "JEE Main",
+      "name": "Joint Entrance Examination (Main)",
+      "category": "ENTRANCE",
+      "conductingBody": "National Testing Agency",
+      "sourceUrl": "https://jeemain.nta.nic.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 200
+          },
+          "widthPx": {
+            "min": 100,
+            "max": 1000
+          },
+          "heightPx": {
+            "min": 120,
+            "max": 1400
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 450
+          },
+          "notes": "About 3.5 cm x 4.5 cm, recent colour photo with about 80% face coverage including ears. Guides quote 10 to 200 KB or 10 to 300 KB; the lower maximum passes both.",
+          "background": "Plain white"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 4,
+            "max": 30
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 150
+          },
+          "notes": "About 3.5 cm x 1.5 cm, signed on plain white paper.",
+          "ink": "Black or blue"
+        }
+      ],
+      "certificates": [
+        {
+          "name": "Class 10 certificate or birth certificate",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 300
+          }
+        },
+        {
+          "name": "Category certificate (if claiming)",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 300
+          }
+        },
+        {
+          "name": "PwD / UDID certificate (if claiming)",
+          "formats": [
+            "pdf"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 300
+          }
+        }
+      ]
+    },
+    {
+      "id": "ctet",
+      "shortName": "CTET",
+      "name": "Central Teacher Eligibility Test",
+      "category": "TEACHING",
+      "conductingBody": "Central Board of Secondary Education",
+      "sourceUrl": "https://ctet.nic.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 100
+          },
+          "widthPx": {
+            "min": 100,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 120,
+            "max": 1000
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 450
+          },
+          "notes": "3.5 cm x 4.5 cm, recent colour photo.",
+          "background": "Plain, light"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 3,
+            "max": 30
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 150
+          },
+          "notes": "3.5 cm x 1.5 cm.",
+          "ink": "Black or blue"
+        }
+      ]
+    },
+    {
+      "id": "afcat",
+      "shortName": "AFCAT",
+      "name": "Air Force Common Admission Test",
+      "category": "DEFENCE",
+      "conductingBody": "Indian Air Force",
+      "sourceUrl": "https://afcat.cdac.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 200,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 200,
+            "max": 800
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 350
+          },
+          "notes": "Recent colour photo. Guides quote 350 x 350 px; check the notification for any name or date rule.",
+          "background": "Plain, light"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 200,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 100,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 150
+          },
+          "notes": "Signed on white paper.",
+          "ink": "Black"
+        },
+        {
+          "kind": "left_thumb",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 200,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 200,
+            "max": 800
+          },
+          "targetPx": {
+            "width": 350,
+            "height": 350
+          },
+          "notes": "Left thumb impression on white paper.",
+          "ink": "Blue or black"
+        }
+      ]
+    },
+    {
+      "id": "lic-aao",
+      "shortName": "LIC AAO",
+      "name": "Assistant Administrative Officer (Generalist)",
+      "category": "BANKING",
+      "conductingBody": "Life Insurance Corporation of India",
+      "sourceUrl": "https://licindia.in/",
+      "lastVerified": null,
+      "verification": "community",
+      "notes": "Community sourced. LIC has used the IBPS-style upload sizes; check the current notification before you upload.",
+      "documents": [
+        {
+          "kind": "photo",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 200,
+            "max": 200
+          },
+          "heightPx": {
+            "min": 230,
+            "max": 230
+          },
+          "targetPx": {
+            "width": 200,
+            "height": 230
+          },
+          "notes": "3.5 cm x 4.5 cm. No cap or dark glasses; religious headwear is fine if the face is visible. A live photo is also captured during registration.",
+          "background": "Light, preferably white"
+        },
+        {
+          "kind": "signature",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 10,
+            "max": 20
+          },
+          "widthPx": {
+            "min": 140,
+            "max": 140
+          },
+          "heightPx": {
+            "min": 60,
+            "max": 60
+          },
+          "targetPx": {
+            "width": 140,
+            "height": 60
+          },
+          "notes": "3.5 cm x 1.5 cm, signed on white paper, not in capital letters.",
+          "ink": "Black"
+        },
+        {
+          "kind": "left_thumb",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 20,
+            "max": 50
+          },
+          "widthPx": {
+            "min": 240,
+            "max": 240
+          },
+          "heightPx": {
+            "min": 240,
+            "max": 240
+          },
+          "targetPx": {
+            "width": 240,
+            "height": 240
+          },
+          "notes": "3 cm x 3 cm, on white paper.",
+          "ink": "Blue or black"
+        },
+        {
+          "kind": "declaration",
+          "formats": [
+            "jpeg"
+          ],
+          "sizeKb": {
+            "min": 50,
+            "max": 100
+          },
+          "widthPx": {
+            "min": 800,
+            "max": 800
+          },
+          "heightPx": {
+            "min": 400,
+            "max": 400
+          },
+          "targetPx": {
+            "width": 800,
+            "height": 400
+          },
+          "notes": "10 cm x 5 cm. Write in English, in your own handwriting: \"I, (name of the candidate), hereby declare that all the information submitted by me in the application form is correct, true and valid. I will present the supporting documents as and when required.\" Not in capital letters.",
+          "ink": "Black"
         }
       ]
     }

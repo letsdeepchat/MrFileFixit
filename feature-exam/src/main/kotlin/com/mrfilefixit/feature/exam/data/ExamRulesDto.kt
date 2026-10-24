@@ -12,6 +12,7 @@ internal data class ExamRulesFileDto(
 @Serializable
 internal data class ExamProfileDto(
     val id: String,
+    val shortName: String,
     val name: String,
     val category: String,
     val conductingBody: String,
@@ -20,6 +21,7 @@ internal data class ExamProfileDto(
     val verification: String,
     val notes: String? = null,
     val documents: List<DocumentDto>,
+    val certificates: List<CertificateDto> = emptyList(),
     val composite: CompositeDto? = null,
 )
 
@@ -32,6 +34,16 @@ internal data class DocumentDto(
     val heightPx: RangeDto,
     val targetPx: SizeDto,
     val kilobyteBytes: Int = 1024,
+    val notes: String? = null,
+    val background: String? = null,
+    val ink: String? = null,
+)
+
+@Serializable
+internal data class CertificateDto(
+    val name: String,
+    val formats: List<String>,
+    val sizeKb: RangeDto,
     val notes: String? = null,
 )
 
