@@ -68,18 +68,24 @@ object ThumbnailCache {
      * Callers only ask for this after the PDF passed the input limits and is known not to be encrypted.
      * Damaged or protected files still fail safely: PdfRenderer throws and we show the placeholder.
      */
-    private fun renderFirstPage(context: Context, uri: Uri, sizePx: Int): Bitmap? = try {
-        context.contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
-            PdfRenderer(descriptor).use { renderer ->
-                if (renderer.pageCount == 0) null else renderer.openPage(0).use { it.toBitmap(sizePx) }
+    private fun renderFirstPage(context: Context, uri: Uri, sizePx: Int): Bitmap? {
+        val resolver = context.contentResolver
+        return try {
+            val descriptor = resolver.openFileDescriptor(uri, "r") ?: return null
+            try {
+                PdfRenderer(descriptor).use { renderer ->
+                    if (renderer.pageCount == 0) null else renderer.openPage(0).use { it.toBitmap(sizePx) }
+                }
+            } finally {
+                descriptor.close()
             }
+        } catch (_: IOException) {
+            null
+        } catch (_: SecurityException) {
+            null
+        } catch (_: IllegalArgumentException) {
+            null
         }
-    } catch (_: IOException) {
-        null
-    } catch (_: SecurityException) {
-        null
-    } catch (_: IllegalArgumentException) {
-        null
     }
 
     private fun PdfRenderer.Page.toBitmap(sizePx: Int): Bitmap {
