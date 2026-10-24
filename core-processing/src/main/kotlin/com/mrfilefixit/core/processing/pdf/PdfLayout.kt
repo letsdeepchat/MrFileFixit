@@ -1,5 +1,6 @@
 package com.mrfilefixit.core.processing.pdf
 
+import com.mrfilefixit.core.domain.pdf.PageOrientation
 import com.mrfilefixit.core.domain.pdf.PageSize
 import com.mrfilefixit.core.domain.pdf.Position
 
@@ -9,12 +10,24 @@ internal object PdfLayout {
 
     private const val PX_TO_PT_AT_150_DPI = 72f / 150f
 
-    /** Page size for an image: a fixed paper size (rotated to match the image) or the image itself at 150 dpi. */
-    fun pageBox(pageSize: PageSize, imageWidthPx: Int, imageHeightPx: Int): Box {
+    /**
+     * Page size for an image: a fixed paper size in [orientation] (AUTO turns it to match the image), or
+     * the image itself at 150 dpi.
+     */
+    fun pageBox(
+        pageSize: PageSize,
+        imageWidthPx: Int,
+        imageHeightPx: Int,
+        orientation: PageOrientation = PageOrientation.AUTO,
+    ): Box {
         if (pageSize == PageSize.FIT_IMAGE) {
             return Box(0f, 0f, imageWidthPx * PX_TO_PT_AT_150_DPI, imageHeightPx * PX_TO_PT_AT_150_DPI)
         }
-        val landscape = imageWidthPx > imageHeightPx
+        val landscape = when (orientation) {
+            PageOrientation.AUTO -> imageWidthPx > imageHeightPx
+            PageOrientation.PORTRAIT -> false
+            PageOrientation.LANDSCAPE -> true
+        }
         val w = if (landscape) pageSize.heightPt else pageSize.widthPt
         val h = if (landscape) pageSize.widthPt else pageSize.heightPt
         return Box(0f, 0f, w, h)

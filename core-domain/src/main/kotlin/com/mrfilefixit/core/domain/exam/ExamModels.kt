@@ -2,17 +2,20 @@ package com.mrfilefixit.core.domain.exam
 
 import com.mrfilefixit.core.domain.image.ImageFormat
 
-enum class ExamCategory { SSC, UPSC, IBPS, RRB, NEET, STATE_PSC, OTHER }
+/** Declaration order is the order of the category filter pills. */
+enum class ExamCategory { SSC, UPSC, BANKING, RAILWAYS, DEFENCE, ENTRANCE, TEACHING, STATE_PSC, OTHER }
 
-enum class DocumentKind { PHOTO, SIGNATURE, LEFT_THUMB, DECLARATION, OTHER }
+enum class DocumentKind { PHOTO, POSTCARD_PHOTO, SIGNATURE, LEFT_THUMB, DECLARATION, OTHER }
 
 enum class VerificationStatus {
-    /** Checked by a maintainer against the official notification on [ExamProfile.lastVerified]. */
+    /** Checked by a maintainer against the official page or notification on [ExamProfile.lastVerified]. */
     VERIFIED,
 
-    /** Sample data. Must be checked against the official notification before use. */
-    UNVERIFIED,
+    /** Collected from public guides and past notices. Must be checked against the official notification. */
+    COMMUNITY,
 }
+
+enum class CertificateFormat { PDF, JPEG }
 
 /** Inclusive range. A null bound means "no limit on that side". */
 data class IntBounds(val min: Int?, val max: Int?) {
@@ -46,6 +49,10 @@ data class DocumentSpec(
     val targetHeight: Int,
     val kilobyteBytes: Int = KIB,
     val notes: String? = null,
+    /** Background the notice asks for, as written there (e.g. "Plain white"). */
+    val background: String? = null,
+    /** Ink colour for signatures, thumb impressions and declarations. */
+    val ink: String? = null,
 ) {
     init {
         require(formats.isNotEmpty()) { "At least one format" }
@@ -92,8 +99,29 @@ data class CompositeSpec(
     }
 }
 
+/**
+ * A supporting document (marksheet, category certificate, ID) the portal asks for. The app does not
+ * generate these; it shows the limits and sends the user to the PDF tools to compress a scan.
+ */
+data class CertificateSpec(
+    val name: String,
+    val formats: Set<CertificateFormat>,
+    val minKb: Int,
+    val maxKb: Int,
+    val notes: String? = null,
+) {
+    init {
+        require(name.isNotBlank()) { "Certificate needs a name" }
+        require(formats.isNotEmpty()) { "At least one format" }
+        require(minKb in 0..maxKb && maxKb > 0) { "Invalid KB range" }
+    }
+}
+
 data class ExamProfile(
     val id: String,
+    /** Short label used on cards and chips, e.g. "SSC CGL". */
+    val shortName: String,
+    /** Full exam name, e.g. "Combined Graduate Level Examination". */
     val name: String,
     val category: ExamCategory,
     val conductingBody: String,
@@ -104,10 +132,11 @@ data class ExamProfile(
     val documents: List<DocumentSpec>,
     val composite: CompositeSpec? = null,
     val notes: String? = null,
+    val certificates: List<CertificateSpec> = emptyList(),
 ) {
     init {
         require(documents.isNotEmpty()) { "A profile needs at least one document" }
-        require(verification == VerificationStatus.UNVERIFIED || lastVerified != null) {
+        require(verification == VerificationStatus.COMMUNITY || lastVerified != null) {
             "A verified profile needs a lastVerified date"
         }
     }

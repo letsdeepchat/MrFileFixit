@@ -14,6 +14,19 @@ enum class PageSize(val widthPt: Float, val heightPt: Float) {
     FIT_IMAGE(0f, 0f),
 }
 
+/** Page orientation for images placed on paper. [AUTO] turns each page to match its image. */
+enum class PageOrientation { AUTO, PORTRAIT, LANDSCAPE }
+
+/** Margin around images on paper, in PDF points (1 mm = 72 / 25.4 pt). */
+enum class PageMargin(val points: Float) {
+    NONE(0f),
+    SMALL(14.17f), // 5 mm
+    BIG(28.35f), // 10 mm
+}
+
+/** How Split PDF divides the document. */
+enum class SplitMode { CUSTOM, EVERY_N, SINGLE_PAGES }
+
 enum class Position { TOP_LEFT, TOP_CENTER, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT }
 
 enum class CompressionLevel(val dpi: Int, val jpegQuality: Int) {
@@ -74,6 +87,7 @@ sealed interface PdfOperation {
         val marginPt: Float,
         override val outputDir: String,
         override val outputBaseName: String,
+        val orientation: PageOrientation = PageOrientation.AUTO,
     ) : PdfOperation
 
     data class ToImages(
