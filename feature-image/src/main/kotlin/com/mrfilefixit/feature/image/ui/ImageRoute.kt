@@ -1,15 +1,11 @@
 package com.mrfilefixit.feature.image.ui
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -20,8 +16,12 @@ import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.share.shareFiles
 import kotlinx.serialization.Serializable
 
+/**
+ * Image tools. [examId] and [document] (a DocumentKind name) open Resize with that exam upload's preset
+ * applied: exact pixels, crop to fill and the exam's KB window.
+ */
 @Serializable
-data object ImageRoute
+data class ImageRoute(val examId: String? = null, val document: String? = null)
 
 fun NavGraphBuilder.imageScreen() {
     composable<ImageRoute> { ImageToolRoute() }
@@ -48,6 +48,7 @@ private fun ImageToolRoute(viewModel: ImageToolViewModel = hiltViewModel()) {
             onTool = viewModel::onToolSelected,
             onPick = viewModel::onFilesPicked,
             onOptions = viewModel::onOptionsChanged,
+            onResize = viewModel::onResizeEdit,
             onRun = viewModel::onRun,
             onCancel = viewModel::onCancel,
             onRevealed = viewModel::onResultRevealed,
@@ -60,8 +61,5 @@ private fun ImageToolRoute(viewModel: ImageToolViewModel = hiltViewModel()) {
             canEncode = viewModel::canEncode,
         )
     }
-    Box(Modifier.fillMaxSize()) {
-        ImageToolScreen(state, remaining, actions)
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
-    }
+    ImageToolScreen(state, remaining, actions, snackbarHost = { SnackbarHost(snackbar) })
 }

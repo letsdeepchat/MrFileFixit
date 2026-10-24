@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="image_title">इमेज टूल</string>
-    <string name="image_pick">इमेज चुनें</string>
     <plurals name="image_selected">
         <item quantity="one">%1$d इमेज चुनी गई</item>
         <item quantity="other">%1$d इमेज चुनी गईं</item>
     </plurals>
-    <string name="image_tool">टूल</string>
     <string name="image_tool_RESIZE">साइज़ बदलें</string>
     <string name="image_tool_CROP">क्रॉप करें</string>
     <string name="image_tool_ROTATE">घुमाएँ</string>
     <string name="image_tool_COMPRESS">छोटा करें</string>
     <string name="image_tool_CONVERT">फ़ॉर्मैट बदलें</string>
     <string name="image_tool_STRIP_EXIF">मेटाडेटा हटाएँ</string>
-    <string name="image_width">चौड़ाई (px)</string>
-    <string name="image_height">ऊँचाई (px)</string>
+    <string name="image_width">चौड़ाई</string>
+    <string name="image_height">ऊँचाई</string>
     <string name="image_keep_aspect">अनुपात बनाए रखें</string>
     <string name="image_aspect">अनुपात</string>
     <string name="image_aspect_free">मूल</string>
@@ -23,7 +21,6 @@
     <string name="image_format">आउटपुट फ़ॉर्मैट</string>
     <string name="image_strip_note">लोकेशन, कैमरा और तारीख की जानकारी हटाता है। JPEG और PNG बिना दोबारा कम्प्रेस किए साफ़ होते हैं।</string>
     <string name="image_crop_single_only">क्रॉप एक बार में एक ही इमेज पर काम करता है।</string>
-    <string name="image_run">प्रोसेस करें</string>
     <plurals name="image_done">
         <item quantity="one">%1$d इमेज तैयार</item>
         <item quantity="other">%1$d इमेज तैयार</item>
@@ -39,4 +36,28 @@
     <string name="image_heic_unavailable">इस डिवाइस पर HEIC आउटपुट सपोर्टेड नहीं है।</string>
     <string name="notification_channel_jobs">फ़ाइल जॉब</string>
     <string name="notification_job_running">इमेज प्रोसेस हो रही हैं…</string>
+    <string name="image_pick_title">इमेज चुनने के लिए टैप करें</string>
+    <string name="image_pick_hint">JPG, PNG, WebP या HEIC • अधिकतम %1$d इमेज</string>
+    <string name="image_original_size">मूल साइज़: %1$d × %2$d px</string>
+    <string name="image_rotate_by">इतना घुमाएँ</string>
+    <string name="image_unit_kb">KB</string>
+    <string name="image_unit_px">px</string>
+    <string name="image_target_dimensions">लक्ष्य साइज़</string>
+    <string name="image_keep_aspect_hint">एक तरफ़ बदलने पर दूसरी अपने-आप बदलती है</string>
+    <string name="image_presets">प्रीसेट</string>
+    <string name="image_size_px">%1$d × %2$d</string>
+    <string name="image_preset_passport">पासपोर्ट</string>
+    <string name="image_preset_exam">%1$s %2$s</string>
+    <string name="image_preset_summary">आउटपुट %1$d × %2$d px में क्रॉप होगा और %3$d–%4$d KB तक कम्प्रेस होगा। अपलोड से पहले परीक्षा की सूचना ज़रूर जाँचें।</string>
+    <string name="image_kind_PHOTO">फ़ोटो</string>
+    <string name="image_kind_POSTCARD_PHOTO">पोस्टकार्ड फ़ोटो</string>
+    <string name="image_kind_SIGNATURE">हस्ताक्षर</string>
+    <string name="image_kind_LEFT_THUMB">अंगूठा</string>
+    <string name="image_kind_DECLARATION">घोषणा</string>
+    <string name="image_kind_OTHER">दस्तावेज़</string>
+    <string name="image_start_over">फिर से शुरू करें</string>
+    <plurals name="image_run">
+        <item quantity="one">%1$d इमेज प्रोसेस करें</item>
+        <item quantity="other">%1$d इमेज प्रोसेस करें</item>
+    </plurals>
 </resources>
