@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="scan_title">Scan &amp; OCR</string>
-    <string name="scan_intro">Scan paper documents with your camera, or pick an image or PDF to read its text. Everything is processed on this phone.</string>
-    <string name="scan_start">Scan document</string>
-    <string name="scan_pick_ocr">Pick image or PDF for text</string>
+    <string name="scan_intro">Turn paper into a clean PDF, or read the text in an image or PDF.</string>
     <plurals name="scan_pages">
         <item quantity="one">%1$d scanned page</item>
         <item quantity="other">%1$d scanned pages</item>
@@ -27,4 +25,9 @@
     <string name="scan_copied">Text copied</string>
     <string name="scan_share_text">Share text</string>
     <string name="scan_importing">Saving scan…</string>
+    <string name="scan_camera_title">Scan with Camera</string>
+    <string name="scan_camera_subtitle">Auto-detect document edges, perspective crop, and enhance</string>
+    <string name="scan_storage_title">Extract Text from Storage</string>
+    <string name="scan_storage_subtitle">Select existing JPG, PNG, or PDF to extract text</string>
+    <string name="scan_privacy">Everything is processed locally on this device. Your documents never leave your phone.</string>
 </resources>

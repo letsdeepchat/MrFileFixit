@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="exam_title">Exam forms</string>
-    <string name="exam_picker_heading">Pick your exam</string>
     <string name="exam_picker_empty">Select an exam to see its photo and signature rules.</string>
     <string name="exam_category_SSC">SSC</string>
     <string name="exam_category_UPSC">UPSC</string>
-    <string name="exam_category_IBPS">Banking (IBPS)</string>
-    <string name="exam_category_RRB">Railways (RRB)</string>
-    <string name="exam_category_NEET">NEET</string>
     <string name="exam_category_STATE_PSC">State PSC</string>
     <string name="exam_category_OTHER">Other</string>
     <string name="exam_source">Source: %1$s</string>
@@ -16,7 +12,6 @@
     <string name="exam_doc_LEFT_THUMB">Left thumb impression</string>
     <string name="exam_doc_DECLARATION">Handwritten declaration</string>
     <string name="exam_doc_OTHER">Document</string>
-    <string name="exam_requirements">Required: %1$s, %2$s, %3$s × %4$s</string>
     <string name="exam_your_file">Your file now</string>
     <string name="exam_fix_button">Fix to fit</string>
     <string name="exam_result_heading">Ready to upload</string>
@@ -28,4 +23,43 @@
     <string name="exam_crop_hint">Drag and pinch to position. The frame matches the required shape.</string>
     <string name="exam_saved">Saved</string>
     <string name="cd_exam_verified_badge">Verification status: %1$s</string>
+    <string name="exam_category_all">All</string>
+    <string name="exam_category_BANKING">Banking</string>
+    <string name="exam_category_RAILWAYS">Railways</string>
+    <string name="exam_category_DEFENCE">Defence</string>
+    <string name="exam_category_ENTRANCE">NTA / Entrance</string>
+    <string name="exam_category_TEACHING">Teaching</string>
+    <string name="exam_search_hint">Search exams, e.g. SSC CGL or GATE</string>
+    <plurals name="exam_count">
+        <item quantity="one">%1$d exam</item>
+        <item quantity="other">%1$d exams</item>
+    </plurals>
+    <string name="exam_no_matches">No exams match “%1$s”.</string>
+    <string name="exam_no_matches_category">No exams in this category yet.</string>
+    <string name="exam_clear_filters">Clear search and filters</string>
+    <string name="exam_chip_photo">Photo (%1$s)</string>
+    <string name="exam_chip_sign">Sign (%1$s)</string>
+    <string name="exam_chip_docs">Docs (%1$s)</string>
+    <plurals name="exam_chip_extra">
+        <item quantity="one">+%1$d more upload</item>
+        <item quantity="other">+%1$d more uploads</item>
+    </plurals>
+    <string name="exam_up_to_kb">Up to %1$s KB</string>
+    <string name="exam_doc_POSTCARD_PHOTO">Postcard-size photograph</string>
+    <string name="exam_tab_photo">Photo</string>
+    <string name="exam_tab_signature">Signature</string>
+    <string name="exam_tab_other">Other uploads</string>
+    <string name="exam_tab_certificates">Certificates</string>
+    <string name="exam_prepare_files">Prepare Files for This Exam</string>
+    <string name="exam_prepare_files_hint">Opens Image tools with this exam\'s pixel and KB limits already set.</string>
+    <string name="exam_req_dimensions">Dimensions</string>
+    <string name="exam_dimensions_value">%1$s × %2$s px</string>
+    <string name="exam_req_size">File size</string>
+    <string name="exam_req_format">Format</string>
+    <string name="exam_req_background">Background</string>
+    <string name="exam_req_ink">Ink</string>
+    <string name="exam_req_notes">Notes</string>
+    <string name="exam_choose_for">Choose %1$s</string>
+    <string name="exam_no_certificates">This exam lists no certificate uploads here. Check the notice for any documents asked at a later stage.</string>
+    <string name="exam_compress_pdf">Compress PDF to fit</string>
 </resources>

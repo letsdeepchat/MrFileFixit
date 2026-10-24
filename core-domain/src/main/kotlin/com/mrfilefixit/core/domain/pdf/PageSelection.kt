@@ -42,6 +42,19 @@ object PageSelection {
     fun everyNPages(n: Int, pageCount: Int): List<IntRange> =
         (1..pageCount step n.coerceAtLeast(1)).map { start -> start..minOf(start + n - 1, pageCount) }
 
+    /**
+     * The files a split will produce, one range per file. [ranges] is read for [SplitMode.CUSTOM] and
+     * [everyN] for [SplitMode.EVERY_N]. The UI shows this as a live preview before the job runs.
+     */
+    fun splitPlan(mode: SplitMode, ranges: String, everyN: Int?, pageCount: Int): AppResult<List<IntRange>> =
+        when {
+            pageCount <= 0 -> failure(AppError.InvalidPageSelection(pageCount))
+            mode == SplitMode.CUSTOM -> parseRanges(ranges, pageCount)
+            mode == SplitMode.SINGLE_PAGES -> success(everyNPages(1, pageCount))
+            everyN == null || everyN !in 1..pageCount -> failure(AppError.InvalidPageSelection(pageCount))
+            else -> success(everyNPages(everyN, pageCount))
+        }
+
     private fun parseToken(token: String, pageCount: Int): IntProgression? {
         val parts = token.split('-').map { it.trim() }
         return when (parts.size) {

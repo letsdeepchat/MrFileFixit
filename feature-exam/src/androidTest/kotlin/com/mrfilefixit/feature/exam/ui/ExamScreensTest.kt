@@ -1,21 +1,29 @@
 package com.mrfilefixit.feature.exam.ui
 
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
-import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.mrfilefixit.core.domain.exam.CertificateSpec
+import com.mrfilefixit.core.domain.exam.DocumentKind
 import com.mrfilefixit.core.domain.exam.SpecCheck
 import com.mrfilefixit.core.domain.exam.SpecReport
+import com.mrfilefixit.core.domain.exam.VerificationStatus
 import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.ImageInfo
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.ui.R as CoreR
+import com.mrfilefixit.core.ui.format.formatIsoDate
 import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.feature.exam.R
 import org.junit.Assert.assertEquals
@@ -30,28 +38,43 @@ class ExamScreensTest {
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
+    private fun catalogActions(onSelect: (String) -> Unit = {}) = ExamCatalogActions(onSelect, {}, {}, {}, {})
+
     @Test
-    fun pickerShowsDisclaimerAndSelectsExam() {
+    fun catalogShowsDisclaimerAndSelectsExam() {
         var selected: String? = null
         compose.setContent {
             MffTheme(dynamicColor = false) {
-                ExamPickerScreen(ExamPickerUiState.Loaded(PreviewProfiles), null, { selected = it }, {})
+                ExamCatalogScreen(ExamPickerUiState.Loaded(PreviewProfiles), null, catalogActions { selected = it })
             }
         }
         compose.onNodeWithText(context.getString(CoreR.string.disclaimer_title)).assertIsDisplayed()
-        compose.onNodeWithText("IBPS Probationary Officer (PO)").performClick()
+        compose.onNodeWithTag("exam_list").performScrollToNode(hasTestTag("exam_card_ibps-po"))
+        compose.onNodeWithTag("exam_card_ibps-po").performClick()
         assertEquals("ibps-po", selected)
     }
 
     @Test
-    fun unverifiedProfilesAreLabelled() {
+    fun onlyCheckedProfilesClaimTheOfficialPage() {
+        val gate = PreviewProfiles.single { it.verification == VerificationStatus.VERIFIED }
+        var verifiedLabel = ""
         compose.setContent {
+            val date = formatIsoDate(gate.lastVerified.orEmpty())
+            verifiedLabel = stringResource(CoreR.string.verification_verified, date)
             MffTheme(dynamicColor = false) {
-                ExamPickerScreen(ExamPickerUiState.Loaded(PreviewProfiles), null, {}, {})
+                ExamCatalogScreen(ExamPickerUiState.Loaded(PreviewProfiles), null, catalogActions())
             }
         }
-        val label = context.getString(CoreR.string.verification_unverified)
-        assertEquals(PreviewProfiles.size, compose.onAllNodesWithText(label).fetchSemanticsNodes().size)
+        val community = context.getString(CoreR.string.verification_community)
+        PreviewProfiles.forEach { profile ->
+            val card = "exam_card_${profile.id}"
+            compose.onNodeWithTag("exam_list").performScrollToNode(hasTestTag(card))
+            if (profile.verification == VerificationStatus.VERIFIED) {
+                compose.onNodeWithTag(card).assert(hasText(verifiedLabel)).assert(hasText(community).not())
+            } else {
+                compose.onNodeWithTag(card).assert(hasText(community)).assert(hasText(verifiedLabel).not())
+            }
+        }
     }
 
     @Test
@@ -97,16 +120,22 @@ class ExamScreensTest {
                         override fun onShare(key: SlotKey) = Unit
                         override fun onMakeComposite() = Unit
                         override fun onRetryLoad() = Unit
+                        override fun onPrepareInImageTools(kind: DocumentKind) = Unit
+                        override fun onCompressPdf(certificate: CertificateSpec) = Unit
                     },
                 )
             }
         }
-        compose.onNodeWithText(context.getString(R.string.exam_your_file)).assertIsDisplayed()
+        val yourFile = context.getString(R.string.exam_your_file)
+        compose.onNodeWithTag("exam_detail").performScrollToNode(hasText(yourFile))
+        compose.onNodeWithText(yourFile).assertIsDisplayed()
         // Each checklist row is a single TalkBack node whose description carries the verdict.
         compose.onAllNodesWithContentDescription(context.getString(CoreR.string.check_failed), substring = true)
             .fetchSemanticsNodes().let { assertEquals(3, it.size) }
         // The crop box pushes the actions below the fold on small screens (the CI emulator is 320x640 dp).
-        compose.onNodeWithText(context.getString(R.string.exam_fix_button)).performScrollTo().performClick()
+        val fix = context.getString(R.string.exam_fix_button)
+        compose.onNodeWithTag("exam_detail").performScrollToNode(hasText(fix))
+        compose.onNodeWithText(fix).performClick()
         assertEquals(true, fixed)
     }
 }

@@ -1,10 +1,13 @@
 package com.mrfilefixit.feature.image.ui
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.mrfilefixit.core.domain.batch.BatchPolicy
 import com.mrfilefixit.core.domain.batch.BatchQuotaRepository
 import com.mrfilefixit.core.domain.dispatchers.ApplicationScope
+import com.mrfilefixit.core.domain.exam.GetExamProfilesUseCase
 import com.mrfilefixit.core.domain.file.DescribeFileUseCase
 import com.mrfilefixit.core.domain.file.DestinationUri
 import com.mrfilefixit.core.domain.file.FileRef
@@ -56,6 +59,8 @@ data class ImageOptions(
     val width: String = "1080",
     val height: String = "1080",
     val keepAspect: Boolean = true,
+    /** Set by a preset; cleared as soon as the user edits the size by hand. */
+    val presetId: String? = null,
     /** Crop frame aspect (w / h); null = image's own aspect. */
     val cropAspect: Float? = null,
     val crop: NormalizedRect = NormalizedRect.FULL,
@@ -65,9 +70,21 @@ data class ImageOptions(
     val format: ImageFormat = ImageFormat.JPEG,
 )
 
+/** Edits on the Resize form. Width and height stay in the photo's ratio while [ImageOptions.keepAspect] is on. */
+sealed interface ResizeEdit {
+    data class Width(val text: String) : ResizeEdit
+
+    data class Height(val text: String) : ResizeEdit
+
+    data class KeepAspect(val keep: Boolean) : ResizeEdit
+
+    data class Preset(val preset: ResizePreset) : ResizeEdit
+}
+
 data class ImageToolUiState(
     val tool: ImageTool = ImageTool.RESIZE,
     val files: List<FileRef> = emptyList(),
+    val presets: List<ResizePreset> = listOf(ResizePreset.PASSPORT),
     /** Header info of the first file, used to size the crop preview. */
     val firstInfo: ImageInfo? = null,
     val options: ImageOptions = ImageOptions(),
@@ -79,6 +96,7 @@ data class ImageToolUiState(
     val isBatch: Boolean get() = files.size > 1
     val outcome: BatchOutcome? get() = (job as? JobState.Success)?.value?.takeIf { resultRevealed }
     val canRun: Boolean get() = files.isNotEmpty() && (tool != ImageTool.CROP || files.size == 1)
+    val activePreset: ResizePreset? get() = presets.firstOrNull { it.id == options.presetId }
 }
 
 sealed interface ImageEffect {
@@ -93,6 +111,8 @@ sealed interface ImageEffect {
  */
 @HiltViewModel
 class ImageToolViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val getExamProfiles: GetExamProfilesUseCase,
     private val describeFile: DescribeFileUseCase,
     private val batchImages: BatchImageUseCase,
     private val imageProcessor: ImageProcessor,
@@ -123,6 +143,57 @@ class ImageToolViewModel @Inject constructor(
         viewModelScope.launch {
             runner.state.collect { job -> if (!state.value.runsInBackground) applyJob(job) }
         }
+        val route = savedStateHandle.toRoute<ImageRoute>()
+        viewModelScope.launch { loadPresets(route) }
+    }
+
+    /** Exam presets come from the bundled rules. Opened from an exam, that exam's upload is pre-selected. */
+    private suspend fun loadPresets(route: ImageRoute) {
+        val profiles = (getExamProfiles() as? Result.Success)?.value.orEmpty()
+        val presets = ResizePresets.build(profiles, route.examId)
+        mutableState.update { it.copy(presets = presets) }
+        val requested = presets.firstOrNull { it.spec != null && it.id == "${route.examId}:${route.document}" }
+        if (requested != null) {
+            mutableState.update { it.copy(tool = ImageTool.RESIZE) }
+            onResizeEdit(ResizeEdit.Preset(requested))
+        }
+    }
+
+    fun onResizeEdit(edit: ResizeEdit) = mutableState.update { s ->
+        val o = s.options
+        val info = s.firstInfo
+        val synced = when (edit) {
+            is ResizeEdit.Width -> {
+                val text = edit.text.digitsOnly()
+                val value = text.toIntOrNull()
+                val height = if (o.keepAspect && info != null && value != null) {
+                    AspectRatioSync.heightFor(value, info.width, info.height).toString()
+                } else {
+                    o.height
+                }
+                o.copy(width = text, height = height, presetId = null)
+            }
+            is ResizeEdit.Height -> {
+                val text = edit.text.digitsOnly()
+                val value = text.toIntOrNull()
+                val width = if (o.keepAspect && info != null && value != null) {
+                    AspectRatioSync.widthFor(value, info.width, info.height).toString()
+                } else {
+                    o.width
+                }
+                o.copy(height = text, width = width, presetId = null)
+            }
+            is ResizeEdit.KeepAspect -> o.copy(keepAspect = edit.keep, presetId = null).withSyncedHeight(info)
+            // An exam preset is an exact box: crop to fill rather than keep the photo's ratio.
+            is ResizeEdit.Preset -> o.copy(
+                width = edit.preset.width.toString(),
+                height = edit.preset.height.toString(),
+                keepAspect = false,
+                presetId = edit.preset.id,
+                format = if (edit.preset.spec != null) ImageFormat.JPEG else o.format,
+            )
+        }
+        s.copy(options = synced)
     }
 
     private fun applyJob(job: JobState<BatchOutcome>) =
@@ -141,7 +212,11 @@ class ImageToolViewModel @Inject constructor(
                 is Result.Success -> {
                     mutableState.update { it.copy(files = described.value, firstInfo = null, inputError = null) }
                     imageProcessor.readInfo(described.value.first()).fold(
-                        onSuccess = { info -> mutableState.update { it.copy(firstInfo = info) } },
+                        onSuccess = { info ->
+                            mutableState.update {
+                                it.copy(firstInfo = info, options = it.options.withSyncedHeight(info))
+                            }
+                        },
                         onFailure = { error -> mutableState.update { it.copy(inputError = error) } },
                     )
                 }
@@ -210,16 +285,27 @@ class ImageToolViewModel @Inject constructor(
     private fun buildSpec(s: ImageToolUiState): ImageBatchSpec {
         val o = s.options
         val quality = EncodeTarget.Quality(o.quality.coerceIn(1, MAX_QUALITY))
+        val examSpec = s.activePreset?.spec
         return when (s.tool) {
             ImageTool.RESIZE -> ImageBatchSpec(
                 listOf(
                     ImageOp.Resize(
                         o.width.toIntOrNull()?.coerceIn(1, limits.maxDimension) ?: DEFAULT_SIDE,
                         o.height.toIntOrNull()?.coerceIn(1, limits.maxDimension) ?: DEFAULT_SIDE,
-                        if (o.keepAspect) ResizeMode.FIT else ResizeMode.STRETCH,
+                        when {
+                            examSpec != null -> ResizeMode.FILL
+                            o.keepAspect -> ResizeMode.FIT
+                            else -> ResizeMode.STRETCH
+                        },
                     ),
                 ),
-                OutputSpec(o.format, quality),
+                if (examSpec != null) {
+                    // Same KB targeting as the exam flow: aim inside the window under either KB reading.
+                    val range = examSpec.targetBytes
+                    OutputSpec(ImageFormat.JPEG, EncodeTarget.SizeRange(range.first, range.last, allowPadding = true))
+                } else {
+                    OutputSpec(o.format, quality)
+                },
                 "-resized",
             )
             ImageTool.CROP -> ImageBatchSpec(listOf(ImageOp.Crop(o.crop)), OutputSpec(o.format, quality), "-cropped")
@@ -287,7 +373,7 @@ class ImageToolViewModel @Inject constructor(
         runner.reset()
         workObserver?.cancel()
         discardOutputs()
-        mutableState.update { ImageToolUiState(tool = it.tool, options = it.options) }
+        mutableState.update { ImageToolUiState(tool = it.tool, presets = it.presets, options = it.options) }
     }
 
     private fun discardOutputs() {
@@ -302,7 +388,19 @@ class ImageToolViewModel @Inject constructor(
         super.onCleared()
     }
 
+    private fun String.digitsOnly(): String = filter(Char::isDigit).take(MAX_DIGITS)
+
+    private fun ImageOptions.withSyncedHeight(info: ImageInfo?): ImageOptions {
+        val width = width.toIntOrNull()
+        return if (keepAspect && info != null && width != null && presetId == null) {
+            copy(height = AspectRatioSync.heightFor(width, info.width, info.height).toString())
+        } else {
+            this
+        }
+    }
+
     private companion object {
+        const val MAX_DIGITS = 5
         const val STOP_TIMEOUT_MS = 5_000L
         const val MAX_QUALITY = 100
         const val DEFAULT_SIDE = 1080

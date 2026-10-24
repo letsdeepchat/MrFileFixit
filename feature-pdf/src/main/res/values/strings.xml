@@ -2,7 +2,6 @@
 <!-- Page-range examples keep the ASCII hyphen: it is what the page parser accepts (TypographyDashes ignored). -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="pdf_title">PDF tools</string>
-    <string name="pdf_pick_tool">Pick a tool</string>
     <string name="pdf_tool_MERGE">Merge PDFs</string>
     <string name="pdf_tool_SPLIT">Split PDF</string>
     <string name="pdf_tool_EXTRACT">Extract pages</string>
@@ -16,7 +15,6 @@
     <string name="pdf_tool_PAGE_NUMBERS">Add page numbers</string>
     <string name="pdf_tool_PROTECT">Add password</string>
     <string name="pdf_tool_UNLOCK">Remove password</string>
-    <string name="pdf_add_files">Add files</string>
     <plurals name="pdf_pages_count">
         <item quantity="one">%1$d page</item>
         <item quantity="other">%1$d pages</item>
@@ -51,7 +49,6 @@
     <string name="pdf_password_confirm">Confirm password</string>
     <string name="pdf_password_mismatch">Passwords do not match.</string>
     <string name="pdf_password_note">The password is never saved. If you forget it, the file cannot be opened.</string>
-    <string name="pdf_run">Run</string>
     <plurals name="pdf_result_files">
         <item quantity="one">%1$d file ready</item>
         <item quantity="other">%1$d files ready</item>
@@ -59,4 +56,79 @@
     <string name="pdf_share_all">Share all</string>
     <string name="cd_show_password">Show password</string>
     <string name="cd_hide_password">Hide password</string>
+    <string name="pdf_pick_tool_detail">Pick a tool to get started.</string>
+    <string name="pdf_group_ORGANIZE">Organize</string>
+    <string name="pdf_group_CONVERT">Convert</string>
+    <string name="pdf_group_OPTIMIZE">Optimize</string>
+    <string name="pdf_group_SECURITY">Security</string>
+    <string name="pdf_desc_MERGE">Combine files in any order</string>
+    <string name="pdf_desc_SPLIT">Break one PDF into several</string>
+    <string name="pdf_desc_EXTRACT">Keep only the pages you need</string>
+    <string name="pdf_desc_REORDER">Change the page order</string>
+    <string name="pdf_desc_ROTATE">Turn pages the right way up</string>
+    <string name="pdf_desc_DELETE">Remove unwanted pages</string>
+    <string name="pdf_desc_IMAGES_TO_PDF">Photos and scans into one PDF</string>
+    <string name="pdf_desc_TO_IMAGES">Save every page as a JPG</string>
+    <string name="pdf_desc_COMPRESS">Shrink a PDF to fit upload limits</string>
+    <string name="pdf_desc_WATERMARK">Stamp text on every page</string>
+    <string name="pdf_desc_PAGE_NUMBERS">Number the pages</string>
+    <string name="pdf_desc_PROTECT">Lock with a password</string>
+    <string name="pdf_desc_UNLOCK">Remove a known password</string>
+    <string name="pdf_upload_merge_title">Tap to select PDF documents</string>
+    <string name="pdf_upload_merge_subtitle">Select two or more files to merge in custom order</string>
+    <string name="pdf_upload_images_title">Tap to select images</string>
+    <string name="pdf_upload_images_subtitle">JPG, PNG or WebP • Each image becomes one page</string>
+    <string name="pdf_upload_single_title">Tap to select a PDF</string>
+    <string name="pdf_upload_single_subtitle">Max file size 50 MB • PDF format only</string>
+    <plurals name="pdf_files_selected">
+        <item quantity="one">%1$d file selected</item>
+        <item quantity="other">%1$d files selected</item>
+    </plurals>
+    <string name="pdf_merge_need_two">Add at least two PDFs to merge.</string>
+    <string name="pdf_unlock_first">This PDF is password protected. Remove the password first.</string>
+    <plurals name="pdf_run_merge">
+        <item quantity="one">Merge %1$d PDF</item>
+        <item quantity="other">Merge %1$d PDFs</item>
+    </plurals>
+    <plurals name="pdf_run_images">
+        <item quantity="one">Create PDF from %1$d image</item>
+        <item quantity="other">Create PDF from %1$d images</item>
+    </plurals>
+    <plurals name="pdf_run_split">
+        <item quantity="one">Split into %1$d file</item>
+        <item quantity="other">Split into %1$d files</item>
+    </plurals>
+    <string name="cd_first_page">First page preview</string>
+    <string name="pdf_split_method">Split method</string>
+    <string name="pdf_split_CUSTOM">Custom range</string>
+    <string name="pdf_split_EVERY_N">Every N pages</string>
+    <string name="pdf_split_SINGLE_PAGES">Single pages</string>
+    <string name="pdf_split_every_label">Pages per file</string>
+    <string name="pdf_split_single_note">Every page is saved as its own PDF.</string>
+    <plurals name="pdf_split_preview">
+        <item quantity="one">You will get %1$d file</item>
+        <item quantity="other">You will get %1$d files</item>
+    </plurals>
+    <string name="pdf_range">%1$d–%2$d</string>
+    <string name="pdf_split_file">File %1$d · pages %2$s</string>
+    <plurals name="pdf_split_more">
+        <item quantity="one">and %1$d more file</item>
+        <item quantity="other">and %1$d more files</item>
+    </plurals>
+    <string name="pdf_orientation">Orientation</string>
+    <string name="pdf_orientation_AUTO">Auto</string>
+    <string name="pdf_orientation_PORTRAIT">Portrait</string>
+    <string name="pdf_orientation_LANDSCAPE">Landscape</string>
+    <string name="pdf_margins">Margins</string>
+    <string name="pdf_margin_NONE">None</string>
+    <string name="pdf_margin_SMALL">Small (5 mm)</string>
+    <string name="pdf_margin_BIG">Big (10 mm)</string>
+    <plurals name="pdf_images_header">
+        <item quantity="one">%1$d page · long-press to reorder</item>
+        <item quantity="other">%1$d pages · long-press to reorder</item>
+    </plurals>
+    <string name="pdf_page_number">Page %1$d</string>
+    <string name="pdf_target_hint">Exam limit: %1$d–%2$d KB. Start with the lightest level that meets it.</string>
+    <string name="pdf_target_met">%1$s · within the exam limit</string>
+    <string name="pdf_target_missed">%1$s · above the %2$d KB limit, try a stronger level</string>
 </resources>

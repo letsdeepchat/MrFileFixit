@@ -4,7 +4,9 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Build
 import android.util.LruCache
@@ -24,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import java.io.IOException
@@ -45,18 +48,56 @@ object ThumbnailCache {
         override fun sizeOf(key: String, value: Bitmap): Int = value.allocationByteCount / KIB
     }
 
-    fun get(uri: String, sizePx: Int): Bitmap? = cache.get(key(uri, sizePx))
+    fun get(uri: String, sizePx: Int, pdf: Boolean = false): Bitmap? = cache.get(key(uri, sizePx, pdf))
 
     fun clear() = cache.evictAll()
 
-    suspend fun load(context: Context, uri: String, sizePx: Int): Bitmap? {
-        get(uri, sizePx)?.let { return it }
-        val bitmap = withContext(Dispatchers.IO) { decode(context, uri.toUri(), sizePx) } ?: return null
-        cache.put(key(uri, sizePx), bitmap)
+    /** [pdf] renders the first page with [PdfRenderer] (one page, at thumbnail size). */
+    suspend fun load(context: Context, uri: String, sizePx: Int, pdf: Boolean = false): Bitmap? {
+        get(uri, sizePx, pdf)?.let { return it }
+        val bitmap = withContext(Dispatchers.IO) {
+            if (pdf) renderFirstPage(context, uri.toUri(), sizePx) else decode(context, uri.toUri(), sizePx)
+        } ?: return null
+        cache.put(key(uri, sizePx, pdf), bitmap)
         return bitmap
     }
 
-    private fun key(uri: String, sizePx: Int) = "$sizePx|$uri"
+    private fun key(uri: String, sizePx: Int, pdf: Boolean) = "${if (pdf) "pdf" else "img"}|$sizePx|$uri"
+
+    /**
+     * Callers only ask for this after the PDF passed the input limits and is known not to be encrypted.
+     * Damaged or protected files still fail safely: PdfRenderer throws and we show the placeholder.
+     */
+    private fun renderFirstPage(context: Context, uri: Uri, sizePx: Int): Bitmap? {
+        val resolver = context.contentResolver
+        return try {
+            val descriptor = resolver.openFileDescriptor(uri, "r") ?: return null
+            try {
+                PdfRenderer(descriptor).use { renderer ->
+                    if (renderer.pageCount == 0) null else renderer.openPage(0).use { it.toBitmap(sizePx) }
+                }
+            } finally {
+                descriptor.close()
+            }
+        } catch (_: IOException) {
+            null
+        } catch (_: SecurityException) {
+            null
+        } catch (_: IllegalArgumentException) {
+            null
+        }
+    }
+
+    private fun PdfRenderer.Page.toBitmap(sizePx: Int): Bitmap {
+        val scale = sizePx.toFloat() / maxOf(width, height)
+        val bitmap = createBitmap(
+            (width * scale).toInt().coerceAtLeast(1),
+            (height * scale).toInt().coerceAtLeast(1),
+        )
+        bitmap.eraseColor(Color.WHITE)
+        render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+        return bitmap
+    }
 
     @Suppress("ReturnCount")
     private fun decode(context: Context, uri: Uri, sizePx: Int): Bitmap? = try {
@@ -104,11 +145,12 @@ fun Thumbnail(
     size: Dp,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop,
+    pdf: Boolean = false,
 ) {
     val context = LocalContext.current
     val sizePx = with(LocalDensity.current) { size.roundToPx() }
-    val image: ImageBitmap? by produceState(ThumbnailCache.get(uri, sizePx)?.asImageBitmap(), uri, sizePx) {
-        value = ThumbnailCache.load(context, uri, sizePx)?.asImageBitmap()
+    val image: ImageBitmap? by produceState(ThumbnailCache.get(uri, sizePx, pdf)?.asImageBitmap(), uri, sizePx, pdf) {
+        value = ThumbnailCache.load(context, uri, sizePx, pdf)?.asImageBitmap()
     }
     Box(modifier.size(size)) {
         val loaded = image

@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="image_title">Image tools</string>
-    <string name="image_pick">Choose images</string>
     <plurals name="image_selected">
         <item quantity="one">%1$d image selected</item>
         <item quantity="other">%1$d images selected</item>
     </plurals>
-    <string name="image_tool">Tool</string>
     <string name="image_tool_RESIZE">Resize</string>
     <string name="image_tool_CROP">Crop</string>
     <string name="image_tool_ROTATE">Rotate</string>
     <string name="image_tool_COMPRESS">Compress</string>
     <string name="image_tool_CONVERT">Convert</string>
     <string name="image_tool_STRIP_EXIF">Remove metadata</string>
-    <string name="image_width">Width (px)</string>
-    <string name="image_height">Height (px)</string>
+    <string name="image_width">Width</string>
+    <string name="image_height">Height</string>
     <string name="image_keep_aspect">Keep aspect ratio</string>
     <string name="image_aspect">Aspect ratio</string>
     <string name="image_aspect_free">Original</string>
@@ -23,7 +21,6 @@
     <string name="image_format">Output format</string>
     <string name="image_strip_note">Removes location, camera and date details. JPEG and PNG are cleaned without re-compressing.</string>
     <string name="image_crop_single_only">Crop works on one image at a time.</string>
-    <string name="image_run">Process</string>
     <plurals name="image_done">
         <item quantity="one">%1$d image ready</item>
         <item quantity="other">%1$d images ready</item>
@@ -39,4 +36,28 @@
     <string name="image_heic_unavailable">HEIC output is not supported on this device.</string>
     <string name="notification_channel_jobs">File jobs</string>
     <string name="notification_job_running">Processing images…</string>
+    <string name="image_pick_title">Tap to select images</string>
+    <string name="image_pick_hint">JPG, PNG, WebP or HEIC • Max files: %1$d</string>
+    <string name="image_original_size">Original: %1$d × %2$d px</string>
+    <string name="image_rotate_by">Rotate by</string>
+    <string name="image_unit_kb">KB</string>
+    <string name="image_unit_px">px</string>
+    <string name="image_target_dimensions">Target dimensions</string>
+    <string name="image_keep_aspect_hint">Editing one side updates the other</string>
+    <string name="image_presets">Presets</string>
+    <string name="image_size_px">%1$d × %2$d</string>
+    <string name="image_preset_passport">Passport</string>
+    <string name="image_preset_exam">%1$s %2$s</string>
+    <string name="image_preset_summary">Output is cropped to fill %1$d × %2$d px and compressed to %3$d–%4$d KB. Check the exam notice before you upload.</string>
+    <string name="image_kind_PHOTO">Photo</string>
+    <string name="image_kind_POSTCARD_PHOTO">Postcard photo</string>
+    <string name="image_kind_SIGNATURE">Sign</string>
+    <string name="image_kind_LEFT_THUMB">Thumb</string>
+    <string name="image_kind_DECLARATION">Declaration</string>
+    <string name="image_kind_OTHER">Document</string>
+    <string name="image_start_over">Start over</string>
+    <plurals name="image_run">
+        <item quantity="one">Process %1$d image</item>
+        <item quantity="other">Process %1$d images</item>
+    </plurals>
 </resources>

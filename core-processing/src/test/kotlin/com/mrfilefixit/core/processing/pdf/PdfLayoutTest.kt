@@ -1,5 +1,6 @@
 package com.mrfilefixit.core.processing.pdf
 
+import com.mrfilefixit.core.domain.pdf.PageOrientation
 import com.mrfilefixit.core.domain.pdf.PageSize
 import com.mrfilefixit.core.domain.pdf.Position
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -10,6 +11,14 @@ class PdfLayoutTest {
     fun `A4 page turns landscape for landscape images`() {
         assertEquals(PdfLayout.Box(0f, 0f, 595f, 842f), PdfLayout.pageBox(PageSize.A4, 1000, 2000))
         assertEquals(PdfLayout.Box(0f, 0f, 842f, 595f), PdfLayout.pageBox(PageSize.A4, 2000, 1000))
+    }
+
+    @Test
+    fun `fixed orientation overrides the image shape`() {
+        val portrait = PdfLayout.pageBox(PageSize.A4, 2000, 1000, PageOrientation.PORTRAIT)
+        assertEquals(PdfLayout.Box(0f, 0f, 595f, 842f), portrait)
+        val landscape = PdfLayout.pageBox(PageSize.A4, 1000, 2000, PageOrientation.LANDSCAPE)
+        assertEquals(PdfLayout.Box(0f, 0f, 842f, 595f), landscape)
     }
 
     @Test

@@ -2,7 +2,6 @@
 <!-- Page-range examples keep the ASCII hyphen: it is what the page parser accepts (TypographyDashes ignored). -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="pdf_title">PDF टूल</string>
-    <string name="pdf_pick_tool">कोई टूल चुनें</string>
     <string name="pdf_tool_MERGE">PDF जोड़ें</string>
     <string name="pdf_tool_SPLIT">PDF बाँटें</string>
     <string name="pdf_tool_EXTRACT">पेज निकालें</string>
@@ -16,7 +15,6 @@
     <string name="pdf_tool_PAGE_NUMBERS">पेज नंबर लगाएँ</string>
     <string name="pdf_tool_PROTECT">पासवर्ड लगाएँ</string>
     <string name="pdf_tool_UNLOCK">पासवर्ड हटाएँ</string>
-    <string name="pdf_add_files">फ़ाइलें जोड़ें</string>
     <plurals name="pdf_pages_count">
         <item quantity="one">%1$d पेज</item>
         <item quantity="other">%1$d पेज</item>
@@ -51,7 +49,6 @@
     <string name="pdf_password_confirm">पासवर्ड दोबारा लिखें</string>
     <string name="pdf_password_mismatch">पासवर्ड मेल नहीं खाते।</string>
     <string name="pdf_password_note">पासवर्ड कभी सेव नहीं होता। भूल जाने पर फ़ाइल नहीं खुलेगी।</string>
-    <string name="pdf_run">शुरू करें</string>
     <plurals name="pdf_result_files">
         <item quantity="one">%1$d फ़ाइल तैयार</item>
         <item quantity="other">%1$d फ़ाइलें तैयार</item>
@@ -59,4 +56,79 @@
     <string name="pdf_share_all">सभी शेयर करें</string>
     <string name="cd_show_password">पासवर्ड दिखाएँ</string>
     <string name="cd_hide_password">पासवर्ड छिपाएँ</string>
+    <string name="pdf_pick_tool_detail">शुरू करने के लिए एक टूल चुनें।</string>
+    <string name="pdf_group_ORGANIZE">व्यवस्थित करें</string>
+    <string name="pdf_group_CONVERT">बदलें</string>
+    <string name="pdf_group_OPTIMIZE">छोटा करें</string>
+    <string name="pdf_group_SECURITY">सुरक्षा</string>
+    <string name="pdf_desc_MERGE">फ़ाइलें किसी भी क्रम में जोड़ें</string>
+    <string name="pdf_desc_SPLIT">एक PDF को कई में बाँटें</string>
+    <string name="pdf_desc_EXTRACT">सिर्फ़ ज़रूरी पेज रखें</string>
+    <string name="pdf_desc_REORDER">पेजों का क्रम बदलें</string>
+    <string name="pdf_desc_ROTATE">पेज सीधे करें</string>
+    <string name="pdf_desc_DELETE">बेकार पेज हटाएँ</string>
+    <string name="pdf_desc_IMAGES_TO_PDF">फ़ोटो और स्कैन से एक PDF</string>
+    <string name="pdf_desc_TO_IMAGES">हर पेज को JPG में सेव करें</string>
+    <string name="pdf_desc_COMPRESS">अपलोड सीमा के लिए PDF छोटा करें</string>
+    <string name="pdf_desc_WATERMARK">हर पेज पर टेक्स्ट लगाएँ</string>
+    <string name="pdf_desc_PAGE_NUMBERS">पेज नंबर जोड़ें</string>
+    <string name="pdf_desc_PROTECT">पासवर्ड से लॉक करें</string>
+    <string name="pdf_desc_UNLOCK">ज्ञात पासवर्ड हटाएँ</string>
+    <string name="pdf_upload_merge_title">PDF दस्तावेज़ चुनने के लिए टैप करें</string>
+    <string name="pdf_upload_merge_subtitle">अपने क्रम में जोड़ने के लिए दो या ज़्यादा फ़ाइलें चुनें</string>
+    <string name="pdf_upload_images_title">इमेज चुनने के लिए टैप करें</string>
+    <string name="pdf_upload_images_subtitle">JPG, PNG या WebP • हर इमेज एक पेज बनेगी</string>
+    <string name="pdf_upload_single_title">PDF चुनने के लिए टैप करें</string>
+    <string name="pdf_upload_single_subtitle">अधिकतम फ़ाइल साइज़ 50 MB • केवल PDF</string>
+    <plurals name="pdf_files_selected">
+        <item quantity="one">%1$d फ़ाइल चुनी गई</item>
+        <item quantity="other">%1$d फ़ाइलें चुनी गईं</item>
+    </plurals>
+    <string name="pdf_merge_need_two">जोड़ने के लिए कम से कम दो PDF चुनें।</string>
+    <string name="pdf_unlock_first">यह PDF पासवर्ड से सुरक्षित है। पहले पासवर्ड हटाएँ।</string>
+    <plurals name="pdf_run_merge">
+        <item quantity="one">%1$d PDF जोड़ें</item>
+        <item quantity="other">%1$d PDF जोड़ें</item>
+    </plurals>
+    <plurals name="pdf_run_images">
+        <item quantity="one">%1$d इमेज से PDF बनाएँ</item>
+        <item quantity="other">%1$d इमेज से PDF बनाएँ</item>
+    </plurals>
+    <plurals name="pdf_run_split">
+        <item quantity="one">%1$d फ़ाइल में बाँटें</item>
+        <item quantity="other">%1$d फ़ाइलों में बाँटें</item>
+    </plurals>
+    <string name="cd_first_page">पहले पेज का प्रीव्यू</string>
+    <string name="pdf_split_method">बाँटने का तरीका</string>
+    <string name="pdf_split_CUSTOM">अपनी रेंज</string>
+    <string name="pdf_split_EVERY_N">हर N पेज</string>
+    <string name="pdf_split_SINGLE_PAGES">अलग-अलग पेज</string>
+    <string name="pdf_split_every_label">हर फ़ाइल में पेज</string>
+    <string name="pdf_split_single_note">हर पेज अपनी अलग PDF में सेव होगा।</string>
+    <plurals name="pdf_split_preview">
+        <item quantity="one">आपको %1$d फ़ाइल मिलेगी</item>
+        <item quantity="other">आपको %1$d फ़ाइलें मिलेंगी</item>
+    </plurals>
+    <string name="pdf_range">%1$d–%2$d</string>
+    <string name="pdf_split_file">फ़ाइल %1$d · पेज %2$s</string>
+    <plurals name="pdf_split_more">
+        <item quantity="one">और %1$d फ़ाइल</item>
+        <item quantity="other">और %1$d फ़ाइलें</item>
+    </plurals>
+    <string name="pdf_orientation">दिशा</string>
+    <string name="pdf_orientation_AUTO">अपने-आप</string>
+    <string name="pdf_orientation_PORTRAIT">खड़ा</string>
+    <string name="pdf_orientation_LANDSCAPE">आड़ा</string>
+    <string name="pdf_margins">मार्जिन</string>
+    <string name="pdf_margin_NONE">कोई नहीं</string>
+    <string name="pdf_margin_SMALL">छोटा (5 mm)</string>
+    <string name="pdf_margin_BIG">बड़ा (10 mm)</string>
+    <plurals name="pdf_images_header">
+        <item quantity="one">%1$d पेज · क्रम बदलने के लिए देर तक दबाएँ</item>
+        <item quantity="other">%1$d पेज · क्रम बदलने के लिए देर तक दबाएँ</item>
+    </plurals>
+    <string name="pdf_page_number">पेज %1$d</string>
+    <string name="pdf_target_hint">परीक्षा की सीमा: %1$d–%2$d KB। सबसे हल्के स्तर से शुरू करें जो सीमा में आए।</string>
+    <string name="pdf_target_met">%1$s · परीक्षा की सीमा में</string>
+    <string name="pdf_target_missed">%1$s · %2$d KB सीमा से ज़्यादा, तेज़ स्तर आज़माएँ</string>
 </resources>

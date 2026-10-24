@@ -39,4 +39,21 @@ class PageSelectionTest {
     fun `every n pages covers the document`() {
         assertEquals(listOf(1..3, 4..6, 7..7), PageSelection.everyNPages(3, 7))
     }
+
+    @Test
+    fun `split plan covers custom ranges, fixed sets and single pages`() {
+        val custom = PageSelection.splitPlan(SplitMode.CUSTOM, "1-3, 5, 8-", null, 10)
+        assertEquals(success(listOf(1..3, 5..5, 8..10)), custom)
+        assertEquals(success(listOf(1..2, 3..4, 5..5)), PageSelection.splitPlan(SplitMode.EVERY_N, "", 2, 5))
+        val singles = PageSelection.splitPlan(SplitMode.SINGLE_PAGES, "junk", null, 3)
+        assertEquals(success(listOf(1..1, 2..2, 3..3)), singles)
+    }
+
+    @Test
+    fun `split plan rejects a missing or oversized set size`() {
+        assertEquals(failure(AppError.InvalidPageSelection(5)), PageSelection.splitPlan(SplitMode.EVERY_N, "", null, 5))
+        assertEquals(failure(AppError.InvalidPageSelection(5)), PageSelection.splitPlan(SplitMode.EVERY_N, "", 6, 5))
+        val empty = PageSelection.splitPlan(SplitMode.SINGLE_PAGES, "", 1, 0)
+        assertEquals(failure(AppError.InvalidPageSelection(0)), empty)
+    }
 }

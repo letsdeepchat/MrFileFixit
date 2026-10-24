@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="scan_title">स्कैन और OCR</string>
-    <string name="scan_intro">कैमरे से काग़ज़ी दस्तावेज़ स्कैन करें, या टेक्स्ट पढ़ने के लिए कोई इमेज या PDF चुनें। सब कुछ इसी फ़ोन पर प्रोसेस होता है।</string>
-    <string name="scan_start">दस्तावेज़ स्कैन करें</string>
-    <string name="scan_pick_ocr">टेक्स्ट के लिए इमेज या PDF चुनें</string>
+    <string name="scan_intro">काग़ज़ को साफ़ PDF में बदलें, या किसी इमेज या PDF का टेक्स्ट पढ़ें।</string>
     <plurals name="scan_pages">
         <item quantity="one">%1$d पेज स्कैन हुआ</item>
         <item quantity="other">%1$d पेज स्कैन हुए</item>
@@ -27,4 +25,9 @@
     <string name="scan_copied">टेक्स्ट कॉपी हो गया</string>
     <string name="scan_share_text">टेक्स्ट शेयर करें</string>
     <string name="scan_importing">स्कैन सेव हो रहा है…</string>
+    <string name="scan_camera_title">कैमरे से स्कैन करें</string>
+    <string name="scan_camera_subtitle">दस्तावेज़ के किनारे अपने-आप पहचानें, सीधा क्रॉप करें और साफ़ बनाएँ</string>
+    <string name="scan_storage_title">स्टोरेज से टेक्स्ट निकालें</string>
+    <string name="scan_storage_subtitle">टेक्स्ट निकालने के लिए मौजूदा JPG, PNG या PDF चुनें</string>
+    <string name="scan_privacy">सब कुछ इसी डिवाइस पर प्रोसेस होता है। आपके दस्तावेज़ फ़ोन से बाहर नहीं जाते।</string>
 </resources>

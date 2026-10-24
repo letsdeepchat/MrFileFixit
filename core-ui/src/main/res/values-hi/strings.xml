@@ -5,8 +5,6 @@
     <string name="action_retry">फिर से कोशिश करें</string>
     <string name="action_save">सेव करें</string>
     <string name="action_share">शेयर करें</string>
-    <string name="action_choose_file">फ़ाइल चुनें</string>
-    <string name="action_choose_image">इमेज चुनें</string>
     <string name="action_rotate">90° घुमाएँ</string>
     <string name="action_reset">फिर से शुरू करें</string>
     <string name="action_open_source">आधिकारिक साइट खोलें</string>
@@ -15,6 +13,10 @@
     <string name="action_remove">हटाएँ</string>
     <string name="action_move_up">ऊपर ले जाएँ</string>
     <string name="action_move_down">नीचे ले जाएँ</string>
+    <string name="action_clear_all">सब हटाएँ</string>
+    <string name="action_add_more">और जोड़ें</string>
+    <string name="action_change">बदलें</string>
+    <string name="action_clear_search">खोज साफ़ करें</string>
     <string name="share_chooser_title">फ़ाइल शेयर करें</string>
 
     <string name="job_working">काम चल रहा है…</string>
@@ -23,9 +25,11 @@
     <string name="job_done">हो गया</string>
 
     <string name="disclaimer_title">आधिकारिक सूचना ज़रूर देखें</string>
-    <string name="disclaimer_body">ये साइज़ समुदाय द्वारा बनाए गए नमूने हैं, आधिकारिक नियम नहीं। आवेदन जमा करने से पहले अपनी परीक्षा की आधिकारिक अधिसूचना से फ़ोटो और हस्ताक्षर की शर्तें हमेशा मिलाएँ।</string>
-    <string name="verification_unverified">सत्यापित नहीं</string>
-    <string name="verification_verified">%1$s को सत्यापित</string>
+    <string name="disclaimer_body">ये साइज़ सार्वजनिक गाइड और आधिकारिक पेजों से जुटाए गए हैं, पर ये आधिकारिक नियम नहीं हैं और हर साल बदलते हैं। आवेदन जमा करने से पहले अपनी परीक्षा की आधिकारिक अधिसूचना से फ़ोटो, हस्ताक्षर और दस्तावेज़ों की शर्तें हमेशा मिलाएँ।</string>
+    <string name="verification_community">समुदाय से जुटाया गया</string>
+    <string name="verification_verified">आधिकारिक पेज से मिलाया, %1$s</string>
+    <string name="last_verified">आखिरी जाँच: %1$s</string>
+    <string name="last_verified_never">अभी आधिकारिक सूचना से नहीं मिलाया गया</string>
 
     <string name="check_format">फ़ॉर्मैट</string>
     <string name="check_file_size">फ़ाइल साइज़</string>
@@ -73,4 +77,7 @@
     <string name="cd_pass_icon">सही</string>
     <string name="cd_fail_icon">गलत</string>
     <string name="cd_info_icon">जानकारी</string>
+
+    <string name="upload_limit_hint">अधिकतम फ़ाइल साइज़ %1$s</string>
+    <string name="cd_drag_handle">क्रम बदलने के लिए खींचें</string>
 </resources>

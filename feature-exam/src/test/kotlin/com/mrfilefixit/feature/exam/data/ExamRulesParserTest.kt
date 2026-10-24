@@ -1,5 +1,6 @@
 package com.mrfilefixit.feature.exam.data
 
+import com.mrfilefixit.core.domain.exam.CertificateFormat
 import com.mrfilefixit.core.domain.exam.DocumentKind
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.Result
@@ -10,7 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
 class ExamRulesParserTest {
-    private fun file(profileJson: String) = """{"schemaVersion":1,"profiles":[$profileJson]}"""
+    private fun file(profileJson: String) = """{"schemaVersion":2,"profiles":[$profileJson]}"""
 
     private val document =
         """{"kind":"photo","formats":["jpeg"],"sizeKb":{"min":20,"max":50},"widthPx":{"min":200,"max":200},""" +
@@ -19,12 +20,14 @@ class ExamRulesParserTest {
     private fun profile(
         id: String = "demo",
         url: String = "https://example.org",
-        verification: String = "unverified",
+        verification: String = "community",
         lastVerified: String = "null",
         documents: String = document,
         composite: String = "",
-    ) = """{"id":"$id","name":"Demo exam","category":"OTHER","conductingBody":"Demo","sourceUrl":"$url",""" +
-        """"lastVerified":$lastVerified,"verification":"$verification","documents":[$documents]$composite}"""
+        certificates: String = "",
+    ) = """{"id":"$id","shortName":"Demo","name":"Demo exam","category":"OTHER","conductingBody":"Demo",""" +
+        """"sourceUrl":"$url","lastVerified":$lastVerified,"verification":"$verification",""" +
+        """"documents":[$documents]$certificates$composite}"""
 
     @Test
     fun `parses a minimal profile with composite`() {
@@ -36,6 +39,17 @@ class ExamRulesParserTest {
         assertEquals(0.7f, parsed.composite?.photoFraction)
     }
 
+    @Test
+    fun `parses certificates with an open lower bound`() {
+        val certificates = ""","certificates":[{"name":"Category certificate","formats":["pdf"],""" +
+            """"sizeKb":{"max":400}}]"""
+        val result = ExamRulesParser.parse(file(profile(certificates = certificates)))
+        result as Result.Success
+        val certificate = result.value.single().certificates.single()
+        assertEquals(setOf(CertificateFormat.PDF), certificate.formats)
+        assertEquals(0..400, certificate.minKb..certificate.maxKb)
+    }
+
     @ParameterizedTest
     @ValueSource(
         strings = [
@@ -44,7 +58,9 @@ class ExamRulesParserTest {
             "lastVerified=\"22-10-2026\"",
             "documents=",
             "unknownKey",
-            "schema2",
+            "schema1",
+            "verification=unverified",
+            "certificateFormat=docx",
             "duplicateIds",
         ],
     )
@@ -55,8 +71,12 @@ class ExamRulesParserTest {
             "lastVerified=\"22-10-2026\"" -> file(profile(lastVerified = "\"22-10-2026\""))
             "documents=" -> file(profile(documents = ""))
             "unknownKey" -> file(profile().dropLast(1) + ""","extra":1}""")
-            "schema2" -> file(profile()).replace("\"schemaVersion\":1", "\"schemaVersion\":2")
-            "duplicateIds" -> """{"schemaVersion":1,"profiles":[${profile()},${profile()}]}"""
+            "schema1" -> file(profile()).replace("\"schemaVersion\":2", "\"schemaVersion\":1")
+            "verification=unverified" -> file(profile(verification = "unverified"))
+            "certificateFormat=docx" -> file(
+                profile(certificates = ""","certificates":[{"name":"ID","formats":["docx"],"sizeKb":{"max":9}}]"""),
+            )
+            "duplicateIds" -> """{"schemaVersion":2,"profiles":[${profile()},${profile()}]}"""
             else -> error(case)
         }
         val result = ExamRulesParser.parse(text)

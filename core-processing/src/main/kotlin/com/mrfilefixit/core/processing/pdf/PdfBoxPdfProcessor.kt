@@ -282,7 +282,7 @@ internal class PdfBoxPdfProcessor @Inject constructor(
                     )
                 }
                 upright.use { bitmap ->
-                    val pageBox = PdfLayout.pageBox(op.pageSize, bitmap.width, bitmap.height)
+                    val pageBox = PdfLayout.pageBox(op.pageSize, bitmap.width, bitmap.height, op.orientation)
                     val page = PDPage(PDRectangle(pageBox.width, pageBox.height))
                     doc.addPage(page)
                     val draw = PdfLayout.fit(bitmap.width, bitmap.height, pageBox.width, pageBox.height, op.marginPt)
