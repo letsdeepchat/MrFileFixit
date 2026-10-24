@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="exam_title">परीक्षा फ़ॉर्म</string>
-    <string name="exam_picker_heading">अपनी परीक्षा चुनें</string>
     <string name="exam_picker_empty">फ़ोटो और हस्ताक्षर के नियम देखने के लिए कोई परीक्षा चुनें।</string>
     <string name="exam_category_SSC">SSC</string>
     <string name="exam_category_UPSC">UPSC</string>
-    <string name="exam_category_IBPS">बैंकिंग (IBPS)</string>
-    <string name="exam_category_RRB">रेलवे (RRB)</string>
-    <string name="exam_category_NEET">NEET</string>
     <string name="exam_category_STATE_PSC">राज्य PSC</string>
     <string name="exam_category_OTHER">अन्य</string>
     <string name="exam_source">स्रोत: %1$s</string>
@@ -16,7 +12,6 @@
     <string name="exam_doc_LEFT_THUMB">बाएँ अंगूठे का निशान</string>
     <string name="exam_doc_DECLARATION">हस्तलिखित घोषणा</string>
     <string name="exam_doc_OTHER">दस्तावेज़</string>
-    <string name="exam_requirements">ज़रूरी: %1$s, %2$s, %3$s × %4$s</string>
     <string name="exam_your_file">आपकी फ़ाइल अभी</string>
     <string name="exam_fix_button">सही साइज़ में बदलें</string>
     <string name="exam_result_heading">अपलोड के लिए तैयार</string>
@@ -28,4 +23,43 @@
     <string name="exam_crop_hint">सही जगह के लिए खींचें और पिंच करें। फ़्रेम ज़रूरी आकार का है।</string>
     <string name="exam_saved">सेव हो गया</string>
     <string name="cd_exam_verified_badge">सत्यापन स्थिति: %1$s</string>
+    <string name="exam_category_all">सभी</string>
+    <string name="exam_category_BANKING">बैंकिंग</string>
+    <string name="exam_category_RAILWAYS">रेलवे</string>
+    <string name="exam_category_DEFENCE">रक्षा</string>
+    <string name="exam_category_ENTRANCE">NTA / प्रवेश</string>
+    <string name="exam_category_TEACHING">शिक्षण</string>
+    <string name="exam_search_hint">परीक्षा खोजें, जैसे SSC CGL या GATE</string>
+    <plurals name="exam_count">
+        <item quantity="one">%1$d परीक्षा</item>
+        <item quantity="other">%1$d परीक्षाएँ</item>
+    </plurals>
+    <string name="exam_no_matches">“%1$s” से कोई परीक्षा नहीं मिली।</string>
+    <string name="exam_no_matches_category">इस श्रेणी में अभी कोई परीक्षा नहीं है।</string>
+    <string name="exam_clear_filters">खोज और फ़िल्टर हटाएँ</string>
+    <string name="exam_chip_photo">फ़ोटो (%1$s)</string>
+    <string name="exam_chip_sign">हस्ताक्षर (%1$s)</string>
+    <string name="exam_chip_docs">दस्तावेज़ (%1$s)</string>
+    <plurals name="exam_chip_extra">
+        <item quantity="one">+%1$d और अपलोड</item>
+        <item quantity="other">+%1$d और अपलोड</item>
+    </plurals>
+    <string name="exam_up_to_kb">अधिकतम %1$s KB</string>
+    <string name="exam_doc_POSTCARD_PHOTO">पोस्टकार्ड साइज़ फ़ोटो</string>
+    <string name="exam_tab_photo">फ़ोटो</string>
+    <string name="exam_tab_signature">हस्ताक्षर</string>
+    <string name="exam_tab_other">अन्य अपलोड</string>
+    <string name="exam_tab_certificates">प्रमाणपत्र</string>
+    <string name="exam_prepare_files">इस परीक्षा के लिए फ़ाइलें तैयार करें</string>
+    <string name="exam_prepare_files_hint">इमेज टूल इस परीक्षा की पिक्सेल और KB सीमा के साथ खुलेंगे।</string>
+    <string name="exam_req_dimensions">आकार</string>
+    <string name="exam_dimensions_value">%1$s × %2$s px</string>
+    <string name="exam_req_size">फ़ाइल साइज़</string>
+    <string name="exam_req_format">फ़ॉर्मैट</string>
+    <string name="exam_req_background">बैकग्राउंड</string>
+    <string name="exam_req_ink">स्याही</string>
+    <string name="exam_req_notes">नोट</string>
+    <string name="exam_choose_for">%1$s चुनें</string>
+    <string name="exam_no_certificates">इस परीक्षा में यहाँ कोई प्रमाणपत्र अपलोड नहीं है। बाद के चरण में माँगे जाने वाले दस्तावेज़ों के लिए सूचना देखें।</string>
+    <string name="exam_compress_pdf">PDF को सीमा में छोटा करें</string>
 </resources>
