@@ -2,13 +2,7 @@ package com.mrfilefixit.feature.pdf.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -16,24 +10,26 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.share.shareFiles
 import com.mrfilefixit.core.ui.theme.Dimens
@@ -41,60 +37,69 @@ import com.mrfilefixit.feature.pdf.R
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
+/**
+ * PDF tools. [tool] opens one tool directly (by [PdfTool] name) and [minKb]/[maxKb] give it a size
+ * target, e.g. when the exam screen sends a certificate to Compress.
+ */
 @Serializable
-data object PdfRoute
+data class PdfRoute(val tool: String? = null, val minKb: Int? = null, val maxKb: Int? = null)
 
 fun NavGraphBuilder.pdfScreen() {
-    composable<PdfRoute> { PdfListDetail() }
+    composable<PdfRoute> { entry -> PdfListDetail(entry.toRoute<PdfRoute>()) }
 }
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun PdfListDetail(modifier: Modifier = Modifier) {
+fun PdfListDetail(route: PdfRoute = PdfRoute(), modifier: Modifier = Modifier) {
     val navigator = rememberListDetailPaneScaffoldNavigator<String>()
     val scope = rememberCoroutineScope()
     val selected = navigator.currentDestination?.contentKey?.let { key ->
         PdfTool.entries.firstOrNull { it.name == key }
+    }
+    val singlePane = navigator.scaffoldValue[ListDetailPaneScaffoldRole.List] == PaneAdaptedValue.Hidden
+    val sizeTarget = route.maxKb?.let { KbTarget(route.minKb ?: 0, it) }
+    // Open the requested tool once; after that the user's own navigation wins (also across rotation).
+    var openedRequested by rememberSaveable(route) { mutableStateOf(false) }
+    LaunchedEffect(route) {
+        val requested = PdfTool.entries.firstOrNull { it.name == route.tool }
+        if (requested != null && !openedRequested) {
+            openedRequested = true
+            navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, requested.name)
+        }
     }
     NavigableListDetailPaneScaffold(
         navigator = navigator,
         modifier = modifier,
         listPane = {
             AnimatedPane {
-                LazyColumn {
-                    item {
-                        Text(
-                            stringResource(R.string.pdf_pick_tool),
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.padding(Dimens.SpaceM).semantics { heading() },
-                        )
-                    }
-                    items(PdfTool.entries, key = { it.name }) { tool ->
-                        ListItem(
-                            headlineContent = { Text(toolLabel(tool)) },
-                            colors = if (tool == selected) {
-                                ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                            } else {
-                                ListItemDefaults.colors()
-                            },
-                            modifier = Modifier
-                                .heightIn(min = Dimens.MinTouchTarget)
-                                .selectable(tool == selected, role = Role.Button) {
-                                    scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, tool.name) }
-                                },
-                        )
-                    }
-                }
+                PdfToolPicker(
+                    selected = selected,
+                    onSelect = { tool ->
+                        scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, tool.name) }
+                    },
+                )
             }
         },
         detailPane = {
             AnimatedPane {
                 if (selected == null) {
                     Box(Modifier.fillMaxSize()) {
-                        Text(stringResource(R.string.pdf_pick_tool), Modifier.align(Alignment.Center))
+                        Text(
+                            stringResource(R.string.pdf_pick_tool_detail),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(Dimens.SpaceL),
+                        )
                     }
                 } else {
-                    PdfToolRoute(selected)
+                    val back: () -> Unit = { scope.launch { navigator.navigateBack() } }
+                    PdfToolRoute(
+                        tool = selected,
+                        // The size target only applies to the tool it was sent to.
+                        sizeTarget = sizeTarget.takeIf { selected.name == route.tool },
+                        onBack = back.takeIf { singlePane },
+                    )
                 }
             }
         },
@@ -102,8 +107,10 @@ fun PdfListDetail(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun PdfToolRoute(tool: PdfTool) {
-    val viewModel = hiltViewModel<PdfToolViewModel, PdfToolViewModel.Factory>(key = tool.name) { it.create(tool) }
+private fun PdfToolRoute(tool: PdfTool, sizeTarget: KbTarget?, onBack: (() -> Unit)?) {
+    val viewModel = hiltViewModel<PdfToolViewModel, PdfToolViewModel.Factory>(key = "${tool.name}-$sizeTarget") {
+        it.create(tool, sizeTarget)
+    }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
@@ -133,8 +140,5 @@ private fun PdfToolRoute(tool: PdfTool) {
             onReset = viewModel::onReset,
         )
     }
-    Box(Modifier.fillMaxSize()) {
-        PdfToolScreen(state, actions)
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
-    }
+    PdfToolScreen(state, actions, onBack = onBack, snackbarHost = { SnackbarHost(snackbar) })
 }

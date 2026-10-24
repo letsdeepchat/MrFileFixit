@@ -16,12 +16,15 @@ import com.mrfilefixit.core.domain.job.JobRunner
 import com.mrfilefixit.core.domain.job.JobState
 import com.mrfilefixit.core.domain.pdf.CompressionLevel
 import com.mrfilefixit.core.domain.pdf.GetPdfInfoUseCase
+import com.mrfilefixit.core.domain.pdf.PageMargin
+import com.mrfilefixit.core.domain.pdf.PageOrientation
 import com.mrfilefixit.core.domain.pdf.PageSelection
 import com.mrfilefixit.core.domain.pdf.PageSize
 import com.mrfilefixit.core.domain.pdf.PdfInfo
 import com.mrfilefixit.core.domain.pdf.PdfOperation
 import com.mrfilefixit.core.domain.pdf.Position
 import com.mrfilefixit.core.domain.pdf.RunPdfOperationUseCase
+import com.mrfilefixit.core.domain.pdf.SplitMode
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.AppResult
 import com.mrfilefixit.core.domain.result.Result
@@ -45,20 +48,36 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class PdfTool(val acceptsImages: Boolean = false, val multipleInputs: Boolean = false) {
-    MERGE(multipleInputs = true),
-    SPLIT,
-    EXTRACT,
-    REORDER,
-    ROTATE,
-    DELETE,
-    COMPRESS,
-    IMAGES_TO_PDF(acceptsImages = true, multipleInputs = true),
-    TO_IMAGES,
-    WATERMARK,
-    PAGE_NUMBERS,
-    PROTECT,
-    UNLOCK,
+/** Sections of the tool picker. */
+enum class PdfToolGroup { ORGANIZE, CONVERT, OPTIMIZE, SECURITY }
+
+enum class PdfTool(
+    val group: PdfToolGroup,
+    val acceptsImages: Boolean = false,
+    val multipleInputs: Boolean = false,
+) {
+    MERGE(PdfToolGroup.ORGANIZE, multipleInputs = true),
+    SPLIT(PdfToolGroup.ORGANIZE),
+    EXTRACT(PdfToolGroup.ORGANIZE),
+    REORDER(PdfToolGroup.ORGANIZE),
+    ROTATE(PdfToolGroup.ORGANIZE),
+    DELETE(PdfToolGroup.ORGANIZE),
+    IMAGES_TO_PDF(PdfToolGroup.CONVERT, acceptsImages = true, multipleInputs = true),
+    TO_IMAGES(PdfToolGroup.CONVERT),
+    COMPRESS(PdfToolGroup.OPTIMIZE),
+    WATERMARK(PdfToolGroup.OPTIMIZE),
+    PAGE_NUMBERS(PdfToolGroup.OPTIMIZE),
+    PROTECT(PdfToolGroup.SECURITY),
+    UNLOCK(PdfToolGroup.SECURITY),
+}
+
+/** A KB window the output should land in, e.g. an exam portal's certificate limit. Shown, not enforced. */
+data class KbTarget(val minKb: Int, val maxKb: Int) {
+    fun contains(bytes: Long): Boolean = bytes in minKb.toLong() * KIB..maxKb.toLong() * KIB
+
+    private companion object {
+        const val KIB = 1024L
+    }
 }
 
 enum class NumberStyle(val pattern: String) { PLAIN("{n}"), OF_TOTAL("{n} / {total}"), PAGE_OF("Page {n} of {total}") }
@@ -69,6 +88,11 @@ data class PdfOptions(
     val degrees: Int = 90,
     val level: CompressionLevel = CompressionLevel.MEDIUM,
     val pageSize: PageSize = PageSize.A4,
+    val orientation: PageOrientation = PageOrientation.AUTO,
+    val margin: PageMargin = PageMargin.SMALL,
+    val splitMode: SplitMode = SplitMode.CUSTOM,
+    /** "Every N pages" for [SplitMode.EVERY_N], as typed. */
+    val everyN: String = "2",
     val dpi: Int = 150,
     val watermarkText: String = "",
     val opacity: Float = 0.3f,
@@ -81,6 +105,9 @@ data class PdfToolUiState(
     val tool: PdfTool,
     val files: List<FileRef> = emptyList(),
     val info: PdfInfo? = null,
+    /** Page count per picked PDF (by URI), for the merge list. Missing while loading. */
+    val pageCounts: Map<String, Int> = emptyMap(),
+    val sizeTarget: KbTarget? = null,
     val options: PdfOptions = PdfOptions(),
     val inputError: AppError? = null,
     val job: JobState<List<OutputFile>> = JobState.Idle,
@@ -92,7 +119,14 @@ data class PdfToolUiState(
     val canRun: Boolean get() = when {
         files.isEmpty() -> false
         tool.multipleInputs -> files.size >= if (tool == PdfTool.MERGE) 2 else 1
-        else -> info != null && (tool == PdfTool.UNLOCK || info.encrypted.not())
+        info == null -> false
+        tool == PdfTool.SPLIT -> !info.encrypted && splitPlan is Result.Success
+        else -> tool == PdfTool.UNLOCK || info.encrypted.not()
+    }
+
+    /** Files a split will produce, for the live preview. Null until the PDF is read. */
+    val splitPlan: AppResult<List<IntRange>>? get() = info?.let {
+        PageSelection.splitPlan(options.splitMode, options.pages, options.everyN.toIntOrNull(), it.pageCount)
     }
 }
 
@@ -105,6 +139,7 @@ sealed interface PdfEffect {
 @HiltViewModel(assistedFactory = PdfToolViewModel.Factory::class)
 class PdfToolViewModel @AssistedInject constructor(
     @Assisted private val tool: PdfTool,
+    @Assisted private val sizeTarget: KbTarget?,
     private val describeFile: DescribeFileUseCase,
     private val getInfo: GetPdfInfoUseCase,
     private val runOperation: RunPdfOperationUseCase,
@@ -118,10 +153,10 @@ class PdfToolViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(tool: PdfTool): PdfToolViewModel
+        fun create(tool: PdfTool, sizeTarget: KbTarget?): PdfToolViewModel
     }
 
-    private val mutableState = MutableStateFlow(PdfToolUiState(tool))
+    private val mutableState = MutableStateFlow(PdfToolUiState(tool, sizeTarget = sizeTarget))
     val state: StateFlow<PdfToolUiState> = mutableState.asStateFlow()
 
     private val effectChannel = Channel<PdfEffect>(Channel.BUFFERED)
@@ -140,7 +175,13 @@ class PdfToolViewModel @AssistedInject constructor(
         }
     }
 
-    fun onFilesPicked(uris: List<String>) {
+    fun onFilesPicked(picked: List<String>) {
+        // The same file twice in a merge is almost always a mis-tap, and unique URIs keep list keys stable.
+        val uris = if (tool.multipleInputs) {
+            picked.distinct().filter { uri -> state.value.files.none { it.uri == uri } }
+        } else {
+            picked
+        }
         if (uris.isEmpty()) return
         viewModelScope.launch {
             val combined = if (tool.multipleInputs) state.value.files.size + uris.size else 1
@@ -158,6 +199,7 @@ class PdfToolViewModel @AssistedInject constructor(
                     }
                     mutableState.update { it.copy(files = files, inputError = null, info = null) }
                     if (!tool.multipleInputs) loadInfo(files.first())
+                    if (tool == PdfTool.MERGE) described.value.forEach { loadPageCount(it) }
                 }
             }
         }
@@ -167,6 +209,15 @@ class PdfToolViewModel @AssistedInject constructor(
         getInfo(file).fold(
             onSuccess = { info -> mutableState.update { it.copy(info = info) } },
             onFailure = { error -> mutableState.update { it.copy(inputError = error) } },
+        )
+    }
+
+    private suspend fun loadPageCount(file: FileRef) {
+        getInfo(file).fold(
+            onSuccess = { info ->
+                mutableState.update { it.copy(pageCounts = it.pageCounts + (file.uri to info.pageCount)) }
+            },
+            onFailure = {},
         )
     }
 
@@ -208,7 +259,7 @@ class PdfToolViewModel @AssistedInject constructor(
         fun pages() = PageSelection.parse(o.pages, pageCount)
         return when (s.tool) {
             PdfTool.MERGE -> success(PdfOperation.Merge(s.files, dir, "merged"))
-            PdfTool.SPLIT -> PageSelection.parseRanges(o.pages, pageCount).map {
+            PdfTool.SPLIT -> PageSelection.splitPlan(o.splitMode, o.pages, o.everyN.toIntOrNull(), pageCount).map {
                 PdfOperation.Split(first, it, dir, base)
             }
             PdfTool.EXTRACT, PdfTool.REORDER -> pages().map { PdfOperation.SelectPages(first, it, dir, "$base-pages") }
@@ -217,7 +268,9 @@ class PdfToolViewModel @AssistedInject constructor(
             }
             PdfTool.ROTATE -> pages().map { PdfOperation.Rotate(first, it.toSet(), o.degrees, dir, "$base-rotated") }
             PdfTool.COMPRESS -> success(PdfOperation.Compress(first, o.level, dir, "$base-compressed"))
-            PdfTool.IMAGES_TO_PDF -> success(PdfOperation.ImagesToPdf(s.files, o.pageSize, MARGIN_PT, dir, "images"))
+            PdfTool.IMAGES_TO_PDF -> success(
+                PdfOperation.ImagesToPdf(s.files, o.pageSize, o.margin.points, dir, "images", o.orientation),
+            )
             PdfTool.TO_IMAGES -> pages().map { PdfOperation.ToImages(first, it, o.dpi, ImageFormat.JPEG, dir, base) }
             PdfTool.WATERMARK -> success(
                 PdfOperation.Watermark(
@@ -271,7 +324,7 @@ class PdfToolViewModel @AssistedInject constructor(
         runner.cancel()
         runner.reset()
         discardOutputs()
-        mutableState.value = PdfToolUiState(tool)
+        mutableState.value = PdfToolUiState(tool, sizeTarget = sizeTarget)
     }
 
     private fun discardOutputs() {
@@ -286,7 +339,6 @@ class PdfToolViewModel @AssistedInject constructor(
     }
 
     private companion object {
-        const val MARGIN_PT = 24f
         const val WATERMARK_SIZE_PT = 48f
     }
 }
