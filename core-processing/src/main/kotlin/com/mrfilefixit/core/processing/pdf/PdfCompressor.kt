@@ -163,10 +163,10 @@ internal class PdfCompressor(private val limits: InputLimits, private val openDo
         level: CompressionLevel,
         grayscale: Boolean,
     ): PDImageXObject? {
-        // Masks, stencils and 1-bit scans (CCITT/JBIG2) are already compact; JPEG would blur or grow them.
+        // Stencils and 1-bit scans (CCITT/JBIG2) are already compact; JPEG would blur or grow them.
         if (image.isStencil || image.bitsPerComponent <= 1) return null
-        if (image.cosObject.containsKey(COSName.SMASK) || image.cosObject.containsKey(COSName.MASK)) return null
         if (limits.checkDimensions(image.width, image.height) is Result.Failure) return null
+        if (hasVisibleMask(image)) return null
         val (width, height) =
             PdfCompressionPolicy.targetSize(image.width, image.height, page.width, page.height, level.dpi)
         val decoded = try {
@@ -179,6 +179,45 @@ internal class PdfCompressor(private val limits: InputLimits, private val openDo
         }
         val originalBytes = image.cosObject.length
         return candidate.takeIf { PdfCompressionPolicy.shouldReplace(originalBytes, it.cosObject.length) }
+    }
+
+    /**
+     * True when [image] has a mask that hides part of it. Android bitmaps carry an alpha channel by default,
+     * so many generated PDFs attach a soft mask that is fully opaque; such a mask is dropped with the
+     * re-encode (the image is flattened onto white), while real transparency keeps the original.
+     */
+    private fun hasVisibleMask(image: PDImageXObject): Boolean {
+        if (image.cosObject.containsKey(COSName.MASK)) return true
+        if (!image.cosObject.containsKey(COSName.SMASK)) return false
+        val mask = try {
+            image.softMask
+        } catch (_: IOException) {
+            null
+        } ?: return true
+        if (limits.checkDimensions(mask.width, mask.height) is Result.Failure) return true
+        val bitmap = try {
+            mask.image
+        } catch (_: IOException) {
+            null
+        } ?: return true
+        return bitmap.use { !isOpaqueMask(it) }
+    }
+
+    /**
+     * Mask samples are alpha in an ALPHA_8 bitmap and grey (red) otherwise. JPEG noise just below white
+     * still counts as opaque.
+     */
+    private fun isOpaqueMask(mask: Bitmap): Boolean {
+        val alphaOnly = mask.config == Bitmap.Config.ALPHA_8
+        val row = IntArray(mask.width)
+        for (y in 0 until mask.height) {
+            mask.getPixels(row, 0, mask.width, 0, y, mask.width, 1)
+            for (pixel in row) {
+                val value = if (alphaOnly) Color.alpha(pixel) else Color.red(pixel)
+                if (value < OPAQUE_MASK_MIN) return false
+            }
+        }
+        return true
     }
 
     /** Last resort for the strong level: one JPEG per page, rendered one page at a time. */
@@ -245,6 +284,7 @@ internal class PdfCompressor(private val limits: InputLimits, private val openDo
 
     private companion object {
         const val MAX_FORM_DEPTH = 8
+        const val OPAQUE_MASK_MIN = 250
         const val PERCENT = 100f
         const val POINTS_PER_INCH = 72f
 
