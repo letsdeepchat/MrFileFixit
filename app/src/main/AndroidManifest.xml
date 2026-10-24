@@ -4,8 +4,7 @@
 
     <!--
       No storage permissions: files come in through the Storage Access Framework and the photo picker,
-      and go out through FileProvider or "Save as". INTERNET is merged in by the Mobile Ads SDK (core-ads),
-      the only component that uses the network.
+      and go out through FileProvider or "Save as". The app has no ads and no network code of its own.
     -->
     <!--
       heifwriter declares minSdk 28. It is only reached from ImageEncoding.encodeHeic, which is
@@ -59,10 +58,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="${admobAppId}" />
 
         <!-- WorkManager is initialised on demand with the Hilt worker factory. -->
         <provider

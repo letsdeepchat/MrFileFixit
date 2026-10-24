@@ -65,23 +65,22 @@ style:
     maxJumpCount: 2
   ForbiddenImport:
     active: true
-    # Processing code must never touch the network. AdMob (core-ads) is the only network consumer,
-    # and it goes through the Mobile Ads SDK, so these imports are banned project-wide.
+    # The app is offline-only and has no ads, so network imports are banned project-wide.
     imports:
       - value: 'java.net.URL'
-        reason: 'No network access outside the Mobile Ads SDK.'
+        reason: 'The app never uses the network.'
       - value: 'java.net.HttpURLConnection'
-        reason: 'No network access outside the Mobile Ads SDK.'
+        reason: 'The app never uses the network.'
       - value: 'java.net.Socket'
-        reason: 'No network access outside the Mobile Ads SDK.'
+        reason: 'The app never uses the network.'
       - value: 'javax.net.*'
-        reason: 'No network access outside the Mobile Ads SDK.'
+        reason: 'The app never uses the network.'
       - value: 'okhttp3.*'
-        reason: 'No network access outside the Mobile Ads SDK.'
+        reason: 'The app never uses the network.'
       - value: 'retrofit2.*'
-        reason: 'No network access outside the Mobile Ads SDK.'
+        reason: 'The app never uses the network.'
       - value: 'io.ktor.*'
-        reason: 'No network access outside the Mobile Ads SDK.'
+        reason: 'The app never uses the network.'
       - value: 'kotlinx.coroutines.GlobalScope'
         reason: 'Use an injected or lifecycle-bound scope.'
   ForbiddenMethodCall:
@@ -101,9 +100,9 @@ potential-bugs:
 exceptions:
   TooGenericExceptionCaught:
     # Data-layer boundaries catch everything and map it to AppError on purpose.
-    excludes: ['**/core-processing/**', '**/core-storage/**', '**/core-ads/**', '**/result/**']
+    excludes: ['**/core-processing/**', '**/core-storage/**', '**/result/**']
   SwallowedException:
-    excludes: ['**/core-processing/**', '**/core-storage/**', '**/core-ads/**']
+    excludes: ['**/core-processing/**', '**/core-storage/**']
 
 formatting:
   android: true

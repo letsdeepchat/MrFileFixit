@@ -115,7 +115,6 @@ class ExamScreensTest {
                         }
                         override fun onCancel(key: SlotKey) = Unit
                         override fun onReset(key: SlotKey) = Unit
-                        override fun onRevealed(key: SlotKey) = Unit
                         override fun onSave(key: SlotKey, destination: String) = Unit
                         override fun onShare(key: SlotKey) = Unit
                         override fun onMakeComposite() = Unit

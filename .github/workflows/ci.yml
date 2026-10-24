@@ -60,7 +60,7 @@ jobs:
         run: ./gradlew lintDebug --continue
       - name: Assemble debug
         run: ./gradlew :app:assembleDebug
-      - name: Merged manifest has no broad storage permissions
+      - name: Merged manifest has no broad storage permissions and no ads
         run: |
           manifest=$(find app/build/intermediates/merged_manifest -name AndroidManifest.xml | head -n 1)
           test -n "$manifest"
@@ -69,6 +69,11 @@ jobs:
             exit 1
           fi
           grep -q 'android:allowBackup="false"' "$manifest"
+          # No ads SDK, no advertising ID: the app is free and ad-free.
+          if grep -E 'permission.AD_ID|com.google.android.gms.ads' "$manifest"; then
+            echo "Advertising component found in merged manifest" >&2
+            exit 1
+          fi
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -120,8 +125,8 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
-      # The Play Store bundle needs the upload keystore and real AdMob IDs. Until those secrets exist the
-      # job skips the bundle instead of failing, and the tag still ships the tester APK below.
+      # The Play Store bundle needs an upload keystore. Signing is optional: until the MFF_KEYSTORE_* secrets
+      # exist the job skips the bundle instead of failing, and the tag still ships the tester APK below.
       - name: Check release secrets
         id: secrets
         env:
@@ -130,7 +135,7 @@ jobs:
           if [ -n "$KEYSTORE_B64" ]; then
             echo "configured=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::notice::Release secrets are not set, so no Play Store bundle was built."
+            echo "::notice::No upload keystore is configured, so no Play Store bundle was built."
             echo "configured=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Decode keystore
@@ -145,10 +150,6 @@ jobs:
           MFF_KEYSTORE_PASSWORD: ${{ secrets.MFF_KEYSTORE_PASSWORD }}
           MFF_KEY_ALIAS: ${{ secrets.MFF_KEY_ALIAS }}
           MFF_KEY_PASSWORD: ${{ secrets.MFF_KEY_PASSWORD }}
-          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
-          ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
-          ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
-          ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
         run: ./gradlew :app:bundleRelease
       - uses: actions/upload-artifact@v4
         if: steps.secrets.outputs.configured == 'true'
@@ -170,8 +171,8 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
-      # A debug build: debug-signed so it installs by sideloading, shows only Google's test ads, and
-      # installs as com.mrfilefixit.app.debug next to any Play Store copy.
+      # A debug build: debug-signed so it installs by sideloading, and installs as
+      # com.mrfilefixit.app.debug next to any Play Store copy. No ads, no account, everything free.
       - run: ./gradlew :app:assembleDebug
       - name: Publish pre-release with the APK
         env:
@@ -182,4 +183,4 @@ jobs:
           apk="MrFileFixit-${TAG}-tester.apk"
           cp app/build/outputs/apk/debug/app-debug.apk "$apk"
           gh release create "$TAG" "$apk" --target "$GITHUB_SHA" --prerelease --title "Mr File Fixit $TAG (tester build)" \
-            --notes "Tester build for sideloading. It is debug-signed and shows Google's test ads only. Not the Play Store release."
+            --notes "Tester build for sideloading. Free, offline, no ads and no sign-in. It is debug-signed, so it is not the Play Store upload."

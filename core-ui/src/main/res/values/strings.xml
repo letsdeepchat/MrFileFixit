@@ -17,6 +17,8 @@
     <string name="action_clear_all">Clear all</string>
     <string name="action_add_more">Add more</string>
     <string name="action_change">Change</string>
+    <string name="action_read_more">Read more</string>
+    <string name="action_show_less">Show less</string>
     <string name="action_clear_search">Clear search</string>
     <string name="share_chooser_title">Share file</string>
 
@@ -74,7 +76,7 @@
     <string name="error_storage_full">Your phone is out of storage.</string>
     <string name="error_out_of_memory">Not enough memory for this file. Close other apps and try again.</string>
     <string name="error_feature_unavailable">Your device does not support this.</string>
-    <string name="error_quota">You have used today\'s free batch jobs.</string>
+    <string name="error_already_optimized">This PDF is already as small as it can get without losing quality, so it was left unchanged.</string>
     <string name="error_unexpected">Something went wrong. Please try again.</string>
 
     <!-- Accessibility -->

@@ -1,5 +1,5 @@
 # R8 full mode is on (gradle.properties). Library consumer rules cover Hilt, Compose, WorkManager,
-# ML Kit, Play services ads and kotlinx.serialization. Only app-specific rules live here.
+# ML Kit and kotlinx.serialization. Only app-specific rules live here.
 
 # kotlinx.serialization: keep generated serializers for navigation routes and the exam rules DTOs.
 -keepattributes *Annotation*, InnerClasses

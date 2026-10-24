@@ -33,14 +33,12 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -55,7 +53,6 @@ import com.mrfilefixit.core.domain.exam.ExamProfile
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.domain.job.JobState
 import com.mrfilefixit.core.ui.R as CoreR
-import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.CropBox
 import com.mrfilefixit.core.ui.components.ErrorCard
 import com.mrfilefixit.core.ui.components.ExamDisclaimerCard
@@ -67,7 +64,6 @@ import com.mrfilefixit.core.ui.components.boundsText
 import com.mrfilefixit.core.ui.components.displayName
 import com.mrfilefixit.core.ui.format.formatIsoDate
 import com.mrfilefixit.core.ui.preview.AllPreviews
-import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.core.ui.thumbnail.Thumbnail
@@ -81,7 +77,6 @@ internal interface ExamFlowActions {
     fun onFix(key: SlotKey)
     fun onCancel(key: SlotKey)
     fun onReset(key: SlotKey)
-    fun onRevealed(key: SlotKey)
     fun onSave(key: SlotKey, destination: String)
     fun onShare(key: SlotKey)
     fun onMakeComposite()
@@ -393,12 +388,10 @@ private fun CompositeCard(slot: SlotUiState, ready: Boolean, actions: ExamFlowAc
 }
 
 /**
- * Shows [idleContent] until a job runs, then progress, then (after the interstitial gate) the result.
+ * Shows [idleContent] until a job runs, then progress, then the result.
  */
 @Composable
 private fun JobSection(key: SlotKey, slot: SlotUiState, actions: ExamFlowActions, idleContent: @Composable () -> Unit) {
-    val context = LocalContext.current
-    val adSlots = LocalAdSlots.current
     when (val job = slot.job) {
         JobState.Idle -> idleContent()
         JobState.Cancelled -> {
@@ -410,18 +403,7 @@ private fun JobSection(key: SlotKey, slot: SlotUiState, actions: ExamFlowActions
             ErrorCard(job.error, onRetry = { actions.onFix(key) })
             idleContent()
         }
-        is JobState.Success -> {
-            if (!slot.resultRevealed) {
-                // Interstitial (if any) between "done" and the result. Never blocks: the gate has its own timeout.
-                LaunchedEffect(job) {
-                    context.findActivity()?.let { adSlots.beforeResult(it) }
-                    actions.onRevealed(key)
-                }
-                JobProgressCard(1f, onCancel = {})
-            } else {
-                ResultSection(key, slot, actions)
-            }
-        }
+        is JobState.Success -> ResultSection(key, slot, actions)
     }
 }
 
@@ -483,7 +465,6 @@ private object NoOpActions : ExamFlowActions {
     override fun onFix(key: SlotKey) = Unit
     override fun onCancel(key: SlotKey) = Unit
     override fun onReset(key: SlotKey) = Unit
-    override fun onRevealed(key: SlotKey) = Unit
     override fun onSave(key: SlotKey, destination: String) = Unit
     override fun onShare(key: SlotKey) = Unit
     override fun onMakeComposite() = Unit

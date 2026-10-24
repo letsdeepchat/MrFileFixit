@@ -18,4 +18,9 @@ dependencies {
     implementation(libs.pdfbox.android)
     implementation(libs.mlkit.text.recognition)
     implementation(libs.mlkit.text.recognition.devanagari)
+
+    // Instrumented tests for the engines that need real Android graphics (PDF compression).
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }

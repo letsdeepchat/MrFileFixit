@@ -30,7 +30,6 @@ fun NavGraphBuilder.imageScreen() {
 @Composable
 private fun ImageToolRoute(viewModel: ImageToolViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val remaining by viewModel.remainingBatches.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     val chooser = stringResource(CoreR.string.share_chooser_title)
@@ -51,8 +50,6 @@ private fun ImageToolRoute(viewModel: ImageToolViewModel = hiltViewModel()) {
             onResize = viewModel::onResizeEdit,
             onRun = viewModel::onRun,
             onCancel = viewModel::onCancel,
-            onRevealed = viewModel::onResultRevealed,
-            onRewardEarned = viewModel::onRewardEarned,
             onSave = { index, uri ->
                 viewModel.state.value.outcome?.images?.getOrNull(index)?.let { viewModel.onSave(it.file, uri) }
             },
@@ -61,5 +58,5 @@ private fun ImageToolRoute(viewModel: ImageToolViewModel = hiltViewModel()) {
             canEncode = viewModel::canEncode,
         )
     }
-    ImageToolScreen(state, remaining, actions, snackbarHost = { SnackbarHost(snackbar) })
+    ImageToolScreen(state, actions, snackbarHost = { SnackbarHost(snackbar) })
 }

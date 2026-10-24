@@ -4,7 +4,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,8 +19,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.LinkOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -33,29 +35,25 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import com.mrfilefixit.core.domain.exam.DocumentKind
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.domain.job.JobState
-import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.ui.R as CoreR
-import com.mrfilefixit.core.ui.ads.BannerPlacement
-import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.CenteredEmptyState
 import com.mrfilefixit.core.ui.components.CropBox
 import com.mrfilefixit.core.ui.components.ErrorCard
@@ -70,12 +68,10 @@ import com.mrfilefixit.core.ui.components.UploadDropZone
 import com.mrfilefixit.core.ui.components.displayName
 import com.mrfilefixit.core.ui.format.formatBytes
 import com.mrfilefixit.core.ui.preview.AllPreviews
-import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.core.ui.thumbnail.Thumbnail
 import com.mrfilefixit.feature.image.R
-import kotlinx.coroutines.launch
 
 internal class ImageToolActions(
     val onTool: (ImageTool) -> Unit,
@@ -84,8 +80,6 @@ internal class ImageToolActions(
     val onResize: (ResizeEdit) -> Unit,
     val onRun: () -> Unit,
     val onCancel: () -> Unit,
-    val onRevealed: () -> Unit,
-    val onRewardEarned: () -> Unit,
     val onSave: (Int, String) -> Unit,
     val onShareAll: () -> Unit,
     val onReset: () -> Unit,
@@ -104,7 +98,6 @@ private val CROP_ASPECTS = listOf<Float?>(null, 1f, ASPECT_4_3, ASPECT_3_4, ASPE
 @Composable
 internal fun ImageToolScreen(
     state: ImageToolUiState,
-    remainingBatches: Int,
     actions: ImageToolActions,
     modifier: Modifier = Modifier,
     snackbarHost: @Composable () -> Unit = {},
@@ -142,8 +135,7 @@ internal fun ImageToolScreen(
                     if (state.tool == ImageTool.RESIZE) ResizeOptions(state, actions, Modifier.contentWidth())
                 }
             } else {
-                LoadedContent(state, remainingBatches, actions, onChange = pick, modifier = Modifier.weight(1f))
-                LocalAdSlots.current.Banner(BannerPlacement.FILE_LIST, Modifier.fillMaxWidth())
+                LoadedContent(state, actions, onChange = pick, modifier = Modifier.weight(1f))
             }
         }
     }
@@ -173,7 +165,6 @@ private fun ToolTabs(selected: ImageTool, onSelect: (ImageTool) -> Unit) {
 @Composable
 private fun LoadedContent(
     state: ImageToolUiState,
-    remainingBatches: Int,
     actions: ImageToolActions,
     onChange: () -> Unit,
     modifier: Modifier = Modifier,
@@ -187,9 +178,7 @@ private fun LoadedContent(
         item(key = "files") { SelectedFiles(state, onChange, Modifier.contentWidth()) }
         state.inputError?.let { error ->
             item(key = "input-error") {
-                Box(Modifier.contentWidth()) {
-                    if (error is AppError.QuotaExceeded) QuotaCard(actions) else ErrorCard(error, onRetry = null)
-                }
+                ErrorCard(error, onRetry = null, Modifier.contentWidth())
             }
         }
         if (state.outcome == null) {
@@ -198,8 +187,7 @@ private fun LoadedContent(
         if (state.isBatch) {
             item(key = "batch-note") {
                 Text(
-                    stringResource(R.string.image_quota_left, remainingBatches) + "\n" +
-                        stringResource(R.string.image_batch_background),
+                    stringResource(R.string.image_batch_background),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.contentWidth(),
@@ -246,24 +234,6 @@ private fun SelectedFiles(state: ImageToolUiState, onChange: () -> Unit, modifie
 }
 
 @Composable
-private fun QuotaCard(actions: ImageToolActions) {
-    val context = LocalContext.current
-    val adSlots = LocalAdSlots.current
-    val scope = rememberCoroutineScope()
-    SectionCard {
-        Text(stringResource(R.string.image_quota_empty))
-        // Opt-in only: the ad plays when the user taps, and the reward is granted only when it is earned.
-        OutlinedButton(
-            onClick = {
-                val activity = context.findActivity() ?: return@OutlinedButton
-                scope.launch { if (adSlots.showRewarded(activity)) actions.onRewardEarned() }
-            },
-            modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
-        ) { Text(stringResource(R.string.image_watch_ad)) }
-    }
-}
-
-@Composable
 private fun ToolOptions(state: ImageToolUiState, actions: ImageToolActions, modifier: Modifier = Modifier) {
     val o = state.options
     when (state.tool) {
@@ -272,18 +242,21 @@ private fun ToolOptions(state: ImageToolUiState, actions: ImageToolActions, modi
             val info = state.firstInfo
             val file = state.files.firstOrNull()
             if (state.files.size > 1) Text(stringResource(R.string.image_crop_single_only))
-            SectionHeader(stringResource(R.string.image_aspect))
-            ChipRow(CROP_ASPECTS, o.cropAspect, { aspectLabel(it) }) { a ->
-                actions.onOptions { it.copy(cropAspect = a) }
-            }
             if (file != null && info != null && state.files.size == 1) {
                 val imageAspect = info.width.toFloat() / info.height
+                // Bounded canvas: at most 45% of the screen height, so tall photos never push the
+                // aspect buttons off screen or draw over them.
                 CropBox(
                     uri = file.uri,
                     imageAspect = imageAspect,
                     frameAspect = o.cropAspect ?: imageAspect,
                     onCropChanged = { rect: NormalizedRect -> actions.onOptions { it.copy(crop = rect) } },
+                    maxHeight = LocalConfiguration.current.screenHeightDp.dp * CROP_MAX_HEIGHT_FRACTION,
                 )
+            }
+            SectionHeader(stringResource(R.string.image_aspect), Modifier.padding(top = Dimens.SpaceS))
+            ChipRow(CROP_ASPECTS, o.cropAspect, { aspectLabel(it) }) { a ->
+                actions.onOptions { it.copy(cropAspect = a) }
             }
         }
         ImageTool.ROTATE -> SectionCard(modifier) {
@@ -335,8 +308,15 @@ private fun ResizeOptions(state: ImageToolUiState, actions: ImageToolActions, mo
                 suffix = stringResource(R.string.image_unit_px),
                 imeAction = ImeAction.Next,
             )
-            // Decorative separator; each field already announces its own label.
-            Text("×", style = MaterialTheme.typography.titleMedium, modifier = Modifier.clearAndSetSemantics {})
+            // Decorative: shows whether the two sides are linked. Each field announces its own label and the
+            // switch below announces the state.
+            val colors = MaterialTheme.colorScheme
+            Icon(
+                if (o.keepAspect) Icons.Filled.Link else Icons.Filled.LinkOff,
+                contentDescription = null,
+                tint = if (o.keepAspect) colors.primary else colors.onSurfaceVariant,
+                modifier = Modifier.clearAndSetSemantics {},
+            )
             NumberField(
                 o.height,
                 { actions.onResize(ResizeEdit.Height(it)) },
@@ -446,7 +426,10 @@ private fun NumberField(
 
 @Composable
 private fun <T> ChipRow(values: List<T>, selected: T, label: @Composable (T) -> String, onSelect: (T) -> Unit) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+        verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+    ) {
         values.forEach { value ->
             FilterChip(
                 selected = value == selected,
@@ -461,18 +444,10 @@ private fun <T> ChipRow(values: List<T>, selected: T, label: @Composable (T) -> 
 /** Sticky bottom bar: progress while running, Share / Start over after success, otherwise the run button. */
 @Composable
 private fun BottomActions(state: ImageToolUiState, actions: ImageToolActions) {
-    val context = LocalContext.current
-    val adSlots = LocalAdSlots.current
     StickyActionBar {
         when (val job = state.job) {
             is JobState.Running -> JobProgressCard(job.progress, actions.onCancel)
-            is JobState.Success -> if (!state.resultRevealed) {
-                LaunchedEffect(job) {
-                    context.findActivity()?.let { adSlots.beforeResult(it) }
-                    actions.onRevealed()
-                }
-                JobProgressCard(1f, onCancel = {})
-            } else {
+            is JobState.Success -> {
                 PrimaryActionButton(stringResource(CoreR.string.action_share), actions.onShareAll)
                 TextButton(
                     onClick = actions.onReset,
@@ -553,17 +528,18 @@ private fun aspectLabel(aspect: Float?): String = when (aspect) {
 }
 
 private const val MAX_PICK = 100
+private const val CROP_MAX_HEIGHT_FRACTION = 0.45f
 private const val MAX_DIGITS = 5
 private const val MIN_QUALITY = 10f
 private const val MAX_QUALITY = 100f
 
-private val PreviewActions = ImageToolActions({}, {}, {}, {}, {}, {}, {}, {}, { _, _ -> }, {}, {}, { true })
+private val PreviewActions = ImageToolActions({}, {}, {}, {}, {}, {}, { _, _ -> }, {}, {}, { true })
 
 @AllPreviews
 @Composable
 private fun ImageToolEmptyPreview() {
     MffTheme(dynamicColor = false) {
-        ImageToolScreen(ImageToolUiState(), remainingBatches = 3, actions = PreviewActions)
+        ImageToolScreen(ImageToolUiState(), actions = PreviewActions)
     }
 }
 
@@ -571,6 +547,6 @@ private fun ImageToolEmptyPreview() {
 @Composable
 private fun ImageToolCompressPreview() {
     MffTheme(dynamicColor = false) {
-        ImageToolScreen(ImageToolUiState(tool = ImageTool.COMPRESS), remainingBatches = 3, actions = PreviewActions)
+        ImageToolScreen(ImageToolUiState(tool = ImageTool.COMPRESS), actions = PreviewActions)
     }
 }

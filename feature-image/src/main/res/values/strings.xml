@@ -30,9 +30,6 @@
         <item quantity="other">%1$d files could not be processed.</item>
     </plurals>
     <string name="image_batch_background">Large batches keep running in the background with a notification.</string>
-    <string name="image_quota_left">Free batch jobs left today: %1$d</string>
-    <string name="image_quota_empty">You have used today\'s free batch jobs. Single images are always free.</string>
-    <string name="image_watch_ad">Watch an ad for 2 more batch jobs</string>
     <string name="image_heic_unavailable">HEIC output is not supported on this device.</string>
     <string name="notification_channel_jobs">File jobs</string>
     <string name="notification_job_running">Processing images…</string>

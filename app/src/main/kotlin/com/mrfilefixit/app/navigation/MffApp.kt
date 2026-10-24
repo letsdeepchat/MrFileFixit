@@ -18,6 +18,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -44,12 +48,21 @@ data object HomeRoute
 @Serializable
 data object SettingsRoute
 
-enum class TopLevelDestination(val route: Any, val icon: ImageVector, @StringRes val label: Int) {
-    HOME(HomeRoute, Icons.Filled.Home, R.string.nav_home),
-    EXAM(ExamRoute, Icons.Filled.Badge, R.string.nav_exam),
-    PDF(PdfRoute(), Icons.Filled.PictureAsPdf, R.string.nav_pdf),
-    IMAGE(ImageRoute(), Icons.Filled.Image, R.string.nav_image),
-    SCAN(ScanRoute, Icons.Filled.DocumentScanner, R.string.nav_scan),
+/**
+ * [label] is the full name used on home cards; [shortLabel] is the one-word caption for the navigation
+ * bar, so five items fit at 320 dp without wrapping or pushing the last item off screen.
+ */
+enum class TopLevelDestination(
+    val route: Any,
+    val icon: ImageVector,
+    @StringRes val label: Int,
+    @StringRes val shortLabel: Int,
+) {
+    HOME(HomeRoute, Icons.Filled.Home, R.string.nav_home, R.string.nav_home),
+    EXAM(ExamRoute, Icons.Filled.Badge, R.string.nav_exam, R.string.nav_exam_short),
+    PDF(PdfRoute(), Icons.Filled.PictureAsPdf, R.string.nav_pdf, R.string.nav_pdf_short),
+    IMAGE(ImageRoute(), Icons.Filled.Image, R.string.nav_image, R.string.nav_image_short),
+    SCAN(ScanRoute, Icons.Filled.DocumentScanner, R.string.nav_scan, R.string.nav_scan),
 }
 
 /**
@@ -70,7 +83,14 @@ fun MffApp() {
                     selected = destination?.hasRoute(top.route::class) == true,
                     onClick = { navController.navigateTopLevel(top) },
                     icon = { Icon(top.icon, contentDescription = null) },
-                    label = { Text(stringResource(top.label)) },
+                    label = {
+                        Text(
+                            stringResource(top.shortLabel),
+                            style = NavLabelStyle,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
                     modifier = Modifier.testTag("nav_${top.name.lowercase()}"),
                 )
             }
@@ -111,6 +131,9 @@ private fun NavHostController.navigateToTool(route: Any) {
 }
 
 private const val PDF_COMPRESS = "COMPRESS"
+
+/** 11 sp medium with slight tracking: readable, and short enough that every caption stays on one line. */
+private val NavLabelStyle = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.2.sp)
 
 private fun NavHostController.navigateTopLevel(destination: TopLevelDestination) {
     navigate(destination.route) {

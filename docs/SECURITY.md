@@ -7,7 +7,7 @@ Each rule from the product spec is listed with where it is enforced and how it i
 
 | Rule | Enforced in | Checked by |
 | --- | --- | --- |
-| Processing never touches the network; AdMob is the only network user | `NetworkIsolation.kt` convention: every module except `:core-ads` and `:app` fails the build if it resolves a networking library or declares `INTERNET` | `verifyNetworkIsolation` task (runs with `check`); detekt `ForbiddenImport` bans `java.net.*`, `javax.net.*`, OkHttp, Retrofit, Ktor everywhere |
+| Nothing in the app touches the network (no ads, no analytics, no backend) | `NetworkIsolation.kt` convention: every module, `:app` included, fails the build if it resolves a networking library or declares `INTERNET`; CI also fails if the merged manifest has an ads component or `AD_ID` | `verifyNetworkIsolation` task (runs with `check`); detekt `ForbiddenImport` bans `java.net.*`, `javax.net.*`, OkHttp, Retrofit, Ktor everywhere |
 | Scoped storage and SAF only; no broad storage permissions | Photo Picker / `OpenDocument` / `CreateDocument` only. `app/AndroidManifest.xml` removes `READ/WRITE/MANAGE_EXTERNAL_STORAGE` and `READ_MEDIA_IMAGES` with `tools:node="remove"` in case a library adds them | Merged-manifest review in CI (`processReleaseManifest` + grep step) |
 | Validate before decoding: 50 MB, max pixels, page count | `InputLimits` (50 MB, 64 MP, 16 384 px side, 1 000 pages, 100 files). Sizes are checked from SAF metadata, then again while streaming (`LimitedInputStream`); dimensions from the header before any bitmap is allocated; page count before rendering | `InputLimitsTest`, `BatchImageUseCaseTest`, `ScanUseCasesTest` |
 | Sanitize file names | `FilenameSanitizer`: removes path separators, control and format characters (including RTL overrides), `..` runs, reserved Windows names; 100-char cap | `FilenameSanitizerTest` |
@@ -16,7 +16,7 @@ Each rule from the product spec is listed with where it is enforced and how it i
 | Release builds do not log file names, paths or content | `AppLogger` contract; release binds a no-op Timber tree; R8 strips `android.util.Log` calls; `toString()` of `FileRef`, `OutputFile`, `DestinationUri`, `ScanCapture` and PDF password operations is redacted; `AppError.Unexpected` keeps the exception class name only, never its message | Code review + `ResultTest` |
 | Crash reports exclude user data | No crash SDK is bundled. If one is added, it must use `AppError`/class names only (see "Adding a crash reporter") | — |
 | Strip EXIF by default | Every re-encode drops metadata (bitmaps carry none); the lossless "Strip EXIF" path removes APP1/XMP/COM and keeps only JFIF and the ICC colour profile; PNG keeps only critical chunks plus colour chunks | `JpegSegmentsTest`, `PngChunksTest` |
-| Preferences in DataStore; no keys in source | `DataStoreUserPreferences`, `DataStoreBatchQuota`. AdMob app ID and unit IDs, and signing secrets, come from Gradle properties or CI secrets; release build fails if any is missing or is a Google test ID | `verifyReleaseSecrets` task |
+| Preferences in DataStore; no keys in source | `DataStoreUserPreferences`. Optional signing secrets come from Gradle properties or CI secrets only | Code review |
 | Disable backup; block cleartext | `allowBackup=false`, `data_extraction_rules.xml` and `backup_rules.xml` exclude everything; `network_security_config.xml` sets `cleartextTrafficPermitted=false` and trusts system CAs only | Manifest review |
 | Never store PDF passwords | Passwords live in a `CharArray` only from the Run tap until the job ends, then are zero-filled (`PdfOperation.wipeSecrets()` in `finally`). They are never in UI state that survives process death, never in `SavedStateHandle`, never logged (`toString` redacted) | `RunPdfOperationUseCaseTest` |
 
@@ -28,7 +28,6 @@ flowchart LR
         exam[":feature-exam"] --- pdf[":feature-pdf"] --- img[":feature-image"] --- scan[":feature-scan"]
         proc[":core-processing"] --- store[":core-storage"] --- ui[":core-ui"] --- dom[":core-domain"]
     end
-    ads[":core-ads"] -->|UMP consent, ad requests| net(("Internet"))
     gms["Google Play services\n(document scanner UI, separate process)"]
     scan -. intent .-> gms
 ```
@@ -54,16 +53,16 @@ Play services; the scan itself is processed on-device and returned to the app as
 them into `cache/jobs/<id>/` (`FileRepository.importToJob`, which accepts only `content://` URIs and `file://`
 URIs inside this app's own storage) and never send them anywhere.
 
-### AdMob
+### Ads
 
-AdMob and UMP live only in `:core-ads`. Consent is gathered before `MobileAds.initialize` and before any ad
-request. Ads never receive file names, document types or exam names (no custom targeting is set).
+There are none. The ads SDK, consent SDK and advertising ID were removed; every feature is free with no limits.
 
 ## Adding a crash reporter
 
 If a crash reporter is added later, it must:
 
-1. Live in a module that is allowed network access (add it to `NETWORK_ALLOWED_MODULES` deliberately).
+1. Be a deliberate exception to the network-isolation check (today no module is allowed network access), and
+   be declared in the Play Console data-safety form.
 2. Disable automatic collection of logs/breadcrumbs, or route them through `AppLogger`.
 3. Never attach exception messages from the data layer; report `AppError` values and exception class names.
 

@@ -29,10 +29,14 @@ enum class SplitMode { CUSTOM, EVERY_N, SINGLE_PAGES }
 
 enum class Position { TOP_LEFT, TOP_CENTER, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT }
 
+/**
+ * Target resolution and JPEG quality for embedded images. Text and vector content are never rasterized,
+ * except as [HIGH]'s last resort when nothing else makes the file smaller (see [PdfCompressionPolicy]).
+ */
 enum class CompressionLevel(val dpi: Int, val jpegQuality: Int) {
-    LOW(dpi = 200, jpegQuality = 85),
-    MEDIUM(dpi = 150, jpegQuality = 70),
-    HIGH(dpi = 110, jpegQuality = 55),
+    LOW(dpi = 150, jpegQuality = 75),
+    MEDIUM(dpi = 120, jpegQuality = 60),
+    HIGH(dpi = 96, jpegQuality = 45),
 }
 
 /**
@@ -73,12 +77,17 @@ sealed interface PdfOperation {
         override val outputBaseName: String,
     ) : PdfOperation
 
-    /** Re-renders pages as JPEG at a lower resolution. Text stops being selectable; the UI says so. */
+    /**
+     * Downsamples embedded images, recompresses uncompressed streams and drops metadata. The output is
+     * always smaller than the source, or the job fails with `AppError.AlreadyOptimized` and nothing is
+     * written. [grayscale] also converts images to grey, which saves more on colour scans.
+     */
     data class Compress(
         val source: FileRef,
         val level: CompressionLevel,
         override val outputDir: String,
         override val outputBaseName: String,
+        val grayscale: Boolean = false,
     ) : PdfOperation
 
     data class ImagesToPdf(

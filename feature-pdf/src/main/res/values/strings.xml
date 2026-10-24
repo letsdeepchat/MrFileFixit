@@ -29,7 +29,9 @@
     <string name="pdf_compress_LOW">Light (best quality)</string>
     <string name="pdf_compress_MEDIUM">Medium</string>
     <string name="pdf_compress_HIGH">Strong (smallest file)</string>
-    <string name="pdf_compress_note">Pages are converted to images, so text can no longer be selected.</string>
+    <string name="pdf_compress_note">Text stays selectable: only pictures inside the PDF are made smaller. Strong may turn pages into images if that is the only way to shrink the file. The result is never bigger than the original.</string>
+    <string name="pdf_compress_grayscale">Convert images to grayscale</string>
+    <string name="pdf_compress_grayscale_hint">Saves more space on colour scans</string>
     <string name="pdf_page_size">Page size</string>
     <string name="pdf_page_size_A4">A4</string>
     <string name="pdf_page_size_LETTER">Letter</string>

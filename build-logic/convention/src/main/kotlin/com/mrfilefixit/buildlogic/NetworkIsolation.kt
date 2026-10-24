@@ -15,7 +15,7 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
 /**
- * Libraries that open network connections. Only `:core-ads` (and `:app`, which aggregates it) may depend on them.
+ * Libraries that open network connections. No module may depend on them: the app is fully offline and has no ads.
  *
  * `com.google.android.datatransport` is deliberately NOT listed: ML Kit uses it for anonymous usage
  * metrics. It never carries file content. See docs/SECURITY.md, "ML Kit telemetry".
@@ -72,15 +72,12 @@ abstract class VerifyNetworkIsolationTask : DefaultTask() {
                     appendLine("${modulePath.get()} must not use the network.")
                     if (offenders.isNotEmpty()) appendLine("Networking dependencies: ${offenders.joinToString()}")
                     if (declaresInternet) appendLine("Its AndroidManifest.xml declares android.permission.INTERNET.")
-                    append("Only :core-ads may talk to the network.")
+                    append("Mr File Fixit is offline-only: no module may talk to the network.")
                 },
             )
         }
     }
 }
-
-/** Modules allowed to use the network. `:app` only aggregates `:core-ads`. */
-internal val NETWORK_ALLOWED_MODULES = setOf(":core-ads", ":app")
 
 internal fun Project.configureNetworkIsolation(configurationName: String) {
     // Looked up lazily: Android variant configurations do not exist yet when convention plugins run.

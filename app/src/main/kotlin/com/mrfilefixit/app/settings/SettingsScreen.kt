@@ -1,5 +1,6 @@
 package com.mrfilefixit.app.settings
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,8 +14,13 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoDelete
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.PersonOff
+import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -22,7 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -33,16 +39,12 @@ import com.mrfilefixit.app.BuildConfig
 import com.mrfilefixit.app.MainViewModel
 import com.mrfilefixit.app.R
 import com.mrfilefixit.core.domain.prefs.ThemeMode
-import com.mrfilefixit.core.ui.ads.LocalAdSlots
 import com.mrfilefixit.core.ui.components.ToolScaffold
-import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.theme.Dimens
 
 @Composable
 fun SettingsScreen(onBack: () -> Unit, viewModel: MainViewModel = hiltViewModel()) {
     val prefs by viewModel.preferences.collectAsStateWithLifecycle()
-    val adSlots = LocalAdSlots.current
-    val context = LocalContext.current
     ToolScaffold(title = stringResource(R.string.nav_settings), onBack = onBack) { padding ->
         Column(
             Modifier
@@ -90,16 +92,42 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: MainViewModel = hiltViewModel(
 
             SectionTitle(stringResource(R.string.settings_privacy_title))
             Text(stringResource(R.string.settings_privacy_body), style = MaterialTheme.typography.bodyMedium)
-            if (adSlots.privacyOptionsRequired) {
-                OutlinedButton(
-                    onClick = { context.findActivity()?.let(adSlots::showPrivacyOptions) },
-                    modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
-                ) { Text(stringResource(R.string.settings_ads_privacy)) }
-            }
+            privacyPoints.forEach { PrivacyPoint(it) }
             Text(
                 stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = Dimens.SpaceL),
+            )
+        }
+    }
+}
+
+private class PrivacyPointSpec(val icon: ImageVector, @StringRes val title: Int, @StringRes val body: Int)
+
+private val privacyPoints = listOf(
+    PrivacyPointSpec(Icons.Filled.PhoneAndroid, R.string.privacy_offline_title, R.string.privacy_offline_body),
+    PrivacyPointSpec(Icons.Filled.CloudOff, R.string.privacy_network_title, R.string.privacy_network_body),
+    PrivacyPointSpec(Icons.Filled.AutoDelete, R.string.privacy_cache_title, R.string.privacy_cache_body),
+    PrivacyPointSpec(Icons.Filled.PersonOff, R.string.privacy_metadata_title, R.string.privacy_metadata_body),
+)
+
+/** One privacy promise: icon, short title and the detail. Read by TalkBack as a single item. */
+@Composable
+private fun PrivacyPoint(point: PrivacyPointSpec) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = Dimens.SpaceXs)
+            .semantics(mergeDescendants = true) {},
+        horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceM),
+    ) {
+        Icon(point.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXs)) {
+            Text(stringResource(point.title), style = MaterialTheme.typography.titleSmall)
+            Text(
+                stringResource(point.body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

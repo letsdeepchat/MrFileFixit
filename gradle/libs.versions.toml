@@ -1,7 +1,7 @@
 # Version status when this catalog was written:
 #   Verified on Maven Central: kotlin, ksp, hilt, coroutines, turbine, timber, detekt, pdfbox-android.
 #   Unverified (Google Maven was unreachable from the authoring sandbox): agp, every androidx.* and compose
-#   version, play-services-ads, ump, mlkit. Confirm on the first CI build; Dependabot will propose updates.
+#   version, mlkit. Confirm on the first CI build; Dependabot will propose updates.
 [versions]
 # Build
 agp = "9.0.0"
@@ -31,9 +31,7 @@ documentfile = "1.1.0"
 # DI
 hilt = "2.60.1"
 hilt-androidx = "1.2.0"
-# Google Play services / ML Kit / Ads
-play-services-ads = "24.6.0"
-ump = "3.2.0"
+# Google Play services / ML Kit
 mlkit-document-scanner = "16.0.0"
 mlkit-text-recognition = "16.0.1"
 # PDF
@@ -98,8 +96,6 @@ hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hilt-androidx" 
 hilt-androidx-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt-androidx" }
 
 # Google
-play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services-ads" }
-ump = { module = "com.google.android.ump:user-messaging-platform", version.ref = "ump" }
 mlkit-document-scanner = { module = "com.google.android.gms:play-services-mlkit-document-scanner", version.ref = "mlkit-document-scanner" }
 mlkit-text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "mlkit-text-recognition" }
 mlkit-text-recognition-devanagari = { module = "com.google.mlkit:text-recognition-devanagari", version.ref = "mlkit-text-recognition" }

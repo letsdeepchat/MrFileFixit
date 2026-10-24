@@ -9,16 +9,12 @@ plugins {
 fun secret(name: String): String? =
     providers.gradleProperty(name).orNull ?: providers.environmentVariable(name).orNull
 
-// Google's published test IDs. Used only in debug builds.
-val testAdmobAppId = "ca-app-pub-3940256099942544~3347511713"
-val testAdPublisher = "ca-app-pub-3940256099942544"
-
 android {
     namespace = "com.mrfilefixit.app"
 
     defaultConfig {
         applicationId = "com.mrfilefixit.app"
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0.0"
     }
 
@@ -42,13 +38,11 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            manifestPlaceholders["admobAppId"] = testAdmobAppId
         }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            manifestPlaceholders["admobAppId"] = secret("ADMOB_APP_ID") ?: ""
             signingConfig = signingConfigs.getByName("release").takeIf { it.storeFile != null }
         }
     }
@@ -58,32 +52,11 @@ android {
     }
 }
 
-// A release must never ship with test ad IDs or without an AdMob app ID.
-val verifyReleaseSecrets by tasks.registering {
-    val appId = secret("ADMOB_APP_ID")
-    val unitIds = listOf("ADMOB_BANNER_ID", "ADMOB_INTERSTITIAL_ID", "ADMOB_REWARDED_ID").associateWith { secret(it) }
-    // Locals, so the configuration cache does not capture the script object.
-    val testAppId = testAdmobAppId
-    val testPublisher = testAdPublisher
-    doLast {
-        require(!appId.isNullOrBlank()) { "ADMOB_APP_ID is not set for the release build." }
-        require(appId != testAppId) { "Release build is using the AdMob test app ID." }
-        unitIds.forEach { (name, unit) ->
-            require(!unit.isNullOrBlank()) { "$name is not set for the release build." }
-            require(!unit.startsWith(testPublisher)) { "$name is a Google test ad unit." }
-        }
-    }
-}
-tasks.matching { it.name == "bundleRelease" || it.name == "assembleRelease" }.configureEach {
-    dependsOn(verifyReleaseSecrets)
-}
-
 dependencies {
     implementation(projects.coreDomain)
     implementation(projects.coreUi)
     implementation(projects.coreProcessing)
     implementation(projects.coreStorage)
-    implementation(projects.coreAds)
     implementation(projects.featureExam)
     implementation(projects.featurePdf)
     implementation(projects.featureImage)

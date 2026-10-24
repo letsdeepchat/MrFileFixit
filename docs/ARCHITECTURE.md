@@ -1,7 +1,8 @@
 # Mr File Fixit — Architecture
 
 Mr File Fixit is a fully offline Android app. Every byte of user content is processed on-device.
-The only component allowed to use the network is `core-ads` (AdMob + UMP consent).
+No module may use the network: the app has no ads, accounts or backend, and the build fails if any module
+(including `:app`) resolves a networking library.
 
 ## 1. Layers
 
@@ -45,13 +46,12 @@ flowchart TD
     fimg[":feature-image"]
     fscan[":feature-scan"]
     cui[":core-ui"]
-    cads[":core-ads"]
     cstore[":core-storage"]
     cproc[":core-processing"]
     cdom[":core-domain (pure JVM)"]
 
     app --> fexam & fpdf & fimg & fscan
-    app --> cads & cstore & cproc & cui & cdom
+    app --> cstore & cproc & cui & cdom
     bench -. instruments .-> app
 
     fexam --> cui & cdom
@@ -59,7 +59,6 @@ flowchart TD
     fimg --> cui & cdom
     fscan --> cui & cdom
 
-    cads --> cui & cdom
     cui --> cdom
     cstore --> cdom
     cproc --> cdom
@@ -71,8 +70,7 @@ Rules enforced by the graph:
 | --- | --- |
 | Dependencies point inward only | `core-domain` is a `kotlin("jvm")` module, so it cannot see Android or any other module. Features only see `core-ui` and `core-domain`. |
 | Features never see implementations | `core-processing` and `core-storage` bind their implementations with Hilt `@Binds`. Only `:app` puts them on the classpath. |
-| Features never see ads | `core-ui` defines `AdSlots` (banner slot, `beforeResult` gate, opt-in rewarded). `core-ads` implements them; `:app` provides them via a `CompositionLocal`. |
-| Processing never touches the network | `mrfilefixit.network-isolation` convention plugin fails the build if any non-ads module resolves a networking library or declares `INTERNET`; Detekt `ForbiddenImport` bans `java.net.*`, `okhttp3.*`, etc. |
+| Nothing touches the network | `verifyNetworkIsolation` (convention plugins) fails the build if any module, `:app` included, resolves a networking library or declares `INTERNET`; Detekt `ForbiddenImport` bans `java.net.*`, `okhttp3.*`, etc. |
 
 ## 3. Package layout per module
 
@@ -86,13 +84,13 @@ core-domain/      com.mrfilefixit.core.domain
   security/       FilenameSanitizer, InputLimits
   image/          ImageProcessor, ImageFormat, QualitySearch, requests
   exam/           ExamProfile, DocumentSpec, SpecChecker, ExamRulesRepository, use cases
-  pdf/            PdfProcessor, PdfOperation
+  pdf/            PdfProcessor, PdfOperation, PdfCompressionPolicy
   ocr/            OcrProcessor
+  scan/           Import, enhance (ScanFilter, ScanFilterMath) and OCR use cases
 
 core-processing/  com.mrfilefixit.core.processing   (data layer: engines)
 core-storage/     com.mrfilefixit.core.storage      (data layer: SAF, cache, FileProvider, DataStore)
 core-ui/          com.mrfilefixit.core.ui           (theme, components, adaptive scaffolds, previews)
-core-ads/         com.mrfilefixit.core.ads          (AdManager, ConsentManager, frequency cap)
 feature-*/        com.mrfilefixit.feature.<name>    (ui + feature data such as bundled exam rules)
 ```
 
@@ -113,7 +111,6 @@ flowchart LR
     Engine --> Cache["app-private cache/jobs/<id>/"]
     Cache -->|FileProvider, read grant, single URI| Share["Share sheet / Save As"]
     Cache -->|deleted after job| Trash["TempFileStore.cleanup"]
-    Ads["core-ads"] -->|only network user| Net(("Internet"))
 ```
 
 ## 6. Assumptions

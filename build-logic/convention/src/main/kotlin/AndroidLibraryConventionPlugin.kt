@@ -1,5 +1,4 @@
 import com.android.build.api.dsl.LibraryExtension
-import com.mrfilefixit.buildlogic.NETWORK_ALLOWED_MODULES
 import com.mrfilefixit.buildlogic.configureAndroidLibrary
 import com.mrfilefixit.buildlogic.configureDetekt
 import com.mrfilefixit.buildlogic.configureJUnit5
@@ -11,7 +10,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 
-/** Android library. Every library except :core-ads is network-isolated. */
+/** Android library. Every library is network-isolated. */
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply(libs.pluginId("android-library"))
@@ -21,6 +20,6 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
         configureKotlin()
         configureJUnit5()
         configureDetekt()
-        if (path !in NETWORK_ALLOWED_MODULES) configureNetworkIsolation("releaseRuntimeClasspath")
+        configureNetworkIsolation("releaseRuntimeClasspath")
     }
 }

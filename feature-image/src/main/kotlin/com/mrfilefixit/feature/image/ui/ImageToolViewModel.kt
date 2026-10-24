@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.mrfilefixit.core.domain.batch.BatchPolicy
-import com.mrfilefixit.core.domain.batch.BatchQuotaRepository
 import com.mrfilefixit.core.domain.dispatchers.ApplicationScope
 import com.mrfilefixit.core.domain.exam.GetExamProfilesUseCase
 import com.mrfilefixit.core.domain.file.DescribeFileUseCase
@@ -45,11 +44,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -90,11 +87,10 @@ data class ImageToolUiState(
     val options: ImageOptions = ImageOptions(),
     val inputError: AppError? = null,
     val job: JobState<BatchOutcome> = JobState.Idle,
-    val resultRevealed: Boolean = false,
     val runsInBackground: Boolean = false,
 ) {
     val isBatch: Boolean get() = files.size > 1
-    val outcome: BatchOutcome? get() = (job as? JobState.Success)?.value?.takeIf { resultRevealed }
+    val outcome: BatchOutcome? get() = (job as? JobState.Success)?.value
     val canRun: Boolean get() = files.isNotEmpty() && (tool != ImageTool.CROP || files.size == 1)
     val activePreset: ResizePreset? get() = presets.firstOrNull { it.id == options.presetId }
 }
@@ -106,8 +102,8 @@ sealed interface ImageEffect {
 }
 
 /**
- * One screen for all image tools. Single images run inline; batches use one free daily batch job
- * (or one earned with an opt-in rewarded ad), and batches above [BatchPolicy.INLINE_LIMIT] go to WorkManager.
+ * One screen for all image tools. Everything is free and unlimited: small batches run inline, and batches
+ * above [BatchPolicy.INLINE_LIMIT] go to WorkManager so they survive the app being closed.
  */
 @HiltViewModel
 class ImageToolViewModel @Inject constructor(
@@ -117,7 +113,6 @@ class ImageToolViewModel @Inject constructor(
     private val batchImages: BatchImageUseCase,
     private val imageProcessor: ImageProcessor,
     private val scheduler: ImageBatchScheduler,
-    private val quota: BatchQuotaRepository,
     private val saveOutput: SaveOutputUseCase,
     private val shareOutput: ShareOutputUseCase,
     private val tempFiles: TempFileStore,
@@ -127,9 +122,6 @@ class ImageToolViewModel @Inject constructor(
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(ImageToolUiState())
     val state: StateFlow<ImageToolUiState> = mutableState.asStateFlow()
-
-    val remainingBatches: StateFlow<Int> = quota.remaining
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), BatchPolicy.FREE_BATCHES_PER_DAY)
 
     private val effectChannel = Channel<ImageEffect>(Channel.BUFFERED)
     val effects: Flow<ImageEffect> = effectChannel.receiveAsFlow()
@@ -197,7 +189,7 @@ class ImageToolViewModel @Inject constructor(
     }
 
     private fun applyJob(job: JobState<BatchOutcome>) =
-        mutableState.update { it.copy(job = job, resultRevealed = it.resultRevealed && job is JobState.Success) }
+        mutableState.update { it.copy(job = job) }
 
     fun canEncode(format: ImageFormat): Boolean = imageProcessor.canEncode(format)
 
@@ -232,20 +224,11 @@ class ImageToolViewModel @Inject constructor(
         val s = state.value
         if (!s.canRun) return
         viewModelScope.launch {
-            if (s.isBatch) {
-                val allowed = quota.consume()
-                if (allowed is Result.Failure) {
-                    mutableState.update { it.copy(inputError = allowed.error) }
-                    return@launch
-                }
-            }
             val spec = buildSpec(s)
             val id = jobIds.next()
             discardOutputs()
-            mutableState.update { it.copy(resultRevealed = false, inputError = null) }
-            if (s.files.size >
-                BatchPolicy.INLINE_LIMIT
-            ) {
+            mutableState.update { it.copy(inputError = null) }
+            if (s.files.size > BatchPolicy.INLINE_LIMIT) {
                 runInBackground(id, s.files, spec)
             } else {
                 runInline(id, s.files, spec)
@@ -338,16 +321,6 @@ class ImageToolViewModel @Inject constructor(
         if (state.value.runsInBackground && work != null) scheduler.cancel(work) else runner.cancel()
     }
 
-    fun onResultRevealed() = mutableState.update { it.copy(resultRevealed = true) }
-
-    /** Called only after the rewarded ad reports an earned reward, never on click. */
-    fun onRewardEarned() {
-        viewModelScope.launch {
-            quota.grant(BatchPolicy.REWARD_BATCHES)
-            mutableState.update { it.copy(inputError = null) }
-        }
-    }
-
     fun onSave(output: OutputFile, destination: String) {
         viewModelScope.launch {
             saveOutput(output, DestinationUri(destination)).fold({}, { effectChannel.send(ImageEffect.ShowError(it)) })
@@ -401,7 +374,6 @@ class ImageToolViewModel @Inject constructor(
 
     private companion object {
         const val MAX_DIGITS = 5
-        const val STOP_TIMEOUT_MS = 5_000L
         const val MAX_QUALITY = 100
         const val DEFAULT_SIDE = 1080
         const val KIB = 1024L

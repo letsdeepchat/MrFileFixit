@@ -30,4 +30,10 @@
     <string name="scan_storage_title">स्टोरेज से टेक्स्ट निकालें</string>
     <string name="scan_storage_subtitle">टेक्स्ट निकालने के लिए मौजूदा JPG, PNG या PDF चुनें</string>
     <string name="scan_privacy">सब कुछ इसी डिवाइस पर प्रोसेस होता है। आपके दस्तावेज़ फ़ोन से बाहर नहीं जाते।</string>
+    <string name="scan_filter_title">स्कैन बेहतर करें</string>
+    <string name="scan_filter_DOCUMENT_CLEAN">साफ़ दस्तावेज़</string>
+    <string name="scan_filter_MAGIC_COLOR">मैजिक कलर</string>
+    <string name="scan_filter_GRAYSCALE">ग्रेस्केल</string>
+    <string name="scan_filter_ORIGINAL">मूल</string>
+    <string name="scan_enhancing">पेज बेहतर किए जा रहे हैं…</string>
 </resources>
