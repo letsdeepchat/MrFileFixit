@@ -50,7 +50,7 @@ fun NavGraphBuilder.pdfScreen() {
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun PdfListDetail(route: PdfRoute = PdfRoute(), modifier: Modifier = Modifier) {
+fun PdfListDetail(route: PdfRoute, modifier: Modifier = Modifier) {
     val navigator = rememberListDetailPaneScaffoldNavigator<String>()
     val scope = rememberCoroutineScope()
     val selected = navigator.currentDestination?.contentKey?.let { key ->

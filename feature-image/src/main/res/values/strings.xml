@@ -37,7 +37,7 @@
     <string name="notification_channel_jobs">File jobs</string>
     <string name="notification_job_running">Processing images…</string>
     <string name="image_pick_title">Tap to select images</string>
-    <string name="image_pick_hint">JPG, PNG, WebP or HEIC • Up to %1$d images</string>
+    <string name="image_pick_hint">JPG, PNG, WebP or HEIC • Max files: %1$d</string>
     <string name="image_original_size">Original: %1$d × %2$d px</string>
     <string name="image_rotate_by">Rotate by</string>
     <string name="image_unit_kb">KB</string>

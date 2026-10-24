@@ -111,7 +111,10 @@
     </plurals>
     <string name="pdf_range">%1$d–%2$d</string>
     <string name="pdf_split_file">File %1$d · pages %2$s</string>
-    <string name="pdf_split_more">and %1$d more</string>
+    <plurals name="pdf_split_more">
+        <item quantity="one">and %1$d more file</item>
+        <item quantity="other">and %1$d more files</item>
+    </plurals>
     <string name="pdf_orientation">Orientation</string>
     <string name="pdf_orientation_AUTO">Auto</string>
     <string name="pdf_orientation_PORTRAIT">Portrait</string>

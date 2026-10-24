@@ -26,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import java.io.IOException
@@ -68,21 +69,9 @@ object ThumbnailCache {
      * Damaged or protected files still fail safely: PdfRenderer throws and we show the placeholder.
      */
     private fun renderFirstPage(context: Context, uri: Uri, sizePx: Int): Bitmap? = try {
-        context.contentResolver.openFileDescriptor(uri, "r")?.let { descriptor ->
-            val renderer = PdfRenderer(descriptor)
-            try {
-                if (renderer.pageCount == 0) {
-                    null
-                } else {
-                    val page = renderer.openPage(0)
-                    try {
-                        page.toBitmap(sizePx)
-                    } finally {
-                        page.close()
-                    }
-                }
-            } finally {
-                renderer.close() // Also closes the descriptor.
+        context.contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
+            PdfRenderer(descriptor).use { renderer ->
+                if (renderer.pageCount == 0) null else renderer.openPage(0).use { it.toBitmap(sizePx) }
             }
         }
     } catch (_: IOException) {
@@ -95,10 +84,9 @@ object ThumbnailCache {
 
     private fun PdfRenderer.Page.toBitmap(sizePx: Int): Bitmap {
         val scale = sizePx.toFloat() / maxOf(width, height)
-        val bitmap = Bitmap.createBitmap(
+        val bitmap = createBitmap(
             (width * scale).toInt().coerceAtLeast(1),
             (height * scale).toInt().coerceAtLeast(1),
-            Bitmap.Config.ARGB_8888,
         )
         bitmap.eraseColor(Color.WHITE)
         render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)

@@ -314,7 +314,8 @@ private fun SplitPreview(ranges: List<IntRange>) {
             }
         }
         if (ranges.size > MAX_PREVIEW_RANGES) {
-            Text(stringResource(R.string.pdf_split_more, ranges.size - MAX_PREVIEW_RANGES))
+            val more = ranges.size - MAX_PREVIEW_RANGES
+            Text(pluralStringResource(R.plurals.pdf_split_more, more, more))
         }
     }
 }

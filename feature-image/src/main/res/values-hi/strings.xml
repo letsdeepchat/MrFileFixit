@@ -37,7 +37,7 @@
     <string name="notification_channel_jobs">फ़ाइल जॉब</string>
     <string name="notification_job_running">इमेज प्रोसेस हो रही हैं…</string>
     <string name="image_pick_title">इमेज चुनने के लिए टैप करें</string>
-    <string name="image_pick_hint">JPG, PNG, WebP या HEIC • अधिकतम %1$d इमेज</string>
+    <string name="image_pick_hint">JPG, PNG, WebP या HEIC • अधिकतम फ़ाइलें: %1$d</string>
     <string name="image_original_size">मूल साइज़: %1$d × %2$d px</string>
     <string name="image_rotate_by">इतना घुमाएँ</string>
     <string name="image_unit_kb">KB</string>

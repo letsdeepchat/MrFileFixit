@@ -111,7 +111,10 @@
     </plurals>
     <string name="pdf_range">%1$d–%2$d</string>
     <string name="pdf_split_file">फ़ाइल %1$d · पेज %2$s</string>
-    <string name="pdf_split_more">और %1$d</string>
+    <plurals name="pdf_split_more">
+        <item quantity="one">और %1$d फ़ाइल</item>
+        <item quantity="other">और %1$d फ़ाइलें</item>
+    </plurals>
     <string name="pdf_orientation">दिशा</string>
     <string name="pdf_orientation_AUTO">अपने-आप</string>
     <string name="pdf_orientation_PORTRAIT">खड़ा</string>
