@@ -49,7 +49,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Static analysis (detekt + ktlint rules, zero findings allowed)
         run: ./gradlew detekt
       - name: Network isolation (offline modules must not resolve networking libraries)
@@ -91,7 +91,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       # The emulator needs about 7 GB for its userdata partition, and the Gradle build leaves the stock runner
       # with less than that, so drop preinstalled toolchains this job never uses.
       - name: Free disk space
@@ -132,7 +132,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       # The Play Store bundle needs an upload keystore. Signing is optional: until the MFF_KEYSTORE_* secrets
       # exist the job skips the bundle instead of failing, and the tag still ships the tester APK below.
       - name: Check release secrets
@@ -178,7 +178,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       # A debug build: debug-signed so it installs by sideloading, and installs as
       # com.mrfilefixit.app.debug next to any Play Store copy. No ads, no account, everything free.
       - run: ./gradlew :app:assembleDebug
