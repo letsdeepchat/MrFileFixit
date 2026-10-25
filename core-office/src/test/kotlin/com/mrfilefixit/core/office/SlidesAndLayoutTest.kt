@@ -93,4 +93,16 @@ class SlidesAndLayoutTest {
         assertEquals(SheetCell.Empty, sheet.rows[2][1])
         assertEquals(-3.0, (sheet.rows[2][2] as SheetCell.Number).value)
     }
+
+    @Test
+    fun `a heading and paragraph above a table do not merge its columns`() {
+        val glyphs = line("Annual Summary", 72f, 90f, size = 24f, bold = true) +
+            line("Revenue rose in every region this year.", 72f, 130f) +
+            word("Region", 72f, 200f) + word("Revenue", 250f, 200f) + word("Growth", 400f, 200f) +
+            word("North", 72f, 216f) + word("1,250.50", 250f, 216f) + word("12%", 400f, 216f)
+        val rows = TableExtraction.sheet(PdfPageText(595f, 842f, glyphs), "Page 1").rows
+        val north = rows.first { it.firstOrNull()?.display == "North" }
+        assertEquals(1_250.5, (north[1] as SheetCell.Number).value)
+        assertEquals("Annual Summary", rows[0][0].display)
+    }
 }

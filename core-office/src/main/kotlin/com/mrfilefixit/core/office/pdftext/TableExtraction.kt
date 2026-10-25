@@ -6,8 +6,8 @@ import kotlin.math.abs
 
 /**
  * Turns a page's text into a grid for spreadsheets. Text pieces separated by wide gaps are cells; columns
- * are the union of where cells sit across all rows, so a column keeps its place even when some rows leave it
- * empty. Numbers (with thousands separators, currency symbols, percent and accounting negatives) become numbers.
+ * are the union of where cells sit across the multi-cell rows, so a column keeps its place even when some rows
+ * leave it empty. Numbers (with thousands separators, currency symbols, percent and accounting negatives) become numbers.
  */
 object TableExtraction {
     private const val ROW_TOLERANCE = 0.4f
@@ -17,7 +17,9 @@ object TableExtraction {
         val pieces = TextLayout.lines(page.glyphs, TextLayout.TABLE_SPLIT)
         if (pieces.isEmpty()) return Sheet(name, emptyList())
         val rows = groupRows(pieces)
-        val columns = columnRanges(pieces)
+        // Headings and paragraphs above a table are one wide piece each; counting them would merge the
+        // table's columns, so columns come from the rows that have several cells whenever there are some.
+        val columns = columnRanges(rows.filter { it.size > 1 }.flatten().ifEmpty { pieces })
         val grid = rows.map { row ->
             val cells = arrayOfNulls<String>(columns.size)
             row.forEach { piece ->
