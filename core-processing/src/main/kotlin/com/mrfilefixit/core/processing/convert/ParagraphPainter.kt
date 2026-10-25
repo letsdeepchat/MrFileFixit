@@ -13,6 +13,7 @@ import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
 import android.text.style.TypefaceSpan
 import android.text.style.UnderlineSpan
+import androidx.core.graphics.withClip
 import com.mrfilefixit.core.domain.document.DocParagraph
 import com.mrfilefixit.core.domain.document.FontFamily
 import com.mrfilefixit.core.domain.document.ListKind
@@ -49,11 +50,10 @@ internal class MeasuredParagraph(
                 markerPaint,
             )
         }
-        canvas.save()
-        canvas.clipRect(x, y, x + width, y + bottom - top)
-        canvas.translate(x + textOffset, y - top)
-        layout.draw(canvas)
-        canvas.restore()
+        canvas.withClip(x, y, x + width, y + bottom - top) {
+            translate(x + textOffset, y - top)
+            layout.draw(this)
+        }
         if (until == layout.lineCount) {
             style.bottomBorderArgb?.let { color ->
                 val rule = y + bottom - top + RULE_GAP

@@ -1,6 +1,7 @@
 package com.mrfilefixit.core.processing.convert
 
 import android.graphics.Bitmap
+import androidx.core.graphics.scale
 import com.mrfilefixit.core.office.pdftext.PdfGlyph
 import com.mrfilefixit.core.office.pdftext.PdfPageText
 import com.mrfilefixit.core.office.pdftext.PdfPicture
@@ -171,7 +172,7 @@ internal class PdfPageReader(private val maxPicturePixels: Long) {
             val scale = MAX_SIDE.toFloat() / side
             val w = (bitmap.width * scale).toInt().coerceAtLeast(1)
             val h = (bitmap.height * scale).toInt().coerceAtLeast(1)
-            return Bitmap.createScaledBitmap(bitmap, w, h, true)
+            return bitmap.scale(w, h)
         }
     }
 

@@ -4,6 +4,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.pdf.PdfDocument
+import androidx.core.graphics.withClip
 import com.mrfilefixit.core.domain.document.DocBlock
 import com.mrfilefixit.core.domain.document.DocImage
 import com.mrfilefixit.core.domain.document.DocPageBreak
@@ -235,16 +236,14 @@ internal class DocumentPdfWriter(private val maxPages: Int) {
             var consumed = 0f
             while (consumed < row.height - EPSILON) {
                 val slice = min(cursor.remaining, row.height - consumed)
-                val canvas = cursor.canvas
-                canvas.save()
-                canvas.clipRect(
+                cursor.canvas.withClip(
                     cursor.left - BORDER,
                     cursor.y - BORDER,
                     cursor.left + cursor.width + BORDER,
                     cursor.y + slice + BORDER,
-                )
-                paintRow(canvas, row, widths, border, cursor.y - consumed)
-                canvas.restore()
+                ) {
+                    paintRow(this, row, widths, border, cursor.y - consumed)
+                }
                 consumed += slice
                 cursor.y += slice
                 if (consumed < row.height - EPSILON) cursor.newPage()
