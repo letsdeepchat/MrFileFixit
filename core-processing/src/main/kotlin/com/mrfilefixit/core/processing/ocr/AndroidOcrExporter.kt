@@ -105,7 +105,8 @@ internal class AndroidOcrExporter @Inject constructor(
                     placed.forEachIndexed { index, placement ->
                         drawTextLayer(layer, index, placement, byPage[placement.sourceIndex to placement.pageIndex])
                     }
-                    val layerFile = File.createTempFile("ocr-layer", ".pdf", File(outputDir)).also { temps += it }
+                    val jobDir = File(outputDir).apply { mkdirs() }
+                    val layerFile = File.createTempFile("ocr-layer", ".pdf", jobDir).also { temps += it }
                     layerFile.outputStream().use { layer.writeTo(it) }
                     stampLayer(out, layerFile, placed)
                     val file = newOutputFile(outputDir, baseName, DocumentFormat.PDF.extension)
