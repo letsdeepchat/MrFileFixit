@@ -159,7 +159,8 @@ class OcrViewModelTest {
 
     @Test
     fun `scan pages handed over as job files load without the picker`() = runTest(dispatcher) {
-        val dir = createTempDirectory("cache").toFile().resolve("cache/jobs/scan").apply { mkdirs() }
+        val root = createTempDirectory("cache").toFile()
+        val dir = root.resolve("cache/jobs/scan").apply { mkdirs() }
         val page = File(dir, "scan-1.jpg").apply { writeBytes(ByteArray(5)) }
         val vm = viewModel(listOf("file://${page.path}", "file:///etc/passwd"))
         advanceUntilIdle()
@@ -171,7 +172,7 @@ class OcrViewModelTest {
         val file = ok.state.value.files.single()
         assertEquals("image/jpeg", file.mimeType)
         assertEquals(5L, file.sizeBytes)
-        dir.parentFile.parentFile.deleteRecursively()
+        root.deleteRecursively()
     }
 
     @Test
