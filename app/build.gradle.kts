@@ -61,6 +61,7 @@ dependencies {
     implementation(projects.featurePdf)
     implementation(projects.featureImage)
     implementation(projects.featureScan)
+    implementation(projects.featureResume)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

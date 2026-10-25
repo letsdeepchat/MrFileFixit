@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_title">रिज़्यूमे बिल्डर</string>
+    <string name="resume_intro">15 ATS-फ़्रेंडली टेम्पलेट में से एक चुनें, हर सेक्शन बदलें, और PDF या Word फ़ाइल एक्सपोर्ट करें। सब कुछ आपके फ़ोन पर ही रहता है।</string>
+    <string name="resume_create">नया रिज़्यूमे बनाएं</string>
+    <string name="resume_import">एक्सपोर्ट की गई Word फ़ाइल खोलें</string>
+    <string name="resume_import_hint">यहां से एक्सपोर्ट की गई .docx फ़ाइल को फिर से खोलकर बदलाव जारी रखें।</string>
+    <string name="resume_saved_title">आपके रिज़्यूमे</string>
+    <string name="resume_saved_empty">अभी कोई रिज़्यूमे सेव नहीं है। बदलाव करते समय ड्राफ़्ट अपने-आप सेव होते हैं।</string>
+    <string name="resume_edited">बदला गया: %1$s</string>
+    <string name="resume_delete">हटाएं</string>
+    <string name="resume_delete_title">यह रिज़्यूमे हटाएं?</string>
+    <string name="resume_delete_body">ड्राफ़्ट और उसकी फ़ोटो इस फ़ोन से हट जाएगी। पहले से एक्सपोर्ट की गई फ़ाइलों पर असर नहीं पड़ेगा।</string>
+    <string name="resume_cancel">रद्द करें</string>
+
+    <string name="resume_pick_template">टेम्पलेट चुनें</string>
+    <string name="resume_pick_template_hint">हर टेम्पलेट में उस क्षेत्र के लिए सेक्शन का क्रम और नमूना टेक्स्ट है। आप बाद में टेक्स्ट खोए बिना टेम्पलेट बदल सकते हैं।</string>
+    <string name="resume_template_photo">फ़ोटो फ़्रेम</string>
+    <string name="resume_template_ats">ATS-फ़्रेंडली</string>
+
+    <string name="resume_editor_title">रिज़्यूमे बदलें</string>
+    <string name="resume_autosaved">इस फ़ोन पर सेव है</string>
+    <string name="resume_change_template">टेम्पलेट बदलें</string>
+    <string name="resume_current_template">टेम्पलेट: %1$s</string>
+
+    <string name="resume_style">रूप</string>
+    <string name="resume_font">फ़ॉन्ट</string>
+    <string name="resume_font_SANS">सैन्स</string>
+    <string name="resume_font_SERIF">सेरिफ़</string>
+    <string name="resume_font_CONDENSED">पतला</string>
+    <string name="resume_font_MONO">मोनो</string>
+    <string name="resume_text_size">टेक्स्ट का आकार: %1$s pt</string>
+    <string name="resume_accent">मुख्य रंग</string>
+    <string name="resume_accent_option">मुख्य रंग %1$d</string>
+    <string name="resume_paper">काग़ज़</string>
+    <string name="resume_paper_A4">A4</string>
+    <string name="resume_paper_LETTER">US लेटर</string>
+
+    <string name="resume_photo">प्रोफ़ाइल फ़ोटो</string>
+    <string name="resume_photo_hint">वैकल्पिक। हल्की, सादी पृष्ठभूमि और बीच में चेहरे वाली हाल की पासपोर्ट जैसी फ़ोटो लगाएं। सबसे अच्छा आकार 350 × 450 या 413 × 531 पिक्सेल है; कोई भी फ़ोटो चलेगी, क्योंकि उसे 35 × 45 फ़्रेम में काटकर 413 × 531 पर छोटा-बड़ा किया जाता है।</string>
+    <string name="resume_photo_ats">कई भारतीय और विदेशी कंपनियां बिना फ़ोटो वाला रिज़्यूमे पसंद करती हैं। फ़ोटो तभी लगाएं जब नौकरी में मांगी गई हो।</string>
+    <string name="resume_photo_add">फ़ोटो जोड़ें</string>
+    <string name="resume_photo_change">फ़ोटो बदलें</string>
+    <string name="resume_photo_remove">फ़ोटो हटाएं</string>
+    <string name="resume_photo_crop">चेहरे को फ़्रेम में लाने के लिए खींचें और पिंच करें।</string>
+    <string name="resume_photo_use">यही कटिंग इस्तेमाल करें</string>
+    <string name="cd_resume_photo">प्रोफ़ाइल फ़ोटो</string>
+
+    <string name="resume_contact">संपर्क विवरण</string>
+    <string name="resume_full_name">पूरा नाम</string>
+    <string name="resume_headline">हेडलाइन (पद या लक्ष्य)</string>
+    <string name="resume_email">ईमेल</string>
+    <string name="resume_phone">फ़ोन</string>
+    <string name="resume_location">शहर, देश</string>
+    <string name="resume_links">लिंक (LinkedIn, GitHub, पोर्टफ़ोलियो), हर लाइन में एक</string>
+
+    <string name="resume_sections">सेक्शन</string>
+    <string name="resume_sections_hint">क्रम बदलने के लिए तीर इस्तेमाल करें। छिपाए गए सेक्शन ड्राफ़्ट में रहते हैं पर एक्सपोर्ट में नहीं आते।</string>
+    <string name="resume_section_title">सेक्शन का शीर्षक</string>
+    <string name="resume_section_up">सेक्शन ऊपर ले जाएं</string>
+    <string name="resume_section_down">सेक्शन नीचे ले जाएं</string>
+    <string name="resume_section_hide">सेक्शन छिपाएं</string>
+    <string name="resume_section_show">सेक्शन दिखाएं</string>
+    <string name="resume_section_delete">सेक्शन हटाएं</string>
+    <string name="resume_section_hidden">एक्सपोर्ट में नहीं दिखेगा</string>
+    <string name="resume_add_section">सेक्शन जोड़ें</string>
+    <string name="resume_summary_text">सारांश</string>
+    <string name="resume_summary_hint">अपने अनुभव और खूबियों के बारे में दो-तीन लाइनें। नया पैराग्राफ़ शुरू करने के लिए एक खाली लाइन छोड़ें।</string>
+
+    <string name="resume_kind_SUMMARY">सारांश</string>
+    <string name="resume_kind_EXPERIENCE">अनुभव</string>
+    <string name="resume_kind_EDUCATION">शिक्षा</string>
+    <string name="resume_kind_SKILLS">कौशल</string>
+    <string name="resume_kind_PROJECTS">प्रोजेक्ट</string>
+    <string name="resume_kind_CERTIFICATIONS">सर्टिफ़िकेट</string>
+    <string name="resume_kind_CUSTOM">अपना सेक्शन</string>
+    <string name="resume_default_SUMMARY">Professional Summary</string>
+    <string name="resume_default_EXPERIENCE">Work Experience</string>
+    <string name="resume_default_EDUCATION">Education</string>
+    <string name="resume_default_SKILLS">Skills</string>
+    <string name="resume_default_PROJECTS">Projects</string>
+    <string name="resume_default_CERTIFICATIONS">Certifications</string>
+    <string name="resume_default_CUSTOM">Additional Information</string>
+
+    <string name="resume_entry_up">ऊपर ले जाएं</string>
+    <string name="resume_entry_down">नीचे ले जाएं</string>
+    <string name="resume_entry_delete">हटाएं</string>
+    <string name="resume_add_entry">एंट्री जोड़ें</string>
+    <string name="resume_add_skill_group">कौशल समूह जोड़ें</string>
+    <string name="resume_location_short">जगह</string>
+    <string name="resume_dates">तारीख़ें (जैसे Jun 2021 – Present)</string>
+    <string name="resume_bullets">उपलब्धियां, हर लाइन में एक</string>
+    <string name="resume_skill_group">समूह (जैसे Languages)</string>
+    <string name="resume_skill_list">कौशल, कॉमा से अलग करें</string>
+    <string name="resume_title_EXPERIENCE">पद</string>
+    <string name="resume_subtitle_EXPERIENCE">कंपनी</string>
+    <string name="resume_title_EDUCATION">डिग्री या कोर्स</string>
+    <string name="resume_subtitle_EDUCATION">स्कूल या यूनिवर्सिटी</string>
+    <string name="resume_title_PROJECTS">प्रोजेक्ट का नाम</string>
+    <string name="resume_subtitle_PROJECTS">टूल या भूमिका</string>
+    <string name="resume_title_CERTIFICATIONS">सर्टिफ़िकेट या लाइसेंस</string>
+    <string name="resume_subtitle_CERTIFICATIONS">जारी करने वाला</string>
+    <string name="resume_title_CUSTOM">शीर्षक</string>
+    <string name="resume_subtitle_CUSTOM">विवरण</string>
+
+    <string name="resume_export_pdf">PDF एक्सपोर्ट करें</string>
+    <string name="resume_export_docx">Word एक्सपोर्ट करें</string>
+    <string name="resume_export_ready">आपकी %1$s तैयार है</string>
+    <string name="resume_export_pdf_name">PDF</string>
+    <string name="resume_export_docx_name">Word फ़ाइल</string>
+    <plurals name="resume_export_pages">
+        <item quantity="one">%1$s · %2$d पेज</item>
+        <item quantity="other">%1$s · %2$d पेज</item>
+    </plurals>
+    <string name="resume_preview">प्रीव्यू</string>
+    <string name="resume_preview_page">पेज %1$d</string>
+    <string name="resume_ats_tips">ATS टिप्स: सेक्शन के सामान्य नाम रखें, एक ही कॉलम रखें, और नौकरी के विज्ञापन के मुख्य कौशल अपने Skills और Experience में लिखें। ये टेम्पलेट पहले से असली टेक्स्ट और हेडिंग इस्तेमाल करते हैं जिन्हें आवेदक ट्रैकिंग सिस्टम पढ़ सकते हैं।</string>
+
+    <string name="resume_template_SOFTWARE">सॉफ़्टवेयर और IT</string>
+    <string name="resume_template_desc_SOFTWARE">पहले कौशल, फिर अनुभव और प्रोजेक्ट।</string>
+    <string name="resume_template_CORE_ENGINEERING">कोर इंजीनियरिंग</string>
+    <string name="resume_template_desc_CORE_ENGINEERING">मैकेनिकल, सिविल, इलेक्ट्रिकल: अनुभव और टूल।</string>
+    <string name="resume_template_ARTS">कला</string>
+    <string name="resume_template_desc_ARTS">प्रदर्शनियां और पुरस्कार, फ़ोटो फ़्रेम के साथ।</string>
+    <string name="resume_template_MARKETING">मार्केटिंग</string>
+    <string name="resume_template_desc_MARKETING">नतीजों पर ज़ोर, नाम के लिए रंगीन पट्टी।</string>
+    <string name="resume_template_FINANCE">फ़ाइनेंस और अकाउंटिंग</string>
+    <string name="resume_template_desc_FINANCE">CA, ऑडिट और FP&amp;A के लिए क्लासिक सेरिफ़ रूप।</string>
+    <string name="resume_template_DATA_SCIENCE">डेटा साइंस और AI</string>
+    <string name="resume_template_desc_DATA_SCIENCE">ML कौशल, प्रोडक्शन में मॉडल और प्रोजेक्ट।</string>
+    <string name="resume_template_HEALTHCARE">हेल्थकेयर</string>
+    <string name="resume_template_desc_HEALTHCARE">पहले लाइसेंस, फिर क्लिनिकल अनुभव, फ़ोटो फ़्रेम।</string>
+    <string name="resume_template_EDUCATION">शिक्षण</string>
+    <string name="resume_template_desc_EDUCATION">पढ़ाने का अनुभव, B.Ed. और पात्रता परीक्षा।</string>
+    <string name="resume_template_GRAPHIC_DESIGN">ग्राफ़िक डिज़ाइन</string>
+    <string name="resume_template_desc_GRAPHIC_DESIGN">टूल और चुना हुआ काम, फ़ोटो फ़्रेम के साथ।</string>
+    <string name="resume_template_FRESH_GRADUATE">फ़्रेश ग्रेजुएट</string>
+    <string name="resume_template_desc_FRESH_GRADUATE">पहले शिक्षा और प्रोजेक्ट, फिर इंटर्नशिप।</string>
+    <string name="resume_template_BUSINESS_ADMIN">बिज़नेस और मैनेजमेंट</string>
+    <string name="resume_template_desc_BUSINESS_ADMIN">MBA और ऑपरेशंस की भूमिकाएं, आंकड़ों में असर।</string>
+    <string name="resume_template_LEGAL">कानूनी</string>
+    <string name="resume_template_desc_LEGAL">बार में पंजीकरण, प्रैक्टिस के क्षेत्र और प्रकाशन।</string>
+    <string name="resume_template_HUMAN_RESOURCES">ह्यूमन रिसोर्स</string>
+    <string name="resume_template_desc_HUMAN_RESOURCES">भर्ती, कर्मचारी जुड़ाव और HR टूल।</string>
+    <string name="resume_template_OPERATIONS">ऑपरेशंस और सप्लाई चेन</string>
+    <string name="resume_template_desc_OPERATIONS">लॉजिस्टिक्स, ख़रीद और वेयरहाउस के नतीजे।</string>
+    <string name="resume_template_ACADEMIC_CV">अकादमिक CV</string>
+    <string name="resume_template_desc_ACADEMIC_CV">शोध, प्रकाशन, अनुदान और शिक्षण।</string>
+</resources>

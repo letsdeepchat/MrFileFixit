@@ -5,6 +5,8 @@
     <string name="nav_pdf">PDF टूल</string>
     <string name="nav_image">इमेज टूल</string>
     <string name="nav_scan">स्कैन</string>
+    <string name="nav_resume">रिज़्यूमे बिल्डर</string>
+    <string name="nav_resume_short">रिज़्यूमे</string>
     <string name="nav_exam_short">परीक्षा</string>
     <string name="nav_pdf_short">PDF</string>
     <string name="nav_image_short">इमेज</string>
@@ -15,6 +17,7 @@
     <string name="home_pdf_body">जोड़ें, बाँटें, छोटा करें, पासवर्ड लगाएँ और भी बहुत कुछ</string>
     <string name="home_image_body">इमेज का साइज़ बदलें, क्रॉप करें, फ़ॉर्मैट बदलें</string>
     <string name="home_scan_body">दस्तावेज़ स्कैन करके PDF बनाएँ और टेक्स्ट कॉपी करें</string>
+    <string name="home_resume_body">15 टेम्पलेट से ATS-फ़्रेंडली रिज़्यूमे, PDF या Word में</string>
     <string name="settings_theme">थीम</string>
     <string name="settings_theme_system">सिस्टम के अनुसार</string>
     <string name="settings_theme_light">लाइट</string>

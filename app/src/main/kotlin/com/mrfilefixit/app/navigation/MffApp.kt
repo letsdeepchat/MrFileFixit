@@ -3,6 +3,7 @@ package com.mrfilefixit.app.navigation
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Image
@@ -38,6 +39,8 @@ import com.mrfilefixit.feature.image.ui.ImageRoute
 import com.mrfilefixit.feature.image.ui.imageScreen
 import com.mrfilefixit.feature.pdf.ui.PdfRoute
 import com.mrfilefixit.feature.pdf.ui.pdfScreen
+import com.mrfilefixit.feature.resume.ui.ResumeRoute
+import com.mrfilefixit.feature.resume.ui.resumeScreen
 import com.mrfilefixit.feature.scan.ui.ScanRoute
 import com.mrfilefixit.feature.scan.ui.scanScreen
 import kotlinx.serialization.Serializable
@@ -50,7 +53,7 @@ data object SettingsRoute
 
 /**
  * [label] is the full name used on home cards; [shortLabel] is the one-word caption for the navigation
- * bar, so five items fit at 320 dp without wrapping or pushing the last item off screen.
+ * bar, so all six items fit at 320 dp (53 dp each) without wrapping or pushing the last item off screen.
  */
 enum class TopLevelDestination(
     val route: Any,
@@ -63,6 +66,7 @@ enum class TopLevelDestination(
     PDF(PdfRoute(), Icons.Filled.PictureAsPdf, R.string.nav_pdf, R.string.nav_pdf_short),
     IMAGE(ImageRoute(), Icons.Filled.Image, R.string.nav_image, R.string.nav_image_short),
     SCAN(ScanRoute, Icons.Filled.DocumentScanner, R.string.nav_scan, R.string.nav_scan),
+    RESUME(ResumeRoute, Icons.Filled.Description, R.string.nav_resume, R.string.nav_resume_short),
 }
 
 /**
@@ -114,6 +118,7 @@ fun MffApp() {
             pdfScreen()
             imageScreen()
             scanScreen()
+            resumeScreen()
             composable<SettingsRoute> { SettingsScreen(onBack = { navController.popBackStack() }) }
         }
     }

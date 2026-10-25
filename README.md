@@ -1,7 +1,8 @@
 # Mr File Fixit
 
 A free, fully offline Android app for fixing files for government exam forms and everyday paperwork:
-resize and compress photos and signatures to exam specs, PDF tools, image tools, and a document scanner.
+resize and compress photos and signatures to exam specs, PDF tools, image tools, a document scanner, and an
+ATS-friendly resume builder.
 All processing happens on the device. No uploads, no backend, no logging of file content.
 Every feature is free: no ads, no accounts, no sign-in, no premium tier and no usage limits.
 
@@ -19,11 +20,12 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture diagram, m
 | `feature-pdf` | Android library | Merge, split, extract, reorder, rotate, delete, compress, image↔PDF, Word/PowerPoint/Excel↔PDF, watermark, page numbers, password |
 | `feature-image` | Android library | Resize, crop, rotate, compress, convert, batch, strip EXIF |
 | `feature-scan` | Android library | ML Kit document scanner and on-device OCR |
+| `feature-resume` | Android library | Resume builder: 15 templates, section editor, photo frame, PDF and Word export ([docs/RESUME.md](docs/RESUME.md)) |
 | `core-ui` | Android library | Material 3 theme, components, previews |
 | `core-domain` | Pure Kotlin (JVM) | Result types, job pipeline, use cases, processor interfaces, pure algorithms |
 | `core-office` | Pure Kotlin (JVM) | DOCX/PPTX/XLSX readers and writers, legacy DOC/PPT/XLS readers, CSV, PDF text layout analysis ([docs/CONVERSIONS.md](docs/CONVERSIONS.md)) |
 | `core-processing` | Android library | Image, PDF (compressor), office conversion, OCR and scan-filter engines |
-| `core-storage` | Android library | SAF, temp files, FileProvider sharing, DataStore |
+| `core-storage` | Android library | SAF, temp files, FileProvider sharing, DataStore, resume drafts |
 | `benchmark` | Android test | Baseline Profile generator and Macrobenchmark startup tests |
 
 ## Build

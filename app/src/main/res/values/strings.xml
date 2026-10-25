@@ -8,6 +8,8 @@
     <string name="nav_pdf">PDF tools</string>
     <string name="nav_image">Image tools</string>
     <string name="nav_scan">Scan</string>
+    <string name="nav_resume">Resume builder</string>
+    <string name="nav_resume_short">Resume</string>
     <string name="nav_exam_short">Exams</string>
     <string name="nav_pdf_short">PDF</string>
     <string name="nav_image_short">Images</string>
@@ -18,6 +20,7 @@
     <string name="home_pdf_body">Merge, split, compress, protect and more</string>
     <string name="home_image_body">Resize, crop, convert and compress images</string>
     <string name="home_scan_body">Scan documents to PDF and copy text</string>
+    <string name="home_resume_body">ATS-friendly resumes from 15 templates, as PDF or Word</string>
     <string name="settings_theme">Theme</string>
     <string name="settings_theme_system">System default</string>
     <string name="settings_theme_light">Light</string>

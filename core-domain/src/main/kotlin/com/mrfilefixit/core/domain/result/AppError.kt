@@ -63,6 +63,9 @@ sealed interface AppError {
     /** A PDF with no selectable text (usually a scan) cannot become a spreadsheet or editable slides. */
     data object NoTextFound : AppError
 
+    /** A file picked to re-open as a resume was not exported by the resume builder. */
+    data object NotAResume : AppError
+
     /** Anything else. [type] is the exception class name, never its message. */
     data class Unexpected(val type: String) : AppError
 
