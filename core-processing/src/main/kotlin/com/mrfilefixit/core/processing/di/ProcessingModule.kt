@@ -4,8 +4,10 @@ import com.mrfilefixit.core.domain.convert.DocumentConverter
 import com.mrfilefixit.core.domain.image.ImageProcessor
 import com.mrfilefixit.core.domain.ocr.OcrProcessor
 import com.mrfilefixit.core.domain.pdf.PdfProcessor
+import com.mrfilefixit.core.domain.resume.DocumentExporter
 import com.mrfilefixit.core.domain.scan.ScanEnhancer
 import com.mrfilefixit.core.processing.convert.AndroidDocumentConverter
+import com.mrfilefixit.core.processing.convert.AndroidDocumentExporter
 import com.mrfilefixit.core.processing.image.AndroidImageProcessor
 import com.mrfilefixit.core.processing.ocr.MlKitOcrProcessor
 import com.mrfilefixit.core.processing.pdf.PdfBoxPdfProcessor
@@ -42,4 +44,8 @@ internal interface ProcessingModule {
     @Binds
     @Singleton
     fun bindDocumentConverter(impl: AndroidDocumentConverter): DocumentConverter
+
+    @Binds
+    @Singleton
+    fun bindDocumentExporter(impl: AndroidDocumentExporter): DocumentExporter
 }

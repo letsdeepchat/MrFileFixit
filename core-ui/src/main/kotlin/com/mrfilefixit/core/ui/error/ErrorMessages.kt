@@ -48,5 +48,6 @@ fun appErrorMessage(error: AppError): String = when (error) {
     AppError.DocumentProtected -> stringResource(R.string.error_document_protected)
     AppError.DocumentTooComplex -> stringResource(R.string.error_document_too_complex)
     AppError.NoTextFound -> stringResource(R.string.error_no_text_found)
+    AppError.NotAResume -> stringResource(R.string.error_not_a_resume)
     is AppError.Unexpected -> stringResource(R.string.error_unexpected)
 }

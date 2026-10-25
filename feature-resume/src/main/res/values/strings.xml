@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_title">Resume builder</string>
+    <string name="resume_intro">Pick one of 15 ATS-friendly templates, edit every section, and export a PDF or Word file. Everything stays on your phone.</string>
+    <string name="resume_create">Create a new resume</string>
+    <string name="resume_import">Open an exported Word file</string>
+    <string name="resume_import_hint">Re-open a .docx you exported from here to keep editing it.</string>
+    <string name="resume_saved_title">Your resumes</string>
+    <string name="resume_saved_empty">No saved resumes yet. Drafts save automatically while you edit.</string>
+    <string name="resume_edited">Edited %1$s</string>
+    <string name="resume_delete">Delete</string>
+    <string name="resume_delete_title">Delete this resume?</string>
+    <string name="resume_delete_body">The draft and its photo are removed from this phone. Files you already exported are not affected.</string>
+    <string name="resume_cancel">Cancel</string>
+
+    <string name="resume_pick_template">Choose a template</string>
+    <string name="resume_pick_template_hint">Each template has a section order and sample text for its field. You can change the template later without losing your text.</string>
+    <string name="resume_template_photo">Photo frame</string>
+    <string name="resume_template_ats">ATS-friendly</string>
+
+    <string name="resume_editor_title">Edit resume</string>
+    <string name="resume_autosaved">Saved on this phone</string>
+    <string name="resume_change_template">Change template</string>
+    <string name="resume_current_template">Template: %1$s</string>
+
+    <string name="resume_style">Look</string>
+    <string name="resume_font">Font</string>
+    <string name="resume_font_SANS">Sans</string>
+    <string name="resume_font_SERIF">Serif</string>
+    <string name="resume_font_CONDENSED">Narrow</string>
+    <string name="resume_font_MONO">Mono</string>
+    <string name="resume_text_size">Text size: %1$s pt</string>
+    <string name="resume_accent">Accent colour</string>
+    <string name="resume_accent_option">Accent colour %1$d</string>
+    <string name="resume_paper">Paper</string>
+    <string name="resume_paper_A4">A4</string>
+    <string name="resume_paper_LETTER">US Letter</string>
+
+    <string name="resume_photo">Profile photo</string>
+    <string name="resume_photo_hint">Optional. Use a recent passport-style photo with a plain, light background and your face centred. Best sizes are 350 × 450 or 413 × 531 pixels; any photo works, because it is cropped to a 35 × 45 frame and resized to 413 × 531.</string>
+    <string name="resume_photo_ats">Many Indian and international employers prefer resumes without a photo. Add one only if the job asks for it.</string>
+    <string name="resume_photo_add">Add photo</string>
+    <string name="resume_photo_change">Change photo</string>
+    <string name="resume_photo_remove">Remove photo</string>
+    <string name="resume_photo_crop">Drag and pinch to fit your face in the frame.</string>
+    <string name="resume_photo_use">Use this crop</string>
+    <string name="cd_resume_photo">Profile photo</string>
+
+    <string name="resume_contact">Contact details</string>
+    <string name="resume_full_name">Full name</string>
+    <string name="resume_headline">Headline (job title or goal)</string>
+    <string name="resume_email">Email</string>
+    <string name="resume_phone">Phone</string>
+    <string name="resume_location">City, country</string>
+    <string name="resume_links">Links (LinkedIn, GitHub, portfolio), one per line</string>
+
+    <string name="resume_sections">Sections</string>
+    <string name="resume_sections_hint">Use the arrows to change the order. Hidden sections stay in your draft but are left out of the export.</string>
+    <string name="resume_section_title">Section title</string>
+    <string name="resume_section_up">Move section up</string>
+    <string name="resume_section_down">Move section down</string>
+    <string name="resume_section_hide">Hide section</string>
+    <string name="resume_section_show">Show section</string>
+    <string name="resume_section_delete">Delete section</string>
+    <string name="resume_section_hidden">Hidden from the export</string>
+    <string name="resume_add_section">Add a section</string>
+    <string name="resume_summary_text">Summary</string>
+    <string name="resume_summary_hint">Two or three lines about your experience and strengths. Leave a blank line to start a new paragraph.</string>
+
+    <string name="resume_kind_SUMMARY">Summary</string>
+    <string name="resume_kind_EXPERIENCE">Experience</string>
+    <string name="resume_kind_EDUCATION">Education</string>
+    <string name="resume_kind_SKILLS">Skills</string>
+    <string name="resume_kind_PROJECTS">Projects</string>
+    <string name="resume_kind_CERTIFICATIONS">Certifications</string>
+    <string name="resume_kind_CUSTOM">Custom</string>
+    <string name="resume_default_SUMMARY">Professional Summary</string>
+    <string name="resume_default_EXPERIENCE">Work Experience</string>
+    <string name="resume_default_EDUCATION">Education</string>
+    <string name="resume_default_SKILLS">Skills</string>
+    <string name="resume_default_PROJECTS">Projects</string>
+    <string name="resume_default_CERTIFICATIONS">Certifications</string>
+    <string name="resume_default_CUSTOM">Additional Information</string>
+
+    <string name="resume_entry_up">Move up</string>
+    <string name="resume_entry_down">Move down</string>
+    <string name="resume_entry_delete">Remove</string>
+    <string name="resume_add_entry">Add entry</string>
+    <string name="resume_add_skill_group">Add skill group</string>
+    <string name="resume_location_short">Location</string>
+    <string name="resume_dates">Dates (e.g. Jun 2021 – Present)</string>
+    <string name="resume_bullets">Achievements, one per line</string>
+    <string name="resume_skill_group">Group (e.g. Languages)</string>
+    <string name="resume_skill_list">Skills, separated by commas</string>
+    <string name="resume_title_EXPERIENCE">Job title</string>
+    <string name="resume_subtitle_EXPERIENCE">Company</string>
+    <string name="resume_title_EDUCATION">Degree or course</string>
+    <string name="resume_subtitle_EDUCATION">School or university</string>
+    <string name="resume_title_PROJECTS">Project name</string>
+    <string name="resume_subtitle_PROJECTS">Tools or role</string>
+    <string name="resume_title_CERTIFICATIONS">Certificate or licence</string>
+    <string name="resume_subtitle_CERTIFICATIONS">Issued by</string>
+    <string name="resume_title_CUSTOM">Title</string>
+    <string name="resume_subtitle_CUSTOM">Details</string>
+
+    <string name="resume_export_pdf">Export PDF</string>
+    <string name="resume_export_docx">Export Word</string>
+    <string name="resume_export_ready">Your %1$s is ready</string>
+    <string name="resume_export_pdf_name">PDF</string>
+    <string name="resume_export_docx_name">Word file</string>
+    <plurals name="resume_export_pages">
+        <item quantity="one">%1$s · %2$d page</item>
+        <item quantity="other">%1$s · %2$d pages</item>
+    </plurals>
+    <string name="resume_preview">Preview</string>
+    <string name="resume_preview_page">Page %1$d</string>
+    <string name="resume_ats_tips">ATS tips: keep standard section names, use one column, and put key skills from the job post in your Skills and Experience. These templates already use real text and headings that applicant tracking systems can read.</string>
+
+    <string name="resume_template_SOFTWARE">Software and IT</string>
+    <string name="resume_template_desc_SOFTWARE">Skills first, then experience and projects.</string>
+    <string name="resume_template_CORE_ENGINEERING">Core engineering</string>
+    <string name="resume_template_desc_CORE_ENGINEERING">Mechanical, civil, electrical: experience and tools.</string>
+    <string name="resume_template_ARTS">Arts</string>
+    <string name="resume_template_desc_ARTS">Exhibitions and awards, with a photo frame.</string>
+    <string name="resume_template_MARKETING">Marketing</string>
+    <string name="resume_template_desc_MARKETING">Results-led, with a bold name band.</string>
+    <string name="resume_template_FINANCE">Finance and accounting</string>
+    <string name="resume_template_desc_FINANCE">Classic serif look for CA, audit and FP&amp;A roles.</string>
+    <string name="resume_template_DATA_SCIENCE">Data science and AI</string>
+    <string name="resume_template_desc_DATA_SCIENCE">ML skills, models in production and projects.</string>
+    <string name="resume_template_HEALTHCARE">Healthcare</string>
+    <string name="resume_template_desc_HEALTHCARE">Licences first, clinical experience, photo frame.</string>
+    <string name="resume_template_EDUCATION">Teaching</string>
+    <string name="resume_template_desc_EDUCATION">Teaching experience, B.Ed. and eligibility tests.</string>
+    <string name="resume_template_GRAPHIC_DESIGN">Graphic design</string>
+    <string name="resume_template_desc_GRAPHIC_DESIGN">Tools and selected work, with a photo frame.</string>
+    <string name="resume_template_FRESH_GRADUATE">Fresh graduate</string>
+    <string name="resume_template_desc_FRESH_GRADUATE">Education and projects first, then internships.</string>
+    <string name="resume_template_BUSINESS_ADMIN">Business and management</string>
+    <string name="resume_template_desc_BUSINESS_ADMIN">MBA and operations roles, impact in numbers.</string>
+    <string name="resume_template_LEGAL">Legal</string>
+    <string name="resume_template_desc_LEGAL">Bar admission, practice areas and publications.</string>
+    <string name="resume_template_HUMAN_RESOURCES">Human resources</string>
+    <string name="resume_template_desc_HUMAN_RESOURCES">Hiring, engagement and HR tools.</string>
+    <string name="resume_template_OPERATIONS">Operations and supply chain</string>
+    <string name="resume_template_desc_OPERATIONS">Logistics, procurement and warehouse results.</string>
+    <string name="resume_template_ACADEMIC_CV">Academic CV</string>
+    <string name="resume_template_desc_ACADEMIC_CV">Research, publications, grants and teaching.</string>
+</resources>

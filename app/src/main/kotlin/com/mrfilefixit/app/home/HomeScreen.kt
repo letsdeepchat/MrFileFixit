@@ -56,6 +56,7 @@ private val tools = listOf(
     TopLevelDestination.PDF to R.string.home_pdf_body,
     TopLevelDestination.IMAGE to R.string.home_image_body,
     TopLevelDestination.SCAN to R.string.home_scan_body,
+    TopLevelDestination.RESUME to R.string.home_resume_body,
 )
 
 @Composable

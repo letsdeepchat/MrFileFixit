@@ -45,13 +45,14 @@ flowchart TD
     fpdf[":feature-pdf"]
     fimg[":feature-image"]
     fscan[":feature-scan"]
+    fres[":feature-resume"]
     cui[":core-ui"]
     cstore[":core-storage"]
     cproc[":core-processing"]
     cdom[":core-domain (pure JVM)"]
     coff[":core-office (pure JVM)"]
 
-    app --> fexam & fpdf & fimg & fscan
+    app --> fexam & fpdf & fimg & fscan & fres
     app --> cstore & cproc & cui & cdom
     bench -. instruments .-> app
 
@@ -59,6 +60,7 @@ flowchart TD
     fpdf --> cui & cdom
     fimg --> cui & cdom
     fscan --> cui & cdom
+    fres --> cui & cdom
 
     cui --> cdom
     cstore --> cdom
@@ -89,6 +91,7 @@ core-domain/      com.mrfilefixit.core.domain
   pdf/            PdfProcessor, PdfOperation, PdfCompressionPolicy
   convert/        DocumentConverter, ConversionKind, ConvertDocumentUseCase
   document/       RichDocument, Presentation, Workbook (shared by converters, resume templates)
+  resume/         Resume model (JSON drafts), 15 templates, ResumeRenderer → RichDocument, export/import use cases
   ocr/            OcrProcessor
   scan/           Import, enhance (ScanFilter, ScanFilterMath) and OCR use cases
 
