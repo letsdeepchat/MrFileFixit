@@ -191,7 +191,7 @@ private fun LoadedContent(
                 ErrorCard(error, onRetry = null, Modifier.contentWidth())
             }
         }
-        if (state.outcome == null) {
+        if (!state.isDone) {
             item(key = "options") { ToolOptions(state, actions, Modifier.contentWidth()) }
         }
         if (state.isBatch) {
@@ -204,14 +204,14 @@ private fun LoadedContent(
                 )
             }
         }
-        when (val job = state.job) {
+        when (val job = state.activeJob) {
             is JobState.Failed -> item(key = "job-error") { ErrorCard(job.error, null, Modifier.contentWidth()) }
             is JobState.Cancelled -> item(key = "job-cancelled") {
                 Text(stringResource(CoreR.string.job_cancelled), Modifier.contentWidth())
             }
             else -> Unit
         }
-        if (state.outcome != null) item(key = "results") { Results(state, actions, Modifier.contentWidth()) }
+        if (state.isDone) item(key = "results") { Results(state, actions, Modifier.contentWidth()) }
     }
 }
 
@@ -284,14 +284,17 @@ private fun ToolOptions(state: ImageToolUiState, actions: ImageToolActions, modi
         }
         ImageTool.CONVERT -> SectionCard(modifier) {
             SectionHeader(stringResource(R.string.image_format))
-            ChipRow(ImageFormat.entries, o.format, { it.displayName() }) { f ->
-                actions.onOptions { it.copy(format = f) }
+            FormatChips(o, actions, offerPdf = true)
+            if (o.toPdf) {
+                Text(
+                    stringResource(R.string.image_pdf_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
-            if (o.format == ImageFormat.HEIC && !actions.canEncode(ImageFormat.HEIC)) {
-                Text(stringResource(R.string.image_heic_unavailable), color = MaterialTheme.colorScheme.error)
-            }
-            if (o.format.supportsQuality) QualitySlider(o.quality, actions)
         }
+        ImageTool.EDIT -> EditOptionsCards(state, actions, modifier)
+        ImageTool.ENHANCE -> EnhanceOptionsCards(state, actions, modifier)
         ImageTool.STRIP_EXIF -> SectionCard(modifier) {
             Text(stringResource(R.string.image_strip_note), style = MaterialTheme.typography.bodyMedium)
         }
@@ -434,8 +437,47 @@ private fun NumberField(
     )
 }
 
+/**
+ * The image formats as chips, with the HEIC note and the quality slider. With [offerPdf], a PDF chip makes one
+ * document from all the picked images instead.
+ */
 @Composable
-private fun <T> ChipRow(values: List<T>, selected: T, label: @Composable (T) -> String, onSelect: (T) -> Unit) {
+internal fun FormatChips(o: ImageOptions, actions: ImageToolActions, offerPdf: Boolean = false) {
+    val pdf = offerPdf && o.toPdf
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+        verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+    ) {
+        ImageFormat.entries.forEach { format ->
+            FilterChip(
+                selected = !pdf && format == o.format,
+                onClick = { actions.onOptions { it.copy(format = format, toPdf = false) } },
+                label = { Text(format.displayName()) },
+                modifier = Modifier
+                    .heightIn(min = Dimens.MinTouchTarget)
+                    .testTag("image_format_${format.name.lowercase()}"),
+            )
+        }
+        if (offerPdf) {
+            FilterChip(
+                selected = pdf,
+                onClick = { actions.onOptions { it.copy(toPdf = true) } },
+                label = { Text(stringResource(R.string.image_format_pdf)) },
+                modifier = Modifier
+                    .heightIn(min = Dimens.MinTouchTarget)
+                    .testTag("image_format_pdf"),
+            )
+        }
+    }
+    if (pdf) return
+    if (o.format == ImageFormat.HEIC && !actions.canEncode(ImageFormat.HEIC)) {
+        Text(stringResource(R.string.image_heic_unavailable), color = MaterialTheme.colorScheme.error)
+    }
+    if (o.format.supportsQuality) QualitySlider(o.quality, actions)
+}
+
+@Composable
+internal fun <T> ChipRow(values: List<T>, selected: T, label: @Composable (T) -> String, onSelect: (T) -> Unit) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
         verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
@@ -455,7 +497,7 @@ private fun <T> ChipRow(values: List<T>, selected: T, label: @Composable (T) -> 
 @Composable
 private fun BottomActions(state: ImageToolUiState, actions: ImageToolActions) {
     StickyActionBar {
-        when (val job = state.job) {
+        when (val job = state.activeJob) {
             is JobState.Running -> JobProgressCard(job.progress, actions.onCancel)
             is JobState.Success -> {
                 PrimaryActionButton(stringResource(CoreR.string.action_share), actions.onShareAll)
@@ -478,32 +520,36 @@ private fun BottomActions(state: ImageToolUiState, actions: ImageToolActions) {
 
 @Composable
 private fun Results(state: ImageToolUiState, actions: ImageToolActions, modifier: Modifier = Modifier) {
-    val outcome = state.outcome ?: return
+    val outputs = state.outputs
+    if (outputs.isEmpty()) return
+    val failures = state.outcome?.failures.orEmpty()
     var pendingSave by remember { mutableStateOf<Int?>(null) }
-    val saver = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/*")) { uri ->
+    val saveType = outputs.map { it.mimeType }.distinct().singleOrNull() ?: ANY_IMAGE
+    val saver = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(saveType)) { uri ->
         val index = pendingSave
         if (uri != null && index != null) actions.onSave(index, uri.toString())
         pendingSave = null
     }
     SectionCard(modifier) {
-        SectionHeader(pluralStringResource(R.plurals.image_done, outcome.images.size, outcome.images.size))
-        if (outcome.failures.isNotEmpty()) {
+        SectionHeader(pluralStringResource(R.plurals.image_done, outputs.size, outputs.size))
+        if (failures.isNotEmpty()) {
             Text(
-                pluralStringResource(R.plurals.image_some_failed, outcome.failures.size, outcome.failures.size),
+                pluralStringResource(R.plurals.image_some_failed, failures.size, failures.size),
                 color = MaterialTheme.colorScheme.error,
             )
         }
-        outcome.images.forEachIndexed { index, image ->
+        outputs.forEachIndexed { index, file ->
             ListItem(
-                headlineContent = { Text(image.file.displayName) },
+                headlineContent = { Text(file.displayName) },
                 supportingContent = {
-                    Text("${formatBytes(image.file.sizeBytes)} · ${image.file.width} × ${image.file.height}")
+                    val size = formatBytes(file.sizeBytes)
+                    Text(if (file.width != null) "$size · ${file.width} × ${file.height}" else size)
                 },
                 trailingContent = {
                     OutlinedButton(
                         onClick = {
                             pendingSave = index
-                            saver.launch(image.file.displayName)
+                            saver.launch(file.displayName)
                         },
                         modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
                     ) { Text(stringResource(CoreR.string.action_save)) }
@@ -524,6 +570,8 @@ private fun toolLabel(tool: ImageTool): String = stringResource(
         ImageTool.ROTATE -> R.string.image_tool_ROTATE
         ImageTool.COMPRESS -> R.string.image_tool_COMPRESS
         ImageTool.CONVERT -> R.string.image_tool_CONVERT
+        ImageTool.EDIT -> R.string.image_tool_EDIT
+        ImageTool.ENHANCE -> R.string.image_tool_ENHANCE
         ImageTool.STRIP_EXIF -> R.string.image_tool_STRIP_EXIF
     },
 )
@@ -538,6 +586,7 @@ private fun aspectLabel(aspect: Float?): String = when (aspect) {
 }
 
 private const val MAX_PICK = 100
+private const val ANY_IMAGE = "image/*"
 private const val CROP_MAX_HEIGHT_FRACTION = 0.45f
 private const val MAX_DIGITS = 5
 private const val MIN_QUALITY = 10f

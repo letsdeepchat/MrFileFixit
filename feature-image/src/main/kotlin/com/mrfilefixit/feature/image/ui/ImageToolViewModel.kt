@@ -28,12 +28,17 @@ import com.mrfilefixit.core.domain.image.OutputSpec
 import com.mrfilefixit.core.domain.image.ResizeMode
 import com.mrfilefixit.core.domain.job.JobRunner
 import com.mrfilefixit.core.domain.job.JobState
+import com.mrfilefixit.core.domain.pdf.PageSize
+import com.mrfilefixit.core.domain.pdf.PdfOperation
+import com.mrfilefixit.core.domain.pdf.RunPdfOperationUseCase
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.AppResult
 import com.mrfilefixit.core.domain.result.Result
 import com.mrfilefixit.core.domain.result.collectAll
+import com.mrfilefixit.core.domain.result.failure
 import com.mrfilefixit.core.domain.result.flatMap
 import com.mrfilefixit.core.domain.result.fold
+import com.mrfilefixit.core.domain.result.success
 import com.mrfilefixit.core.domain.security.InputLimits
 import com.mrfilefixit.feature.image.work.ImageBatchScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,7 +55,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class ImageTool { RESIZE, CROP, ROTATE, COMPRESS, CONVERT, STRIP_EXIF }
+enum class ImageTool { RESIZE, CROP, ROTATE, COMPRESS, CONVERT, EDIT, ENHANCE, STRIP_EXIF }
 
 data class ImageOptions(
     val width: String = "1080",
@@ -65,6 +70,10 @@ data class ImageOptions(
     val quality: Int = 80,
     val targetKb: String = "",
     val format: ImageFormat = ImageFormat.JPEG,
+    /** Convert: all picked images into one PDF instead of image files. */
+    val toPdf: Boolean = false,
+    val edit: EditOptions = EditOptions(),
+    val enhance: EnhanceOptions = EnhanceOptions(),
 )
 
 /** Edits on the Resize form. Width and height stay in the photo's ratio while [ImageOptions.keepAspect] is on. */
@@ -87,10 +96,20 @@ data class ImageToolUiState(
     val options: ImageOptions = ImageOptions(),
     val inputError: AppError? = null,
     val job: JobState<BatchOutcome> = JobState.Idle,
+    /** Convert to PDF: one document from all the picked images. */
+    val pdfJob: JobState<OutputFile> = JobState.Idle,
     val runsInBackground: Boolean = false,
 ) {
     val isBatch: Boolean get() = files.size > 1
     val outcome: BatchOutcome? get() = (job as? JobState.Success)?.value
+
+    /** The job the screen shows: the PDF job once one has started, otherwise the image batch. */
+    val activeJob: JobState<*> get() = if (pdfJob !is JobState.Idle) pdfJob else job
+
+    /** Finished files, from either job. */
+    val outputs: List<OutputFile>
+        get() = outcome?.images?.map { it.file } ?: listOfNotNull((pdfJob as? JobState.Success)?.value)
+    val isDone: Boolean get() = activeJob is JobState.Success
     val canRun: Boolean get() = files.isNotEmpty() && (tool != ImageTool.CROP || files.size == 1)
     val activePreset: ResizePreset? get() = presets.firstOrNull { it.id == options.presetId }
 }
@@ -118,6 +137,7 @@ class ImageToolViewModel @Inject constructor(
     private val tempFiles: TempFileStore,
     private val jobIds: JobIdGenerator,
     private val limits: InputLimits,
+    private val runPdfOperation: RunPdfOperationUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(ImageToolUiState())
@@ -127,6 +147,7 @@ class ImageToolViewModel @Inject constructor(
     val effects: Flow<ImageEffect> = effectChannel.receiveAsFlow()
 
     private val runner = JobRunner<BatchOutcome>(viewModelScope)
+    private val pdfRunner = JobRunner<OutputFile>(viewModelScope)
     private var jobId: String? = null
     private var workId: UUID? = null
     private var workObserver: Job? = null
@@ -135,6 +156,7 @@ class ImageToolViewModel @Inject constructor(
         viewModelScope.launch {
             runner.state.collect { job -> if (!state.value.runsInBackground) applyJob(job) }
         }
+        viewModelScope.launch { pdfRunner.state.collect { job -> mutableState.update { it.copy(pdfJob = job) } } }
         val route = savedStateHandle.toRoute<ImageRoute>()
         viewModelScope.launch { loadPresets(route) }
     }
@@ -224,10 +246,16 @@ class ImageToolViewModel @Inject constructor(
         val s = state.value
         if (!s.canRun) return
         viewModelScope.launch {
-            val spec = buildSpec(s)
             val id = jobIds.next()
             discardOutputs()
+            runner.reset()
+            pdfRunner.reset()
             mutableState.update { it.copy(inputError = null) }
+            if (s.tool == ImageTool.CONVERT && s.options.toPdf) {
+                runPdf(id, s.files)
+                return@launch
+            }
+            val spec = buildSpec(s)
             if (s.files.size > BatchPolicy.INLINE_LIMIT) {
                 runInBackground(id, s.files, spec)
             } else {
@@ -244,6 +272,23 @@ class ImageToolViewModel @Inject constructor(
             tempFiles.createJobDir(id).flatMap { dir ->
                 jobId = id
                 batchImages(files, spec, dir, progress)
+            }
+        }
+    }
+
+    /** One PDF, a page per image at the image's own size, so nothing is cropped or scaled. */
+    private fun runPdf(id: String, files: List<FileRef>) {
+        mutableState.update { it.copy(runsInBackground = false) }
+        val baseName = files.first().displayName.substringBeforeLast('.').ifBlank { PDF_BASE_NAME }
+        pdfRunner.start(cleanup = {
+            if (pdfRunner.state.value !is JobState.Success) tempFiles.deleteJobDir(id)
+        }) { progress ->
+            tempFiles.createJobDir(id).flatMap { dir ->
+                jobId = id
+                runPdfOperation(PdfOperation.ImagesToPdf(files, PageSize.FIT_IMAGE, 0f, dir, baseName), progress)
+                    .flatMap { outputs ->
+                        outputs.firstOrNull()?.let { success(it) } ?: failure(AppError.Unexpected("NoPdfOutput"))
+                    }
             }
         }
     }
@@ -308,6 +353,22 @@ class ImageToolViewModel @Inject constructor(
                 ImageBatchSpec(emptyList(), OutputSpec(format, target), "-compressed")
             }
             ImageTool.CONVERT -> ImageBatchSpec(emptyList(), OutputSpec(o.format, quality), "")
+            ImageTool.EDIT -> ImageBatchSpec(
+                operations = emptyList(),
+                output = if (o.edit.usesStampSize) {
+                    OutputSpec(ImageFormat.JPEG, EditOptions.STAMP_TARGET)
+                } else {
+                    OutputSpec(o.format, quality)
+                },
+                suffix = "-edited",
+                effects = o.edit.toEffects(),
+            )
+            ImageTool.ENHANCE -> ImageBatchSpec(
+                operations = emptyList(),
+                output = OutputSpec(o.format, quality),
+                suffix = "-enhanced",
+                effects = o.enhance.toEffects(),
+            )
             ImageTool.STRIP_EXIF -> ImageBatchSpec(
                 emptyList(),
                 OutputSpec(ImageFormat.JPEG, EncodeTarget.Original),
@@ -319,6 +380,7 @@ class ImageToolViewModel @Inject constructor(
     fun onCancel() {
         val work = workId
         if (state.value.runsInBackground && work != null) scheduler.cancel(work) else runner.cancel()
+        pdfRunner.cancel()
     }
 
     fun onSave(output: OutputFile, destination: String) {
@@ -328,7 +390,7 @@ class ImageToolViewModel @Inject constructor(
     }
 
     fun onShareAll() {
-        val outputs = state.value.outcome?.images?.map { it.file }.orEmpty()
+        val outputs = state.value.outputs
         if (outputs.isEmpty()) return
         viewModelScope.launch {
             outputs.map { shareOutput(it) }.collectAll().fold(
@@ -344,6 +406,7 @@ class ImageToolViewModel @Inject constructor(
     fun onReset() {
         onCancel()
         runner.reset()
+        pdfRunner.reset()
         workObserver?.cancel()
         discardOutputs()
         mutableState.update { ImageToolUiState(tool = it.tool, presets = it.presets, options = it.options) }
@@ -377,5 +440,6 @@ class ImageToolViewModel @Inject constructor(
         const val MAX_QUALITY = 100
         const val DEFAULT_SIDE = 1080
         const val KIB = 1024L
+        const val PDF_BASE_NAME = "Images"
     }
 }

@@ -5,6 +5,7 @@ import com.mrfilefixit.core.domain.file.OutputFile
 import com.mrfilefixit.core.domain.image.BatchOutcome
 import com.mrfilefixit.core.domain.image.EncodeTarget
 import com.mrfilefixit.core.domain.image.ImageBatchSpec
+import com.mrfilefixit.core.domain.image.ImageEffects
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.ImageOp
 import com.mrfilefixit.core.domain.image.OutputSpec
@@ -28,6 +29,8 @@ internal data class BatchJobDto(
     val maxBytes: Long? = null,
     val original: Boolean = false,
     val suffix: String,
+    /** Absent in jobs written before the Edit and Enhance tools. */
+    val effects: ImageEffects? = null,
 )
 
 @Serializable
@@ -64,6 +67,7 @@ internal object BatchSpecSerialization {
             maxBytes = (spec.output.target as? EncodeTarget.SizeRange)?.maxBytes,
             original = spec.output.target == EncodeTarget.Original,
             suffix = spec.suffix,
+            effects = spec.effects.takeUnless { it.isNone },
         ),
     )
 
@@ -78,6 +82,7 @@ internal object BatchSpecSerialization {
             operations = dto.ops.map { it.toOp() },
             output = OutputSpec(ImageFormat.valueOf(dto.format), target),
             suffix = dto.suffix,
+            effects = dto.effects ?: ImageEffects.NONE,
         )
     }
 

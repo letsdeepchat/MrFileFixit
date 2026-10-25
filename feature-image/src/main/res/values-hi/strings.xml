@@ -58,4 +58,31 @@
         <item quantity="one">%1$d इमेज प्रोसेस करें</item>
         <item quantity="other">%1$d इमेज प्रोसेस करें</item>
     </plurals>
+    <string name="image_tool_EDIT">संपादन</string>
+    <string name="image_tool_ENHANCE">बेहतर करें</string>
+    <string name="image_format_pdf">PDF</string>
+    <string name="image_pdf_note">चुनी गई सभी इमेज एक PDF में जाती हैं, हर इमेज अपने साइज़ के एक पेज पर।</string>
+    <string name="image_edit_look">लुक</string>
+    <string name="image_filter_NONE">मूल</string>
+    <string name="image_filter_GRAYSCALE">ब्लैक एंड व्हाइट</string>
+    <string name="image_filter_DOCUMENT">दस्तावेज़</string>
+    <string name="image_brightness">ब्राइटनेस: %1$d</string>
+    <string name="image_contrast">कंट्रास्ट: %1$d</string>
+    <string name="image_saturation">सैचुरेशन: %1$d</string>
+    <string name="image_text_title">फ़ोटो पर टेक्स्ट</string>
+    <string name="image_text_label">टेक्स्ट</string>
+    <string name="image_pos_TOP">ऊपर</string>
+    <string name="image_pos_CENTER">बीच में</string>
+    <string name="image_pos_BOTTOM">नीचे</string>
+    <string name="image_text_dark">गहरा टेक्स्ट</string>
+    <string name="image_stamp_title">नाम और तारीख़ की पट्टी</string>
+    <string name="image_stamp_hint">परीक्षा फ़ॉर्म में माँगी जाने वाली पट्टी, फ़ोटो के नीचे।</string>
+    <string name="image_stamp_name">नाम</string>
+    <string name="image_stamp_date">तारीख़</string>
+    <string name="image_stamp_dark">काली पट्टी, सफ़ेद टेक्स्ट</string>
+    <string name="image_stamp_size">फ़ाइल 20 से 50 KB के बीच रखें</string>
+    <string name="image_stamp_size_hint">JPEG में सेव होती है, जैसा परीक्षा पोर्टल माँगते हैं।</string>
+    <string name="image_enhance_scale">बड़ा करें</string>
+    <string name="image_enhance_sharpen">शार्पनेस: %1$d%%</string>
+    <string name="image_enhance_note">फ़ोटो को स्मूद स्केलिंग और किनारों की शार्पनिंग से बड़ा करता है, सब इसी फ़ोन पर। लंबी साइड अधिकतम %1$d px।</string>
 </resources>

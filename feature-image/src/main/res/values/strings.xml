@@ -58,4 +58,31 @@
         <item quantity="one">Process %1$d image</item>
         <item quantity="other">Process %1$d images</item>
     </plurals>
+    <string name="image_tool_EDIT">Edit</string>
+    <string name="image_tool_ENHANCE">Enhance</string>
+    <string name="image_format_pdf">PDF</string>
+    <string name="image_pdf_note">All the picked images go into one PDF, a page per image at its own size.</string>
+    <string name="image_edit_look">Look</string>
+    <string name="image_filter_NONE">Original</string>
+    <string name="image_filter_GRAYSCALE">Black and white</string>
+    <string name="image_filter_DOCUMENT">Document</string>
+    <string name="image_brightness">Brightness: %1$d</string>
+    <string name="image_contrast">Contrast: %1$d</string>
+    <string name="image_saturation">Saturation: %1$d</string>
+    <string name="image_text_title">Text on the photo</string>
+    <string name="image_text_label">Text</string>
+    <string name="image_pos_TOP">Top</string>
+    <string name="image_pos_CENTER">Middle</string>
+    <string name="image_pos_BOTTOM">Bottom</string>
+    <string name="image_text_dark">Dark text</string>
+    <string name="image_stamp_title">Name and date bar</string>
+    <string name="image_stamp_hint">The strip exam forms ask for, across the bottom of the photo.</string>
+    <string name="image_stamp_name">Name</string>
+    <string name="image_stamp_date">Date</string>
+    <string name="image_stamp_dark">Black bar with white text</string>
+    <string name="image_stamp_size">Keep the file between 20 and 50 KB</string>
+    <string name="image_stamp_size_hint">Saved as JPEG, the way exam portals ask for it.</string>
+    <string name="image_enhance_scale">Upscale</string>
+    <string name="image_enhance_sharpen">Sharpness: %1$d%%</string>
+    <string name="image_enhance_note">Enlarges the photo with smooth scaling and edge sharpening, all on this phone. The long side is capped at %1$d px.</string>
 </resources>

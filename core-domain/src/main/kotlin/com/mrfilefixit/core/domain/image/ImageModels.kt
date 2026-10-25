@@ -155,6 +155,8 @@ data class ImageRequest(
     val outputBaseName: String,
     val operations: List<ImageOp>,
     val output: OutputSpec,
+    /** Pixel edits after the geometry: filters, the exam name and date bar, text, upscaling. */
+    val effects: ImageEffects = ImageEffects.NONE,
 )
 
 /** Photo and signature stacked into one image, as some exam portals require. */

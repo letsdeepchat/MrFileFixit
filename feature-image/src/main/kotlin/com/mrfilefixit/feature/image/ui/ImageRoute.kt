@@ -51,7 +51,7 @@ private fun ImageToolRoute(onOpenOcr: () -> Unit, viewModel: ImageToolViewModel 
             onRun = viewModel::onRun,
             onCancel = viewModel::onCancel,
             onSave = { index, uri ->
-                viewModel.state.value.outcome?.images?.getOrNull(index)?.let { viewModel.onSave(it.file, uri) }
+                viewModel.state.value.outputs.getOrNull(index)?.let { viewModel.onSave(it, uri) }
             },
             onShareAll = viewModel::onShareAll,
             onReset = viewModel::onReset,
