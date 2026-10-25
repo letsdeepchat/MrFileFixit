@@ -2,6 +2,12 @@ package com.mrfilefixit.feature.pdf.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mrfilefixit.core.domain.convert.ConversionKind
+import com.mrfilefixit.core.domain.convert.ConversionOptions
+import com.mrfilefixit.core.domain.convert.ConversionRequest
+import com.mrfilefixit.core.domain.convert.ConvertDocumentUseCase
+import com.mrfilefixit.core.domain.convert.DocumentFormat
+import com.mrfilefixit.core.domain.convert.SheetOutput
 import com.mrfilefixit.core.domain.dispatchers.ApplicationScope
 import com.mrfilefixit.core.domain.file.DescribeFileUseCase
 import com.mrfilefixit.core.domain.file.DestinationUri
@@ -29,6 +35,7 @@ import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.AppResult
 import com.mrfilefixit.core.domain.result.Result
 import com.mrfilefixit.core.domain.result.collectAll
+import com.mrfilefixit.core.domain.result.failure
 import com.mrfilefixit.core.domain.result.flatMap
 import com.mrfilefixit.core.domain.result.fold
 import com.mrfilefixit.core.domain.result.map
@@ -55,6 +62,8 @@ enum class PdfTool(
     val group: PdfToolGroup,
     val acceptsImages: Boolean = false,
     val multipleInputs: Boolean = false,
+    /** Set for the office conversions, which run through [ConvertDocumentUseCase] instead of the PDF engine. */
+    val conversion: ConversionKind? = null,
 ) {
     MERGE(PdfToolGroup.ORGANIZE, multipleInputs = true),
     SPLIT(PdfToolGroup.ORGANIZE),
@@ -64,11 +73,30 @@ enum class PdfTool(
     DELETE(PdfToolGroup.ORGANIZE),
     IMAGES_TO_PDF(PdfToolGroup.CONVERT, acceptsImages = true, multipleInputs = true),
     TO_IMAGES(PdfToolGroup.CONVERT),
+    WORD_TO_PDF(PdfToolGroup.CONVERT, conversion = ConversionKind.WORD_TO_PDF),
+    PDF_TO_WORD(PdfToolGroup.CONVERT, conversion = ConversionKind.PDF_TO_WORD),
+    PPT_TO_PDF(PdfToolGroup.CONVERT, conversion = ConversionKind.PPT_TO_PDF),
+    PDF_TO_PPT(PdfToolGroup.CONVERT, conversion = ConversionKind.PDF_TO_PPT),
+    EXCEL_TO_PDF(PdfToolGroup.CONVERT, conversion = ConversionKind.EXCEL_TO_PDF),
+    PDF_TO_EXCEL(PdfToolGroup.CONVERT, conversion = ConversionKind.PDF_TO_EXCEL),
     COMPRESS(PdfToolGroup.OPTIMIZE),
     WATERMARK(PdfToolGroup.OPTIMIZE),
     PAGE_NUMBERS(PdfToolGroup.OPTIMIZE),
     PROTECT(PdfToolGroup.SECURITY),
     UNLOCK(PdfToolGroup.SECURITY),
+    ;
+
+    /** True when the input is a Word, PowerPoint or Excel file rather than a PDF. */
+    val officeInput: Boolean get() = conversion != null && DocumentFormat.PDF !in conversion.inputs
+
+    /** MIME types for the system file picker. Office files are often labelled octet-stream by file managers. */
+    val pickerMimeTypes: Array<String>
+        get() = conversion?.takeIf { officeInput }?.let { it.pickerMimeTypes + OCTET_STREAM }
+            ?: arrayOf(DocumentFormat.PDF.mimeType)
+
+    private companion object {
+        const val OCTET_STREAM = "application/octet-stream"
+    }
 }
 
 /** A KB window the output should land in, e.g. an exam portal's certificate limit. Shown, not enforced. */
@@ -100,6 +128,7 @@ data class PdfOptions(
     val diagonal: Boolean = true,
     val position: Position = Position.BOTTOM_CENTER,
     val numberStyle: NumberStyle = NumberStyle.OF_TOTAL,
+    val sheetOutput: SheetOutput = SheetOutput.XLSX,
 )
 
 data class PdfToolUiState(
@@ -116,6 +145,7 @@ data class PdfToolUiState(
     val outputs: List<OutputFile> get() = (job as? JobState.Success)?.value.orEmpty()
     val canRun: Boolean get() = when {
         files.isEmpty() -> false
+        tool.officeInput -> true
         tool.multipleInputs -> files.size >= if (tool == PdfTool.MERGE) 2 else 1
         info == null -> false
         tool == PdfTool.SPLIT -> !info.encrypted && splitPlan is Result.Success
@@ -141,6 +171,7 @@ class PdfToolViewModel @AssistedInject constructor(
     private val describeFile: DescribeFileUseCase,
     private val getInfo: GetPdfInfoUseCase,
     private val runOperation: RunPdfOperationUseCase,
+    private val convertDocument: ConvertDocumentUseCase,
     private val saveOutput: SaveOutputUseCase,
     private val shareOutput: ShareOutputUseCase,
     private val tempFiles: TempFileStore,
@@ -189,12 +220,17 @@ class PdfToolViewModel @AssistedInject constructor(
                     val files = if (tool.multipleInputs) {
                         state.value.files + described.value
                     } else {
-                        described.value.take(
-                            1,
-                        )
+                        described.value.take(1)
+                    }
+                    val wrongType = tool.conversion?.let { kind ->
+                        files.firstOrNull { DocumentFormat.detect(it.mimeType, it.displayName) !in kind.inputs }
+                    }
+                    if (wrongType != null) {
+                        mutableState.update { it.copy(inputError = AppError.UnsupportedFormat(wrongType.mimeType)) }
+                        return@launch
                     }
                     mutableState.update { it.copy(files = files, inputError = null, info = null) }
-                    if (!tool.multipleInputs) loadInfo(files.first())
+                    if (!tool.multipleInputs && !tool.officeInput) loadInfo(files.first())
                     if (tool == PdfTool.MERGE) described.value.forEach { loadPageCount(it) }
                 }
             }
@@ -241,8 +277,35 @@ class PdfToolViewModel @AssistedInject constructor(
         }) { progress ->
             tempFiles.createJobDir(id).flatMap { dir ->
                 jobId = id
-                buildOperation(s, dir, password).flatMap { runOperation(it, progress) }
+                if (s.tool.conversion != null) {
+                    buildConversion(s, s.tool.conversion, dir).flatMap { convertDocument(it, progress) }
+                } else {
+                    buildOperation(s, dir, password).flatMap { runOperation(it, progress) }
+                }
             }.also { password?.fill('\u0000') }
+        }
+    }
+
+    private fun buildConversion(s: PdfToolUiState, kind: ConversionKind, dir: String): AppResult<ConversionRequest> {
+        val first = s.files.first()
+        val base = first.displayName.substringBeforeLast('.').ifBlank { "document" }
+        val pages = if (s.options.pages.isBlank() || s.info == null) {
+            success(emptyList())
+        } else {
+            PageSelection.parse(s.options.pages, s.info.pageCount)
+        }
+        return pages.map { selected ->
+            ConversionRequest(
+                source = first,
+                kind = kind,
+                outputDir = dir,
+                outputBaseName = base,
+                options = ConversionOptions(
+                    pageSize = s.options.pageSize,
+                    sheetOutput = s.options.sheetOutput,
+                    pages = selected,
+                ),
+            )
         }
     }
 
@@ -288,6 +351,9 @@ class PdfToolViewModel @AssistedInject constructor(
             PdfTool.UNLOCK -> success(
                 PdfOperation.Unlock(first, (password ?: CharArray(0)).copyOf(), dir, "$base-unlocked"),
             )
+            PdfTool.WORD_TO_PDF, PdfTool.PDF_TO_WORD, PdfTool.PPT_TO_PDF, PdfTool.PDF_TO_PPT,
+            PdfTool.EXCEL_TO_PDF, PdfTool.PDF_TO_EXCEL,
+            -> failure(AppError.Unexpected("NotAPdfOperation"))
         }
     }
 

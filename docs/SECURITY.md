@@ -10,6 +10,7 @@ Each rule from the product spec is listed with where it is enforced and how it i
 | Nothing in the app touches the network (no ads, no analytics, no backend) | `NetworkIsolation.kt` convention: every module, `:app` included, fails the build if it resolves a networking library or declares `INTERNET`; CI also fails if the merged manifest has an ads component or `AD_ID` | `verifyNetworkIsolation` task (runs with `check`); detekt `ForbiddenImport` bans `java.net.*`, `javax.net.*`, OkHttp, Retrofit, Ktor everywhere |
 | Scoped storage and SAF only; no broad storage permissions | Photo Picker / `OpenDocument` / `CreateDocument` only. `app/AndroidManifest.xml` removes `READ/WRITE/MANAGE_EXTERNAL_STORAGE` and `READ_MEDIA_IMAGES` with `tools:node="remove"` in case a library adds them | Merged-manifest review in CI (`processReleaseManifest` + grep step) |
 | Validate before decoding: 50 MB, max pixels, page count | `InputLimits` (50 MB, 64 MP, 16 384 px side, 1 000 pages, 100 files). Sizes are checked from SAF metadata, then again while streaming (`LimitedInputStream`); dimensions from the header before any bitmap is allocated; page count before rendering | `InputLimitsTest`, `BatchImageUseCaseTest`, `ScanUseCasesTest` |
+| Office files are untrusted input | `:core-office` parses DOCX/PPTX/XLSX with a strict XML pull parser that rejects DTDs (no XXE, no entity expansion) and reads ZIPs with entry-count, per-entry and total expanded-size caps (zip bombs); legacy DOC/PPT/XLS go through a Compound File reader with bounds and cycle checks; row, column, slide and paragraph counts are capped (`OfficeLimits`). Macros, OLE objects and external links are never executed or followed | `XmlReaderTest`, `DocxRoundTripTest`, `SheetFormatsTest` |
 | Sanitize file names | `FilenameSanitizer`: removes path separators, control and format characters (including RTL overrides), `..` runs, reserved Windows names; 100-char cap | `FilenameSanitizerTest` |
 | Temp files in app-private cache; narrow share grants | Every job writes only to `cache/jobs/<uuid>/`. Output paths are canonical-checked against that root before save/share. `FileProvider` exposes `cache/jobs/` only; shares grant read on the single URI via `ClipData` | `SafFileRepository.jobFile`, `file_provider_paths.xml` |
 | Temp files are cleaned up | Job dir deleted on failure/cancel, on reset, when the screen's ViewModel is cleared, and stale dirs (> 6 h) at app start | `JobRunnerTest` (cleanup runs on cancel) |
@@ -26,7 +27,7 @@ Each rule from the product spec is listed with where it is enforced and how it i
 flowchart LR
     subgraph Offline["Offline modules (build fails if a network library appears)"]
         exam[":feature-exam"] --- pdf[":feature-pdf"] --- img[":feature-image"] --- scan[":feature-scan"]
-        proc[":core-processing"] --- store[":core-storage"] --- ui[":core-ui"] --- dom[":core-domain"]
+        proc[":core-processing"] --- store[":core-storage"] --- ui[":core-ui"] --- dom[":core-domain"] --- off[":core-office"]
     end
     gms["Google Play services\n(document scanner UI, separate process)"]
     scan -. intent .-> gms

@@ -77,6 +77,9 @@
     <string name="error_out_of_memory">Not enough memory for this file. Close other apps and try again.</string>
     <string name="error_feature_unavailable">Your device does not support this.</string>
     <string name="error_already_optimized">This PDF is already as small as it can get without losing quality, so it was left unchanged.</string>
+    <string name="error_document_protected">This document is password-protected. Remove the password in Office, then try again.</string>
+    <string name="error_document_too_complex">This document is too large or complex to convert on this phone.</string>
+    <string name="error_no_text_found">This PDF has no selectable text, so it is probably a scan. Use Extract Text in Scan &amp; OCR instead.</string>
     <string name="error_unexpected">Something went wrong. Please try again.</string>
 
     <!-- Accessibility -->

@@ -19,14 +19,20 @@ import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.MergeType
 import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.CoPresent
 import androidx.compose.material.icons.filled.Compress
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.FormatListNumbered
+import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Slideshow
 import androidx.compose.material.icons.filled.SwapVert
+import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -119,6 +125,12 @@ internal fun toolIcon(tool: PdfTool): ImageVector = when (tool) {
     PdfTool.PAGE_NUMBERS -> Icons.Filled.FormatListNumbered
     PdfTool.PROTECT -> Icons.Filled.Lock
     PdfTool.UNLOCK -> Icons.Filled.LockOpen
+    PdfTool.WORD_TO_PDF -> Icons.Filled.Description
+    PdfTool.PDF_TO_WORD -> Icons.Filled.EditNote
+    PdfTool.PPT_TO_PDF -> Icons.Filled.Slideshow
+    PdfTool.PDF_TO_PPT -> Icons.Filled.CoPresent
+    PdfTool.EXCEL_TO_PDF -> Icons.Filled.TableChart
+    PdfTool.PDF_TO_EXCEL -> Icons.Filled.GridOn
 }
 
 @Composable
@@ -147,6 +159,12 @@ private fun toolDescription(tool: PdfTool): String = stringResource(
         PdfTool.PAGE_NUMBERS -> R.string.pdf_desc_PAGE_NUMBERS
         PdfTool.PROTECT -> R.string.pdf_desc_PROTECT
         PdfTool.UNLOCK -> R.string.pdf_desc_UNLOCK
+        PdfTool.WORD_TO_PDF -> R.string.pdf_desc_WORD_TO_PDF
+        PdfTool.PDF_TO_WORD -> R.string.pdf_desc_PDF_TO_WORD
+        PdfTool.PPT_TO_PDF -> R.string.pdf_desc_PPT_TO_PDF
+        PdfTool.PDF_TO_PPT -> R.string.pdf_desc_PDF_TO_PPT
+        PdfTool.EXCEL_TO_PDF -> R.string.pdf_desc_EXCEL_TO_PDF
+        PdfTool.PDF_TO_EXCEL -> R.string.pdf_desc_PDF_TO_EXCEL
     },
 )
 

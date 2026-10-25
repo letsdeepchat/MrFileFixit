@@ -54,6 +54,15 @@ sealed interface AppError {
     /** Compression could not make the file any smaller, so the original is kept as it is. */
     data object AlreadyOptimized : AppError
 
+    /** Office documents. A Word, Excel or PowerPoint file protected with a password cannot be opened. */
+    data object DocumentProtected : AppError
+
+    /** The document is valid but bigger or more deeply nested than the converter allows on a phone. */
+    data object DocumentTooComplex : AppError
+
+    /** A PDF with no selectable text (usually a scan) cannot become a spreadsheet or editable slides. */
+    data object NoTextFound : AppError
+
     /** Anything else. [type] is the exception class name, never its message. */
     data class Unexpected(val type: String) : AppError
 
