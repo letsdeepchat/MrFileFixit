@@ -94,8 +94,14 @@ internal class AndroidImageProcessor @Inject constructor(
                     losslessStrip(request, raw)?.let { return@runCatchingAppFlat success(it) }
                 }
 
-                val bitmap = renderPlan(request.source.uri, raw, plan, output)
+                val rendered = renderPlan(request.source.uri, raw, plan, output)
                 coroutineContext.ensureActive()
+                val bitmap = try {
+                    ImageEffectsRendering.apply(rendered, request.effects)
+                } catch (e: Throwable) {
+                    if (!rendered.isRecycled) rendered.recycle()
+                    throw e
+                }
                 progress.report(PROGRESS_DECODED)
                 bitmap.use { encodeToFile(it, request.outputDir, request.outputBaseName, output, progress) }
             }
@@ -271,7 +277,8 @@ internal class AndroidImageProcessor @Inject constructor(
 
     /** Lossless metadata strip for JPEG/PNG that are already upright. Returns null to fall back to re-encode. */
     private fun losslessStrip(request: ImageRequest, raw: RawImageInfo): ProcessedImage? {
-        if (request.operations.isNotEmpty() || raw.exifRotation != 0 || raw.flipped) return null
+        if (request.operations.isNotEmpty() || !request.effects.isNone) return null
+        if (raw.exifRotation != 0 || raw.flipped) return null
         if (raw.format != request.output.format) return null
         val bytes = resolver.readAllLimited(request.source.uri, limits.maxFileBytes)
         val stripped = when (raw.format) {

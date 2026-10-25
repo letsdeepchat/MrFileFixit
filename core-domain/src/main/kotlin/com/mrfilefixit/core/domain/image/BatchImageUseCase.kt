@@ -20,6 +20,7 @@ data class ImageBatchSpec(
     val output: OutputSpec,
     /** Appended to each source name, e.g. "-resized". */
     val suffix: String,
+    val effects: ImageEffects = ImageEffects.NONE,
 )
 
 data class BatchOutcome(
@@ -57,6 +58,7 @@ class BatchImageUseCase @Inject constructor(
                 outputDir = outputDir,
                 outputBaseName = FilenameSanitizer.sanitize(source.displayName.substringBeforeLast('.') + spec.suffix),
                 operations = spec.operations,
+                effects = spec.effects,
                 // "Remove metadata" keeps each file's own format.
                 output = if (spec.output.target == EncodeTarget.Original) {
                     spec.output.copy(format = ImageFormat.fromMimeType(source.mimeType) ?: spec.output.format)
