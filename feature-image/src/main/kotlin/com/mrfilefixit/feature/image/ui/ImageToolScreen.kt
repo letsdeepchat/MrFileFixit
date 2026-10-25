@@ -101,6 +101,7 @@ internal fun ImageToolScreen(
     actions: ImageToolActions,
     modifier: Modifier = Modifier,
     snackbarHost: @Composable () -> Unit = {},
+    onOpenOcr: () -> Unit = {},
 ) {
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(MAX_PICK)) { uris ->
         actions.onPick(uris.map { it.toString() })
@@ -122,7 +123,7 @@ internal fun ImageToolScreen(
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            ToolTabs(state.tool, actions.onTool)
+            ToolTabs(state.tool, actions.onTool, onOpenOcr)
             if (state.files.isEmpty()) {
                 CenteredEmptyState(Modifier.weight(1f)) {
                     UploadDropZone(
@@ -141,9 +142,10 @@ internal fun ImageToolScreen(
     }
 }
 
+/** The tools, then a last tab that opens text recognition on its own screen. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ToolTabs(selected: ImageTool, onSelect: (ImageTool) -> Unit) {
+private fun ToolTabs(selected: ImageTool, onSelect: (ImageTool) -> Unit, onOpenOcr: () -> Unit) {
     PrimaryScrollableTabRow(
         selectedTabIndex = ImageTool.entries.indexOf(selected),
         edgePadding = Dimens.ScreenPadding,
@@ -159,6 +161,14 @@ private fun ToolTabs(selected: ImageTool, onSelect: (ImageTool) -> Unit) {
                     .testTag("image_tab_${tool.name.lowercase()}"),
             )
         }
+        Tab(
+            selected = false,
+            onClick = onOpenOcr,
+            text = { Text(stringResource(R.string.image_tool_ocr)) },
+            modifier = Modifier
+                .heightIn(min = Dimens.MinTouchTarget)
+                .testTag("image_tab_ocr"),
+        )
     }
 }
 

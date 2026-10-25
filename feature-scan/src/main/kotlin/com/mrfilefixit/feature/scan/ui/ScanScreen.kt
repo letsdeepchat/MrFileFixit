@@ -112,6 +112,7 @@ internal fun ScanScreen(
     actions: ScanActions,
     modifier: Modifier = Modifier,
     snackbarHost: @Composable () -> Unit = {},
+    onOpenOcr: (List<String>) -> Unit = {},
 ) {
     val context = LocalContext.current
     val scanLauncher =
@@ -191,7 +192,7 @@ internal fun ScanScreen(
                     )
                     state.inputError?.let { ErrorCard(it, onRetry = null) }
                     ScanSection(state, actions)
-                    if (state.canRecognize || state.ocr !is JobState.Idle) OcrSection(state, actions)
+                    if (state.canRecognize || state.ocr !is JobState.Idle) OcrSection(state, actions, onOpenOcr)
                 }
                 PrivacyCard(Modifier.contentWidth().padding(top = Dimens.SpaceL))
             }
@@ -374,7 +375,7 @@ private fun ScanOutputs(pdf: OutputFile?, pages: List<OutputFile>, actions: Scan
 }
 
 @Composable
-private fun OcrSection(state: ScanUiState, actions: ScanActions) {
+private fun OcrSection(state: ScanUiState, actions: ScanActions, onOpenOcr: (List<String>) -> Unit) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
         if (state.ocrFiles.isNotEmpty()) {
             Text(
@@ -404,6 +405,16 @@ private fun OcrSection(state: ScanUiState, actions: ScanActions) {
                     enabled = state.canRecognize,
                 )
             }
+        }
+        // More languages, auto-detect, searchable PDF and Word export live on the text recognition screen.
+        if (state.ocrSourceUris.isNotEmpty()) {
+            OutlinedButton(
+                onClick = { onOpenOcr(state.ocrSourceUris) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = Dimens.MinTouchTarget)
+                    .testTag("scan_open_ocr"),
+            ) { Text(stringResource(R.string.scan_open_ocr)) }
         }
     }
 }
@@ -444,8 +455,12 @@ private fun TextResult(text: String, pageCount: Int, actions: ScanActions) {
 @Composable
 private fun scriptLabel(script: OcrScript): String = stringResource(
     when (script) {
+        OcrScript.AUTO -> R.string.scan_script_AUTO
         OcrScript.LATIN -> R.string.scan_script_LATIN
         OcrScript.DEVANAGARI -> R.string.scan_script_DEVANAGARI
+        OcrScript.CHINESE -> R.string.scan_script_CHINESE
+        OcrScript.JAPANESE -> R.string.scan_script_JAPANESE
+        OcrScript.KOREAN -> R.string.scan_script_KOREAN
     },
 )
 

@@ -37,6 +37,8 @@ import com.mrfilefixit.feature.exam.ui.ExamRoute
 import com.mrfilefixit.feature.exam.ui.examScreen
 import com.mrfilefixit.feature.image.ui.ImageRoute
 import com.mrfilefixit.feature.image.ui.imageScreen
+import com.mrfilefixit.feature.ocr.ui.OcrRoute
+import com.mrfilefixit.feature.ocr.ui.ocrScreen
 import com.mrfilefixit.feature.pdf.ui.PdfRoute
 import com.mrfilefixit.feature.pdf.ui.pdfScreen
 import com.mrfilefixit.feature.resume.ui.ResumeRoute
@@ -115,10 +117,14 @@ fun MffApp() {
                     navController.navigateToTool(PdfRoute(tool = PDF_COMPRESS, minKb = minKb, maxKb = maxKb))
                 },
             )
-            pdfScreen()
-            imageScreen()
-            scanScreen()
+            val openOcr = { uris: List<String> ->
+                navController.navigate(OcrRoute(uris)) { launchSingleTop = true }
+            }
+            pdfScreen(onOpenOcr = { openOcr(emptyList()) })
+            imageScreen(onOpenOcr = { openOcr(emptyList()) })
+            scanScreen(onOpenOcr = openOcr)
             resumeScreen()
+            ocrScreen(onBack = { navController.popBackStack() })
             composable<SettingsRoute> { SettingsScreen(onBack = { navController.popBackStack() }) }
         }
     }

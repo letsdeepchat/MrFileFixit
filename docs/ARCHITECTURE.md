@@ -46,13 +46,14 @@ flowchart TD
     fimg[":feature-image"]
     fscan[":feature-scan"]
     fres[":feature-resume"]
+    focr[":feature-ocr"]
     cui[":core-ui"]
     cstore[":core-storage"]
     cproc[":core-processing"]
     cdom[":core-domain (pure JVM)"]
     coff[":core-office (pure JVM)"]
 
-    app --> fexam & fpdf & fimg & fscan & fres
+    app --> fexam & fpdf & fimg & fscan & fres & focr
     app --> cstore & cproc & cui & cdom
     bench -. instruments .-> app
 
@@ -61,6 +62,7 @@ flowchart TD
     fimg --> cui & cdom
     fscan --> cui & cdom
     fres --> cui & cdom
+    focr --> cui & cdom
 
     cui --> cdom
     cstore --> cdom
@@ -92,7 +94,7 @@ core-domain/      com.mrfilefixit.core.domain
   convert/        DocumentConverter, ConversionKind, ConvertDocumentUseCase
   document/       RichDocument, Presentation, Workbook (shared by converters, resume templates)
   resume/         Resume model (JSON drafts), 15 templates, ResumeRenderer → RichDocument, export/import use cases
-  ocr/            OcrProcessor
+  ocr/            OcrProcessor, ScriptDetector (auto-detect), OcrExporter, ExportOcrUseCase
   scan/           Import, enhance (ScanFilter, ScanFilterMath) and OCR use cases
 
 core-office/      com.mrfilefixit.core.office       (pure Kotlin office formats, no third-party code)
@@ -133,4 +135,5 @@ flowchart LR
   platform `PdfRenderer`, one page at a time.
 * The ML Kit document scanner is delivered through Google Play services. Its model is downloaded once by Play
   services; scans and OCR are processed on-device. Text recognition uses the bundled Latin model and runs fully
-  offline. Devanagari OCR is available as an optional bundled model (adds ~4 MB).
+  offline. Devanagari, Chinese, Japanese and Korean
+  recognizers are bundled too, so every script works offline with no model download (see docs/OCR.md).

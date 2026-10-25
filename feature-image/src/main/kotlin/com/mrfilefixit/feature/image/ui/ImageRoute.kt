@@ -23,12 +23,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ImageRoute(val examId: String? = null, val document: String? = null)
 
-fun NavGraphBuilder.imageScreen() {
-    composable<ImageRoute> { ImageToolRoute() }
+fun NavGraphBuilder.imageScreen(onOpenOcr: () -> Unit = {}) {
+    composable<ImageRoute> { ImageToolRoute(onOpenOcr) }
 }
 
 @Composable
-private fun ImageToolRoute(viewModel: ImageToolViewModel = hiltViewModel()) {
+private fun ImageToolRoute(onOpenOcr: () -> Unit, viewModel: ImageToolViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
@@ -58,5 +58,5 @@ private fun ImageToolRoute(viewModel: ImageToolViewModel = hiltViewModel()) {
             canEncode = viewModel::canEncode,
         )
     }
-    ImageToolScreen(state, actions, snackbarHost = { SnackbarHost(snackbar) })
+    ImageToolScreen(state, actions, snackbarHost = { SnackbarHost(snackbar) }, onOpenOcr = onOpenOcr)
 }

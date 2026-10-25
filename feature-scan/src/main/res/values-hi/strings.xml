@@ -15,6 +15,11 @@
     <string name="scan_script">टेक्स्ट की भाषा</string>
     <string name="scan_script_LATIN">अंग्रेज़ी / लैटिन</string>
     <string name="scan_script_DEVANAGARI">हिंदी / देवनागरी</string>
+    <string name="scan_script_AUTO">अपने-आप पहचानें</string>
+    <string name="scan_script_CHINESE">चीनी</string>
+    <string name="scan_script_JAPANESE">जापानी</string>
+    <string name="scan_script_KOREAN">कोरियाई</string>
+    <string name="scan_open_ocr">खोजने योग्य PDF, Word और दूसरी भाषाएँ</string>
     <string name="scan_recognize">टेक्स्ट पहचानें</string>
     <plurals name="scan_text_result">
         <item quantity="one">पहचाना गया टेक्स्ट (%1$d पेज)</item>

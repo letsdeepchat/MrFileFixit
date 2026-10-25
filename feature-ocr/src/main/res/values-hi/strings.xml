@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ocr_title">टेक्स्ट पहचान (OCR)</string>
+    <string name="ocr_pick_title">इमेज या PDF चुनें</string>
+    <string name="ocr_pick_hint">JPG, PNG, WebP या PDF. टेक्स्ट इसी फ़ोन पर पढ़ा जाता है; कुछ भी अपलोड नहीं होता.</string>
+    <string name="ocr_change_files">फ़ाइलें बदलें</string>
+    <plurals name="ocr_files">
+        <item quantity="one">%d फ़ाइल</item>
+        <item quantity="other">%d फ़ाइलें</item>
+    </plurals>
+    <string name="ocr_language">भाषा</string>
+    <string name="ocr_script_AUTO">अपने-आप पहचानें</string>
+    <string name="ocr_script_LATIN">अंग्रेज़ी और लैटिन</string>
+    <string name="ocr_script_DEVANAGARI">हिंदी और देवनागरी</string>
+    <string name="ocr_script_CHINESE">चीनी</string>
+    <string name="ocr_script_JAPANESE">जापानी</string>
+    <string name="ocr_script_KOREAN">कोरियाई</string>
+    <string name="ocr_script_hint_AUTO">पहले पेज पर हर बिल्ट-इन भाषा आज़माकर सबसे अच्छी चुनता है. अगर पेज पर कई लिपियाँ हों तो भाषा ख़ुद चुनें.</string>
+    <string name="ocr_script_hint_LATIN">अंग्रेज़ी, फ़्रेंच, जर्मन, स्पेनिश, पुर्तगाली, इतालवी, डच, पोलिश, तुर्की, इंडोनेशियाई, मलय, स्वाहिली और लैटिन अक्षरों में लिखी दूसरी भाषाएँ.</string>
+    <string name="ocr_script_hint_DEVANAGARI">देवनागरी में लिखी हिंदी, मराठी, नेपाली और संस्कृत. पेज पर अंग्रेज़ी शब्द भी पढ़े जाते हैं.</string>
+    <string name="ocr_script_hint_CHINESE">सरलीकृत और पारंपरिक चीनी, पेज पर अंग्रेज़ी शब्दों के साथ.</string>
+    <string name="ocr_script_hint_JAPANESE">जापानी कांजी, हिरागाना और काताकाना, पेज पर अंग्रेज़ी शब्दों के साथ.</string>
+    <string name="ocr_script_hint_KOREAN">कोरियाई हंगुल, पेज पर अंग्रेज़ी शब्दों के साथ.</string>
+    <string name="ocr_models_note">सभी भाषा मॉडल ऐप में ही हैं, इसलिए पहचान ऑफ़लाइन होती है और कभी डाउनलोड की ज़रूरत नहीं होती.</string>
+    <string name="ocr_recognize">टेक्स्ट पहचानें</string>
+    <plurals name="ocr_result_title">
+        <item quantity="one">%d पेज का टेक्स्ट</item>
+        <item quantity="other">%d पेज का टेक्स्ट</item>
+    </plurals>
+    <string name="ocr_detected">इस्तेमाल की गई भाषा: %1$s</string>
+    <string name="ocr_no_text">कोई टेक्स्ट नहीं मिला. ज़्यादा रोशनी में साफ़ फ़ोटो लें, या भाषा ख़ुद चुनें.</string>
+    <string name="ocr_copy">टेक्स्ट कॉपी करें</string>
+    <string name="ocr_share_text">टेक्स्ट शेयर करें</string>
+    <string name="ocr_copied">टेक्स्ट कॉपी हो गया</string>
+    <string name="ocr_export_title">इस रूप में सेव करें</string>
+    <string name="ocr_export_SEARCHABLE_PDF">खोजने योग्य PDF</string>
+    <string name="ocr_export_TXT">टेक्स्ट फ़ाइल</string>
+    <string name="ocr_export_DOCX">Word</string>
+    <string name="ocr_export_TEXT_PDF">सिर्फ़ टेक्स्ट वाली PDF</string>
+    <string name="ocr_export_hint">खोजने योग्य PDF में मूल पेज रहते हैं और छिपा टेक्स्ट जुड़ता है, ताकि आप किसी भी PDF रीडर में खोज, चुन और कॉपी कर सकें.</string>
+    <string name="ocr_export_ready">%1$s · %2$s</string>
+    <string name="ocr_share">शेयर करें</string>
+</resources>
