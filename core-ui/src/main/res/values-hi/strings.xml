@@ -72,6 +72,9 @@
     <string name="error_out_of_memory">इस फ़ाइल के लिए मेमोरी कम है। दूसरे ऐप बंद करके फिर कोशिश करें।</string>
     <string name="error_feature_unavailable">आपका डिवाइस यह सपोर्ट नहीं करता।</string>
     <string name="error_already_optimized">यह PDF पहले से ही इतनी छोटी है कि क्वालिटी खोए बिना और छोटी नहीं हो सकती, इसलिए इसे नहीं बदला गया।</string>
+    <string name="error_document_protected">यह दस्तावेज़ पासवर्ड से सुरक्षित है। Office में पासवर्ड हटाएँ, फिर दोबारा कोशिश करें।</string>
+    <string name="error_document_too_complex">यह दस्तावेज़ इस फ़ोन पर बदलने के लिए बहुत बड़ा या जटिल है।</string>
+    <string name="error_no_text_found">इस PDF में चुनने योग्य टेक्स्ट नहीं है, शायद यह स्कैन है। इसके बजाय स्कैन और OCR में "स्टोरेज से टेक्स्ट निकालें" का उपयोग करें।</string>
     <string name="error_unexpected">कुछ गलत हो गया। कृपया फिर से कोशिश करें।</string>
 
     <string name="cd_thumbnail">चुनी गई फ़ाइल का प्रीव्यू</string>

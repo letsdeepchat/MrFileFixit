@@ -10,6 +10,7 @@ android {
 // Processing engines. Network isolation is enforced by the convention plugin (verifyNetworkIsolation).
 dependencies {
     implementation(projects.coreDomain)
+    implementation(projects.coreOffice)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.core.ktx)

@@ -16,12 +16,13 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture diagram, m
 | --- | --- | --- |
 | `app` | Android application | Navigation shell, DI wiring, adaptive layout |
 | `feature-exam` | Android library | Exam profile picker, photo/signature flow, live spec checker |
-| `feature-pdf` | Android library | Merge, split, extract, reorder, rotate, delete, compress, image↔PDF, watermark, page numbers, password |
+| `feature-pdf` | Android library | Merge, split, extract, reorder, rotate, delete, compress, image↔PDF, Word/PowerPoint/Excel↔PDF, watermark, page numbers, password |
 | `feature-image` | Android library | Resize, crop, rotate, compress, convert, batch, strip EXIF |
 | `feature-scan` | Android library | ML Kit document scanner and on-device OCR |
 | `core-ui` | Android library | Material 3 theme, components, previews |
 | `core-domain` | Pure Kotlin (JVM) | Result types, job pipeline, use cases, processor interfaces, pure algorithms |
-| `core-processing` | Android library | Image, PDF (compressor), OCR and scan-filter engines |
+| `core-office` | Pure Kotlin (JVM) | DOCX/PPTX/XLSX readers and writers, legacy DOC/PPT/XLS readers, CSV, PDF text layout analysis ([docs/CONVERSIONS.md](docs/CONVERSIONS.md)) |
+| `core-processing` | Android library | Image, PDF (compressor), office conversion, OCR and scan-filter engines |
 | `core-storage` | Android library | SAF, temp files, FileProvider sharing, DataStore |
 | `benchmark` | Android test | Baseline Profile generator and Macrobenchmark startup tests |
 

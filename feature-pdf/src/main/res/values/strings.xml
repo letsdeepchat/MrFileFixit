@@ -133,4 +133,28 @@
     <string name="pdf_target_hint">Exam limit: %1$d–%2$d KB. Start with the lightest level that meets it.</string>
     <string name="pdf_target_met">%1$s · within the exam limit</string>
     <string name="pdf_target_missed">%1$s · above the %2$d KB limit, try a stronger level</string>
+    <string name="pdf_tool_WORD_TO_PDF">Word to PDF</string>
+    <string name="pdf_tool_PDF_TO_WORD">PDF to Word</string>
+    <string name="pdf_tool_PPT_TO_PDF">PowerPoint to PDF</string>
+    <string name="pdf_tool_PDF_TO_PPT">PDF to PowerPoint</string>
+    <string name="pdf_tool_EXCEL_TO_PDF">Excel to PDF</string>
+    <string name="pdf_tool_PDF_TO_EXCEL">PDF to Excel</string>
+    <string name="pdf_desc_WORD_TO_PDF">DOCX or DOC to a PDF</string>
+    <string name="pdf_desc_PDF_TO_WORD">Editable DOCX with text, headings and pictures</string>
+    <string name="pdf_desc_PPT_TO_PDF">PPTX or PPT, one page per slide</string>
+    <string name="pdf_desc_PDF_TO_PPT">Slides that look like the pages, with editable text</string>
+    <string name="pdf_desc_EXCEL_TO_PDF">XLSX, XLS or CSV as printable tables</string>
+    <string name="pdf_desc_PDF_TO_EXCEL">Tables on each page as XLSX or CSV</string>
+    <string name="pdf_upload_word_title">Tap to select a Word file</string>
+    <string name="pdf_upload_word_subtitle">DOCX or DOC</string>
+    <string name="pdf_upload_ppt_title">Tap to select a PowerPoint file</string>
+    <string name="pdf_upload_ppt_subtitle">PPTX or PPT</string>
+    <string name="pdf_upload_excel_title">Tap to select a spreadsheet</string>
+    <string name="pdf_upload_excel_subtitle">XLSX, XLS or CSV</string>
+    <string name="pdf_convert_pages_hint" tools:ignore="TypographyDashes">Leave empty for all pages, or for example 1-3, 5</string>
+    <string name="pdf_sheet_output">Save as</string>
+    <string name="pdf_sheet_output_XLSX">Excel (.xlsx)</string>
+    <string name="pdf_sheet_output_CSV">CSV (.csv)</string>
+    <string name="pdf_convert_note_to_pdf">Text, headings, lists, tables and pictures are kept. Charts, SmartArt and floating text boxes are not. Everything stays on your phone.</string>
+    <string name="pdf_convert_note_from_pdf">Works best with PDFs saved from documents. A scanned page has no text to convert, so use Scan &amp; OCR first. Everything stays on your phone.</string>
 </resources>

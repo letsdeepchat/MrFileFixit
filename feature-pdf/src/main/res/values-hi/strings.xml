@@ -133,4 +133,28 @@
     <string name="pdf_target_hint">परीक्षा की सीमा: %1$d–%2$d KB। सबसे हल्के स्तर से शुरू करें जो सीमा में आए।</string>
     <string name="pdf_target_met">%1$s · परीक्षा की सीमा में</string>
     <string name="pdf_target_missed">%1$s · %2$d KB सीमा से ज़्यादा, तेज़ स्तर आज़माएँ</string>
+    <string name="pdf_tool_WORD_TO_PDF">Word से PDF</string>
+    <string name="pdf_tool_PDF_TO_WORD">PDF से Word</string>
+    <string name="pdf_tool_PPT_TO_PDF">PowerPoint से PDF</string>
+    <string name="pdf_tool_PDF_TO_PPT">PDF से PowerPoint</string>
+    <string name="pdf_tool_EXCEL_TO_PDF">Excel से PDF</string>
+    <string name="pdf_tool_PDF_TO_EXCEL">PDF से Excel</string>
+    <string name="pdf_desc_WORD_TO_PDF">DOCX या DOC को PDF में</string>
+    <string name="pdf_desc_PDF_TO_WORD">टेक्स्ट, हेडिंग और तस्वीरों वाली बदलने योग्य DOCX</string>
+    <string name="pdf_desc_PPT_TO_PDF">PPTX या PPT, हर स्लाइड एक पेज</string>
+    <string name="pdf_desc_PDF_TO_PPT">पेज जैसी दिखने वाली स्लाइड, बदलने योग्य टेक्स्ट के साथ</string>
+    <string name="pdf_desc_EXCEL_TO_PDF">XLSX, XLS या CSV को प्रिंट योग्य टेबल में</string>
+    <string name="pdf_desc_PDF_TO_EXCEL">हर पेज की टेबल XLSX या CSV में</string>
+    <string name="pdf_upload_word_title">Word फ़ाइल चुनने के लिए टैप करें</string>
+    <string name="pdf_upload_word_subtitle">DOCX या DOC</string>
+    <string name="pdf_upload_ppt_title">PowerPoint फ़ाइल चुनने के लिए टैप करें</string>
+    <string name="pdf_upload_ppt_subtitle">PPTX या PPT</string>
+    <string name="pdf_upload_excel_title">स्प्रेडशीट चुनने के लिए टैप करें</string>
+    <string name="pdf_upload_excel_subtitle">XLSX, XLS या CSV</string>
+    <string name="pdf_convert_pages_hint" tools:ignore="TypographyDashes">सभी पेज के लिए खाली छोड़ें, या जैसे 1-3, 5</string>
+    <string name="pdf_sheet_output">इस रूप में सेव करें</string>
+    <string name="pdf_sheet_output_XLSX">Excel (.xlsx)</string>
+    <string name="pdf_sheet_output_CSV">CSV (.csv)</string>
+    <string name="pdf_convert_note_to_pdf">टेक्स्ट, हेडिंग, सूचियाँ, टेबल और तस्वीरें बनी रहती हैं। चार्ट, SmartArt और तैरते टेक्स्ट बॉक्स नहीं। सब कुछ आपके फ़ोन पर ही रहता है।</string>
+    <string name="pdf_convert_note_from_pdf">दस्तावेज़ों से सेव की गई PDF के साथ सबसे अच्छा काम करता है। स्कैन किए गए पेज में बदलने लायक टेक्स्ट नहीं होता, इसलिए पहले स्कैन और OCR का उपयोग करें। सब कुछ आपके फ़ोन पर ही रहता है।</string>
 </resources>

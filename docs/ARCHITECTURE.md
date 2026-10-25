@@ -49,6 +49,7 @@ flowchart TD
     cstore[":core-storage"]
     cproc[":core-processing"]
     cdom[":core-domain (pure JVM)"]
+    coff[":core-office (pure JVM)"]
 
     app --> fexam & fpdf & fimg & fscan
     app --> cstore & cproc & cui & cdom
@@ -61,7 +62,8 @@ flowchart TD
 
     cui --> cdom
     cstore --> cdom
-    cproc --> cdom
+    cproc --> cdom & coff
+    coff --> cdom
 ```
 
 Rules enforced by the graph:
@@ -85,10 +87,17 @@ core-domain/      com.mrfilefixit.core.domain
   image/          ImageProcessor, ImageFormat, QualitySearch, requests
   exam/           ExamProfile, DocumentSpec, SpecChecker, ExamRulesRepository, use cases
   pdf/            PdfProcessor, PdfOperation, PdfCompressionPolicy
+  convert/        DocumentConverter, ConversionKind, ConvertDocumentUseCase
+  document/       RichDocument, Presentation, Workbook (shared by converters, resume templates)
   ocr/            OcrProcessor
   scan/           Import, enhance (ScanFilter, ScanFilterMath) and OCR use cases
 
-core-processing/  com.mrfilefixit.core.processing   (data layer: engines)
+core-office/      com.mrfilefixit.core.office       (pure Kotlin office formats, no third-party code)
+  docx/ pptx/ xlsx/  OOXML readers and writers
+  legacy/         Compound File reader; .doc, .ppt and .xls text readers
+  pdftext/        Glyphs → lines, paragraphs, tables and slides (PDF to Word, PowerPoint, Excel)
+  layout/         Workbook → printable tables
+core-processing/  com.mrfilefixit.core.processing   (data layer: engines; convert/ lays documents out on PDF pages)
 core-storage/     com.mrfilefixit.core.storage      (data layer: SAF, cache, FileProvider, DataStore)
 core-ui/          com.mrfilefixit.core.ui           (theme, components, adaptive scaffolds, previews)
 feature-*/        com.mrfilefixit.feature.<name>    (ui + feature data such as bundled exam rules)

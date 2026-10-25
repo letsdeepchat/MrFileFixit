@@ -45,5 +45,8 @@ fun appErrorMessage(error: AppError): String = when (error) {
     AppError.OutOfMemory -> stringResource(R.string.error_out_of_memory)
     is AppError.FeatureUnavailable -> stringResource(R.string.error_feature_unavailable)
     AppError.AlreadyOptimized -> stringResource(R.string.error_already_optimized)
+    AppError.DocumentProtected -> stringResource(R.string.error_document_protected)
+    AppError.DocumentTooComplex -> stringResource(R.string.error_document_too_complex)
+    AppError.NoTextFound -> stringResource(R.string.error_no_text_found)
     is AppError.Unexpected -> stringResource(R.string.error_unexpected)
 }

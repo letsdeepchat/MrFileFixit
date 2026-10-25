@@ -55,7 +55,7 @@ jobs:
       - name: Network isolation (offline modules must not resolve networking libraries)
         run: ./gradlew verifyNetworkIsolation
       - name: Unit tests
-        run: ./gradlew testDebugUnitTest :core-domain:test
+        run: ./gradlew testDebugUnitTest :core-domain:test :core-office:test
       - name: Android Lint (warnings are errors)
         run: ./gradlew lintDebug --continue
       - name: Assemble debug

@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FileCopy
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Visibility
@@ -45,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import com.mrfilefixit.core.domain.convert.SheetOutput
 import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.job.JobState
 import com.mrfilefixit.core.domain.pdf.CompressionLevel
@@ -112,6 +114,7 @@ internal fun PdfToolScreen(
             tool.acceptsImages -> pickImages.launch(
                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
             )
+            tool.conversion != null -> pickPdf.launch(tool.pickerMimeTypes)
             tool.multipleInputs -> pickPdfs.launch(arrayOf(PDF_MIME))
             else -> pickPdf.launch(arrayOf(PDF_MIME))
         }
@@ -149,6 +152,7 @@ internal fun PdfToolScreen(
                     onClick = pick,
                     icon = when {
                         tool.acceptsImages -> Icons.Filled.AddPhotoAlternate
+                        tool.officeInput -> Icons.Filled.Description
                         tool.multipleInputs -> Icons.Filled.FileCopy
                         else -> Icons.Filled.PictureAsPdf
                     },
@@ -421,10 +425,51 @@ private fun Options(
                 }
                 Text(stringResource(R.string.pdf_password_note), style = MaterialTheme.typography.bodySmall)
             }
+            PdfTool.WORD_TO_PDF, PdfTool.PPT_TO_PDF, PdfTool.EXCEL_TO_PDF,
+            PdfTool.PDF_TO_WORD, PdfTool.PDF_TO_PPT, PdfTool.PDF_TO_EXCEL,
+            -> ConversionOptionsSection(state, actions)
             PdfTool.MERGE, PdfTool.IMAGES_TO_PDF -> Unit
         }
     }
 }
+
+@Composable
+private fun ConversionOptionsSection(state: PdfToolUiState, actions: PdfToolActions) {
+    val o = state.options
+    if (!state.tool.officeInput) {
+        PagesField(
+            value = o.pages,
+            onValue = { v -> actions.onOptions { it.copy(pages = v) } },
+            hint = stringResource(R.string.pdf_convert_pages_hint),
+        )
+    }
+    if (state.tool == PdfTool.PDF_TO_EXCEL) {
+        SectionHeader(stringResource(R.string.pdf_sheet_output))
+        ChoiceGrid(SheetOutput.entries, o.sheetOutput, { sheetOutputLabel(it) }, { v ->
+            actions.onOptions { it.copy(sheetOutput = v) }
+        }, columns = 2)
+    }
+    if (state.tool == PdfTool.EXCEL_TO_PDF) {
+        SectionHeader(stringResource(R.string.pdf_page_size))
+        ChoiceGrid(listOf(PageSize.A4, PageSize.LETTER, PageSize.LEGAL), o.pageSize, { pageSizeLabel(it) }, { v ->
+            actions.onOptions { it.copy(pageSize = v) }
+        }, columns = 3)
+    }
+    val note = if (state.tool.officeInput) R.string.pdf_convert_note_to_pdf else R.string.pdf_convert_note_from_pdf
+    Text(
+        stringResource(note),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+private fun sheetOutputLabel(output: SheetOutput): String = stringResource(
+    when (output) {
+        SheetOutput.XLSX -> R.string.pdf_sheet_output_XLSX
+        SheetOutput.CSV -> R.string.pdf_sheet_output_CSV
+    },
+)
 
 @Composable
 internal fun PagesField(value: String, onValue: (String) -> Unit, hint: String, isError: Boolean = false) {
@@ -502,16 +547,28 @@ internal fun toolLabel(tool: PdfTool): String = stringResource(
         PdfTool.PAGE_NUMBERS -> R.string.pdf_tool_PAGE_NUMBERS
         PdfTool.PROTECT -> R.string.pdf_tool_PROTECT
         PdfTool.UNLOCK -> R.string.pdf_tool_UNLOCK
+        PdfTool.WORD_TO_PDF -> R.string.pdf_tool_WORD_TO_PDF
+        PdfTool.PDF_TO_WORD -> R.string.pdf_tool_PDF_TO_WORD
+        PdfTool.PPT_TO_PDF -> R.string.pdf_tool_PPT_TO_PDF
+        PdfTool.PDF_TO_PPT -> R.string.pdf_tool_PDF_TO_PPT
+        PdfTool.EXCEL_TO_PDF -> R.string.pdf_tool_EXCEL_TO_PDF
+        PdfTool.PDF_TO_EXCEL -> R.string.pdf_tool_PDF_TO_EXCEL
     },
 )
 
 private fun uploadTitle(tool: PdfTool): Int = when {
+    tool == PdfTool.WORD_TO_PDF -> R.string.pdf_upload_word_title
+    tool == PdfTool.PPT_TO_PDF -> R.string.pdf_upload_ppt_title
+    tool == PdfTool.EXCEL_TO_PDF -> R.string.pdf_upload_excel_title
     tool == PdfTool.MERGE -> R.string.pdf_upload_merge_title
     tool.acceptsImages -> R.string.pdf_upload_images_title
     else -> R.string.pdf_upload_single_title
 }
 
 private fun uploadSubtitle(tool: PdfTool): Int = when {
+    tool == PdfTool.WORD_TO_PDF -> R.string.pdf_upload_word_subtitle
+    tool == PdfTool.PPT_TO_PDF -> R.string.pdf_upload_ppt_subtitle
+    tool == PdfTool.EXCEL_TO_PDF -> R.string.pdf_upload_excel_subtitle
     tool == PdfTool.MERGE -> R.string.pdf_upload_merge_subtitle
     tool.acceptsImages -> R.string.pdf_upload_images_subtitle
     else -> R.string.pdf_upload_single_subtitle
