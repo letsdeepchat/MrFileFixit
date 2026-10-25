@@ -15,6 +15,11 @@
     <string name="scan_script">Text language</string>
     <string name="scan_script_LATIN">English / Latin</string>
     <string name="scan_script_DEVANAGARI">Hindi / Devanagari</string>
+    <string name="scan_script_AUTO">Auto-detect</string>
+    <string name="scan_script_CHINESE">Chinese</string>
+    <string name="scan_script_JAPANESE">Japanese</string>
+    <string name="scan_script_KOREAN">Korean</string>
+    <string name="scan_open_ocr">Searchable PDF, Word and more languages</string>
     <string name="scan_recognize">Recognize text</string>
     <plurals name="scan_text_result">
         <item quantity="one">Recognized text (%1$d page)</item>

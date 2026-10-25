@@ -26,12 +26,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object ScanRoute
 
-fun NavGraphBuilder.scanScreen() {
-    composable<ScanRoute> { ScanRouteContent() }
+fun NavGraphBuilder.scanScreen(onOpenOcr: (List<String>) -> Unit = {}) {
+    composable<ScanRoute> { ScanRouteContent(onOpenOcr) }
 }
 
 @Composable
-private fun ScanRouteContent(viewModel: ScanViewModel = hiltViewModel()) {
+private fun ScanRouteContent(onOpenOcr: (List<String>) -> Unit, viewModel: ScanViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val clipboard = LocalClipboard.current
@@ -70,5 +70,5 @@ private fun ScanRouteContent(viewModel: ScanViewModel = hiltViewModel()) {
             onReset = viewModel::onReset,
         )
     }
-    ScanScreen(state, actions, snackbarHost = { SnackbarHost(snackbar) })
+    ScanScreen(state, actions, snackbarHost = { SnackbarHost(snackbar) }, onOpenOcr = onOpenOcr)
 }

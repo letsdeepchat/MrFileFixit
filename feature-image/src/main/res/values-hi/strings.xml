@@ -11,6 +11,7 @@
     <string name="image_tool_COMPRESS">छोटा करें</string>
     <string name="image_tool_CONVERT">फ़ॉर्मैट बदलें</string>
     <string name="image_tool_STRIP_EXIF">मेटाडेटा हटाएँ</string>
+    <string name="image_tool_ocr">टेक्स्ट (OCR)</string>
     <string name="image_width">चौड़ाई</string>
     <string name="image_height">ऊँचाई</string>
     <string name="image_keep_aspect">अनुपात बनाए रखें</string>

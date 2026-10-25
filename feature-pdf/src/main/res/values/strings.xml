@@ -145,6 +145,8 @@
     <string name="pdf_desc_PDF_TO_PPT">Slides that look like the pages, with editable text</string>
     <string name="pdf_desc_EXCEL_TO_PDF">XLSX, XLS or CSV as printable tables</string>
     <string name="pdf_desc_PDF_TO_EXCEL">Tables on each page as XLSX or CSV</string>
+    <string name="pdf_ocr">Text recognition (OCR)</string>
+    <string name="pdf_desc_ocr">Read text from scans and photos, make a PDF searchable</string>
     <string name="pdf_upload_word_title">Tap to select a Word file</string>
     <string name="pdf_upload_word_subtitle">DOCX or DOC</string>
     <string name="pdf_upload_ppt_title">Tap to select a PowerPoint file</string>

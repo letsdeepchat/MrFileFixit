@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ocr_title">Text recognition (OCR)</string>
+    <string name="ocr_pick_title">Pick images or PDFs</string>
+    <string name="ocr_pick_hint">JPG, PNG, WebP or PDF. Text is read on this phone; nothing is uploaded.</string>
+    <string name="ocr_change_files">Change files</string>
+    <plurals name="ocr_files">
+        <item quantity="one">%d file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
+    <string name="ocr_language">Language</string>
+    <string name="ocr_script_AUTO">Auto-detect</string>
+    <string name="ocr_script_LATIN">English and Latin</string>
+    <string name="ocr_script_DEVANAGARI">Hindi and Devanagari</string>
+    <string name="ocr_script_CHINESE">Chinese</string>
+    <string name="ocr_script_JAPANESE">Japanese</string>
+    <string name="ocr_script_KOREAN">Korean</string>
+    <string name="ocr_script_hint_AUTO">Tries every built-in language on the first page and keeps the best match. Pick a language yourself if a page mixes scripts.</string>
+    <string name="ocr_script_hint_LATIN">English, French, German, Spanish, Portuguese, Italian, Dutch, Polish, Turkish, Indonesian, Malay, Swahili and other languages written in Latin letters.</string>
+    <string name="ocr_script_hint_DEVANAGARI">Hindi, Marathi, Nepali and Sanskrit, written in Devanagari. English words on the page are read too.</string>
+    <string name="ocr_script_hint_CHINESE">Simplified and Traditional Chinese, with English words on the page.</string>
+    <string name="ocr_script_hint_JAPANESE">Japanese kanji, hiragana and katakana, with English words on the page.</string>
+    <string name="ocr_script_hint_KOREAN">Korean Hangul, with English words on the page.</string>
+    <string name="ocr_models_note">All language models are built into the app, so recognition works offline and never needs a download.</string>
+    <string name="ocr_recognize">Recognize text</string>
+    <plurals name="ocr_result_title">
+        <item quantity="one">Text from %d page</item>
+        <item quantity="other">Text from %d pages</item>
+    </plurals>
+    <string name="ocr_detected">Language used: %1$s</string>
+    <string name="ocr_no_text">No text was found. Try a sharper photo with more light, or pick the language yourself.</string>
+    <string name="ocr_copy">Copy text</string>
+    <string name="ocr_share_text">Share text</string>
+    <string name="ocr_copied">Text copied</string>
+    <string name="ocr_export_title">Save as</string>
+    <string name="ocr_export_SEARCHABLE_PDF">Searchable PDF</string>
+    <string name="ocr_export_TXT">Text file</string>
+    <string name="ocr_export_DOCX">Word</string>
+    <string name="ocr_export_TEXT_PDF">Text-only PDF</string>
+    <string name="ocr_export_hint">A searchable PDF keeps the original pages and adds hidden text, so you can search, select and copy in any PDF reader.</string>
+    <string name="ocr_export_ready">%1$s · %2$s</string>
+    <string name="ocr_share">Share</string>
+</resources>

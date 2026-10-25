@@ -11,6 +11,7 @@
     <string name="image_tool_COMPRESS">Compress</string>
     <string name="image_tool_CONVERT">Convert</string>
     <string name="image_tool_STRIP_EXIF">Remove metadata</string>
+    <string name="image_tool_ocr">Text (OCR)</string>
     <string name="image_width">Width</string>
     <string name="image_height">Height</string>
     <string name="image_keep_aspect">Keep aspect ratio</string>

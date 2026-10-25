@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Compress
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.GridOn
@@ -53,9 +54,17 @@ import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.feature.pdf.R
 
-/** "Pick a tool": tools grouped by job (Organize, Convert, Optimize, Security) in an adaptive grid. */
+/**
+ * "Pick a tool": tools grouped by job (Organize, Convert, Optimize, Security) in an adaptive grid. Convert ends
+ * with text recognition, which opens its own screen through [onOpenOcr].
+ */
 @Composable
-internal fun PdfToolPicker(selected: PdfTool?, onSelect: (PdfTool) -> Unit, modifier: Modifier = Modifier) {
+internal fun PdfToolPicker(
+    selected: PdfTool?,
+    onSelect: (PdfTool) -> Unit,
+    modifier: Modifier = Modifier,
+    onOpenOcr: () -> Unit = {},
+) {
     Column(modifier.fillMaxSize()) {
         ToolTopAppBar(stringResource(R.string.pdf_title))
         LazyVerticalGrid(
@@ -78,7 +87,26 @@ internal fun PdfToolPicker(selected: PdfTool?, onSelect: (PdfTool) -> Unit, modi
                     )
                 }
                 items(PdfTool.entries.filter { it.group == group }, key = { it.name }) { tool ->
-                    ToolTile(tool, selected = tool == selected, onClick = { onSelect(tool) })
+                    ToolTile(
+                        icon = toolIcon(tool),
+                        label = toolLabel(tool),
+                        description = toolDescription(tool),
+                        tag = "pdf_tool_${tool.name.lowercase()}",
+                        selected = tool == selected,
+                        onClick = { onSelect(tool) },
+                    )
+                }
+                if (group == PdfToolGroup.CONVERT) {
+                    item(key = "ocr") {
+                        ToolTile(
+                            icon = Icons.Filled.DocumentScanner,
+                            label = stringResource(R.string.pdf_ocr),
+                            description = stringResource(R.string.pdf_desc_ocr),
+                            tag = "pdf_tool_ocr",
+                            selected = false,
+                            onClick = onOpenOcr,
+                        )
+                    }
                 }
             }
         }
@@ -86,7 +114,14 @@ internal fun PdfToolPicker(selected: PdfTool?, onSelect: (PdfTool) -> Unit, modi
 }
 
 @Composable
-private fun ToolTile(tool: PdfTool, selected: Boolean, onClick: () -> Unit) {
+private fun ToolTile(
+    icon: ImageVector,
+    label: String,
+    description: String,
+    tag: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
     val colors = MaterialTheme.colorScheme
     OutlinedCard(
         onClick = onClick,
@@ -97,13 +132,13 @@ private fun ToolTile(tool: PdfTool, selected: Boolean, onClick: () -> Unit) {
             .fillMaxWidth()
             .heightIn(min = TILE_MIN_HEIGHT.dp)
             .semantics { this.selected = selected }
-            .testTag("pdf_tool_${tool.name.lowercase()}"),
+            .testTag(tag),
     ) {
         Column(Modifier.padding(Dimens.ScreenPadding), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
-            IconBadge(toolIcon(tool))
-            Text(toolLabel(tool), style = MaterialTheme.typography.titleSmall)
+            IconBadge(icon)
+            Text(label, style = MaterialTheme.typography.titleSmall)
             Text(
-                toolDescription(tool),
+                description,
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant,
             )

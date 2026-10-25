@@ -44,13 +44,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PdfRoute(val tool: String? = null, val minKb: Int? = null, val maxKb: Int? = null)
 
-fun NavGraphBuilder.pdfScreen() {
-    composable<PdfRoute> { entry -> PdfListDetail(entry.toRoute<PdfRoute>()) }
+fun NavGraphBuilder.pdfScreen(onOpenOcr: () -> Unit = {}) {
+    composable<PdfRoute> { entry -> PdfListDetail(entry.toRoute<PdfRoute>(), onOpenOcr) }
 }
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun PdfListDetail(route: PdfRoute, modifier: Modifier = Modifier) {
+fun PdfListDetail(route: PdfRoute, onOpenOcr: () -> Unit, modifier: Modifier = Modifier) {
     val navigator = rememberListDetailPaneScaffoldNavigator<String>()
     val scope = rememberCoroutineScope()
     val selected = navigator.currentDestination?.contentKey?.let { key ->
@@ -74,6 +74,7 @@ fun PdfListDetail(route: PdfRoute, modifier: Modifier = Modifier) {
             AnimatedPane {
                 PdfToolPicker(
                     selected = selected,
+                    onOpenOcr = onOpenOcr,
                     onSelect = { tool ->
                         scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, tool.name) }
                     },

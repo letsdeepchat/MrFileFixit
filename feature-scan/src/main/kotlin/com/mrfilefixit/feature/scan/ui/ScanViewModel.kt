@@ -61,6 +61,11 @@ data class ScanUiState(
         enhanced is JobState.Failed || enhanced is JobState.Cancelled -> original
         else -> null
     }
+
+    /** What OCR reads: the picked files, or else the scanned pages. Handed to the text recognition screen. */
+    val ocrSourceUris: List<String>
+        get() = ocrFiles.map { it.uri }.ifEmpty { document?.pages.orEmpty().map { it.asSource().uri } }
+
     val canRecognize: Boolean get() = ocr !is JobState.Running &&
         (ocrFiles.isNotEmpty() || document?.pages?.isNotEmpty() == true)
 }
