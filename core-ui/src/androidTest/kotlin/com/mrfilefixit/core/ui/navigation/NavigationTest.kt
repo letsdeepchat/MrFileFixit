@@ -36,6 +36,7 @@ import com.mrfilefixit.core.ui.theme.MffTheme
 import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -66,10 +67,13 @@ class NavigationTest {
         }
         labels.forEachIndexed { index, label ->
             compose.onNodeWithTag("tab_$index").performScrollTo()
+            val node = compose.onNode(hasText(label), useUnmergedTree = true).fetchSemanticsNode()
             val layout = textLayout(label)
             assertEquals(label, 1, layout.lineCount)
-            assertFalse(label, layout.didOverflowWidth)
             assertFalse(label, layout.isLineEllipsized(0))
+            // The label's box is as wide as the whole text, so nothing is clipped.
+            val needed = layout.multiParagraph.maxIntrinsicWidth
+            assertTrue("$label: $needed > ${node.size.width}", node.size.width + 1f >= needed)
         }
     }
 
@@ -167,7 +171,9 @@ class NavigationTest {
         val pagerState = rememberPagerState { count }
         val trackers = remember { List(count) { InnerScreenTracker() } }
         val scope = rememberCoroutineScope()
-        SideEffect { onPage(pagerState.currentPage) }
+        // Read during composition so the test hears about every page change.
+        val page = pagerState.currentPage
+        SideEffect { onPage(page) }
         Column(Modifier.fillMaxSize()) {
             Box(Modifier.weight(1f)) {
                 SwipeableTabs(pagerState, trackers) { page ->
