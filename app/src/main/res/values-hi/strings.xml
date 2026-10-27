@@ -5,7 +5,7 @@
     <string name="nav_pdf">PDF टूल</string>
     <string name="nav_image">इमेज टूल</string>
     <string name="nav_scan">स्कैन</string>
-    <string name="nav_resume">रिज़्यूमे बिल्डर</string>
+    <string name="nav_resume">रिज़्यूमे और बायोडेटा</string>
     <string name="nav_resume_short">रिज़्यूमे</string>
     <string name="nav_exam_short">परीक्षा</string>
     <string name="nav_pdf_short">PDF</string>
@@ -17,7 +17,7 @@
     <string name="home_pdf_body">जोड़ें, बाँटें, छोटा करें, पासवर्ड लगाएँ और भी बहुत कुछ</string>
     <string name="home_image_body">इमेज का साइज़ बदलें, क्रॉप करें, फ़ॉर्मैट बदलें</string>
     <string name="home_scan_body">दस्तावेज़ स्कैन करके PDF बनाएँ और टेक्स्ट कॉपी करें</string>
-    <string name="home_resume_body">15 टेम्पलेट से ATS-फ़्रेंडली रिज़्यूमे, PDF या Word में</string>
+    <string name="home_resume_body">15 टेम्पलेट से ATS रिज़्यूमे, साथ में शादी और पोर्टफ़ोलियो बायोडेटा, PDF या Word में</string>
     <string name="settings_theme">थीम</string>
     <string name="settings_theme_system">सिस्टम के अनुसार</string>
     <string name="settings_theme_light">लाइट</string>
@@ -34,4 +34,32 @@
     <string name="privacy_metadata_title">मेटाडेटा हटा दिया जाता है</string>
     <string name="privacy_metadata_body">एक्सपोर्ट करते समय इमेज से लोकेशन, कैमरा की जानकारी और अन्य EXIF डेटा हटा दिया जाता है।</string>
     <string name="settings_version">वर्शन %1$s</string>
+    <!-- Home quick cards -->
+    <string name="home_support_title">Mr File Fixit को सपोर्ट करें</string>
+    <string name="home_support_body">मुफ़्त, बिना विज्ञापन और बिना प्रीमियम। अगर ऐप काम आया हो, तो आपका वैकल्पिक दान इसे बेहतर बनाने में मदद करता है।</string>
+    <!-- Settings and support screen -->
+    <string name="settings_support_title">ऐप को सपोर्ट करें</string>
+    <string name="settings_support_body">UPI या PayPal से वैकल्पिक दान</string>
+    <string name="support_title">ऐप को सपोर्ट करें</string>
+    <string name="support_intro">Mr File Fixit मुफ़्त है, इसमें कोई विज्ञापन, प्रीमियम या साइन-इन नहीं है। अगर इससे आपका समय बचा हो, तो आप ऐप की क्वालिटी सुधारने और नए फ़ीचर जोड़ने में मदद के लिए कोई भी राशि दान कर सकते हैं। यह पूरी तरह वैकल्पिक है: हर टूल हमेशा मुफ़्त रहेगा।</string>
+    <string name="support_upi_title">UPI (भारत)</string>
+    <string name="support_upi_scan">इस QR कोड को किसी भी UPI ऐप से स्कैन करें, जैसे Google Pay, PhonePe, Paytm या BHIM।</string>
+    <string name="support_qr_cd">%1$s को दान करने के लिए UPI QR कोड</string>
+    <string name="support_payee">प्राप्तकर्ता: %1$s</string>
+    <string name="support_upi_id">UPI ID: %1$s</string>
+    <string name="support_copy_upi">UPI ID कॉपी करें</string>
+    <string name="support_copied">UPI ID कॉपी हो गई</string>
+    <string name="support_amount">राशि चुनें, या UPI ऐप में अपनी राशि लिखें</string>
+    <string name="support_amount_any">कोई भी राशि</string>
+    <string name="support_amount_value">₹%1$d</string>
+    <string name="support_pay_upi">UPI ऐप से भुगतान करें</string>
+    <string name="support_choose_upi">इससे भुगतान करें</string>
+    <string name="support_no_upi_app">इस फ़ोन पर कोई UPI ऐप नहीं मिला। दूसरे फ़ोन से QR कोड स्कैन करें या UPI ID कॉपी करें।</string>
+    <string name="support_share_qr">QR कोड शेयर करें</string>
+    <string name="support_paypal_title">PayPal (भारत के बाहर)</string>
+    <string name="support_paypal_body">आपके ब्राउज़र में paypal.me/MrFileFixit खुलेगा, जहाँ आप राशि और मुद्रा चुनते हैं।</string>
+    <string name="support_paypal_button">PayPal से दान करें</string>
+    <string name="support_no_browser">PayPal खोलने के लिए कोई ब्राउज़र नहीं मिला।</string>
+    <string name="support_privacy">भुगतान आपके UPI ऐप में या PayPal पर होता है। Mr File Fixit आपकी भुगतान जानकारी कभी नहीं देखता और दान का कोई रिकॉर्ड नहीं रखता।</string>
+    <string name="support_thanks">एक मुफ़्त और निजी ऐप को चलाए रखने के लिए धन्यवाद!</string>
 </resources>

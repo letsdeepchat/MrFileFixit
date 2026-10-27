@@ -2,6 +2,7 @@ package com.mrfilefixit.core.domain.pdf
 
 import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.file.OutputFile
+import com.mrfilefixit.core.domain.file.requireContents
 import com.mrfilefixit.core.domain.job.ProgressReporter
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.AppResult
@@ -31,7 +32,7 @@ class RunPdfOperationUseCase @Inject constructor(
         operation: PdfOperation,
         progress: ProgressReporter,
     ): AppResult<List<OutputFile>> = try {
-        validate(operation).flatMap { processor.run(operation, progress) }
+        validate(operation).flatMap { processor.run(operation, progress) }.requireContents()
     } finally {
         operation.wipeSecrets()
     }

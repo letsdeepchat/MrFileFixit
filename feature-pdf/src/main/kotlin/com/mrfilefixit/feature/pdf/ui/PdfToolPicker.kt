@@ -64,9 +64,10 @@ internal fun PdfToolPicker(
     onSelect: (PdfTool) -> Unit,
     modifier: Modifier = Modifier,
     onOpenOcr: () -> Unit = {},
+    onBack: (() -> Unit)? = null,
 ) {
     Column(modifier.fillMaxSize()) {
-        ToolTopAppBar(stringResource(R.string.pdf_title))
+        ToolTopAppBar(stringResource(R.string.pdf_title), onBack = onBack)
         LazyVerticalGrid(
             // Two columns on phones, more on wide panes.
             columns = GridCells.Adaptive(minSize = TILE_MIN_WIDTH.dp),

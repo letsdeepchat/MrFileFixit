@@ -60,6 +60,19 @@
     </plurals>
     <string name="image_tool_EDIT">संपादन</string>
     <string name="image_tool_ENHANCE">बेहतर करें</string>
+    <string name="image_tool_BACKGROUND">बैकग्राउंड हटाएँ</string>
+    <string name="image_bg_title">नया बैकग्राउंड</string>
+    <string name="image_bg_note">व्यक्ति वैसा ही रहता है और पीछे का सब कुछ बदल दिया जाता है। यह लोगों की फ़ोटो पर काम करता है: पोर्ट्रेट, सेल्फ़ी और परीक्षा फ़ोटो। यह इसी फ़ोन पर चलता है, कुछ भी अपलोड नहीं होता।</string>
+    <string name="image_bg_WHITE">सफ़ेद</string>
+    <string name="image_bg_EXAM_BLUE">परीक्षा नीला</string>
+    <string name="image_bg_TRANSPARENT">पारदर्शी</string>
+    <string name="image_bg_COLOR">रंग</string>
+    <string name="image_bg_PICTURE">आपकी फ़ोटो</string>
+    <string name="image_bg_color_title">बैकग्राउंड का रंग</string>
+    <string name="image_bg_pick">बैकग्राउंड फ़ोटो चुनें</string>
+    <string name="image_bg_change">बैकग्राउंड फ़ोटो बदलें</string>
+    <string name="image_bg_png_note">पारदर्शी बैकग्राउंड PNG में सेव होता है, या WebP में अगर आप उसे चुनें।</string>
+    <string name="image_bg_edge">किनारे की कोमलता: %1$d%%</string>
     <string name="image_format_pdf">PDF</string>
     <string name="image_pdf_note">चुनी गई सभी इमेज एक PDF में जाती हैं, हर इमेज अपने साइज़ के एक पेज पर।</string>
     <string name="image_edit_look">लुक</string>
@@ -74,7 +87,26 @@
     <string name="image_pos_TOP">ऊपर</string>
     <string name="image_pos_CENTER">बीच में</string>
     <string name="image_pos_BOTTOM">नीचे</string>
-    <string name="image_text_dark">गहरा टेक्स्ट</string>
+    <string name="image_text_size">टेक्स्ट का आकार: %1$d%%</string>
+    <string name="image_text_font">फ़ॉन्ट</string>
+    <string name="image_text_color">टेक्स्ट का रंग</string>
+    <string name="image_color_custom">अपना रंग</string>
+    <string name="image_color_hue">रंग</string>
+    <string name="image_color_shade">गहराई</string>
+    <string name="image_font_SANS">आधुनिक</string>
+    <string name="image_font_SERIF">क्लासिक</string>
+    <string name="image_font_MONO">टाइपराइटर</string>
+    <string name="image_font_CONDENSED">लंबा</string>
+    <string name="image_font_HANDWRITING">हस्तलिखित</string>
+    <string name="image_font_CASUAL">मज़ेदार</string>
+    <string name="image_color_white">सफ़ेद</string>
+    <string name="image_color_black">काला</string>
+    <string name="image_color_yellow">पीला</string>
+    <string name="image_color_orange">नारंगी</string>
+    <string name="image_color_red">लाल</string>
+    <string name="image_color_pink">गुलाबी</string>
+    <string name="image_color_blue">नीला</string>
+    <string name="image_color_green">हरा</string>
     <string name="image_stamp_title">नाम और तारीख़ की पट्टी</string>
     <string name="image_stamp_hint">परीक्षा फ़ॉर्म में माँगी जाने वाली पट्टी, फ़ोटो के नीचे।</string>
     <string name="image_stamp_name">नाम</string>
@@ -82,7 +114,12 @@
     <string name="image_stamp_dark">काली पट्टी, सफ़ेद टेक्स्ट</string>
     <string name="image_stamp_size">फ़ाइल 20 से 50 KB के बीच रखें</string>
     <string name="image_stamp_size_hint">JPEG में सेव होती है, जैसा परीक्षा पोर्टल माँगते हैं।</string>
-    <string name="image_enhance_scale">बड़ा करें</string>
-    <string name="image_enhance_sharpen">शार्पनेस: %1$d%%</string>
-    <string name="image_enhance_note">फ़ोटो को स्मूद स्केलिंग और किनारों की शार्पनिंग से बड़ा करता है, सब इसी फ़ोन पर। लंबी साइड अधिकतम %1$d px।</string>
+    <!-- Natural Enhance -->
+    <string name="image_enhance_title">नैचुरल एन्हांस</string>
+    <string name="image_enhance_explain">खोई हुई डिटेल वापस लाता है और किनारों को बिना हेलो के तेज़ करता है, क्लैरिटी बढ़ाता है ताकि फीकी या धुंधली फ़ोटो साफ़ दिखे, नॉइज़ कम करता है, छोटे दाग-धब्बे हल्के करता है और कंट्रास्ट व रंग संतुलित करता है। त्वचा का रंग प्राकृतिक रहता है, कभी गोरा नहीं किया जाता। पहले और बाद की तुलना के लिए ऊपर डिवाइडर खींचें।</string>
+    <string name="image_enhance_strength">असर: %1$d%%</string>
+    <string name="image_enhance_scale">आउटपुट साइज़</string>
+    <string name="image_enhance_scale_original">मूल साइज़</string>
+    <string name="image_enhance_note">2× और 4× एन्हांस करने से पहले Lanczos रीसैंपलिंग से बड़ा करते हैं। लंबी साइड अधिकतम %1$d px। सब कुछ इसी फ़ोन पर होता है।</string>
+    <string name="image_enhance_preview_note">प्रीव्यू छोटे साइज़ पर है। सेव होने वाली फ़ोटो पूरे रेज़ोल्यूशन पर प्रोसेस होती है।</string>
 </resources>

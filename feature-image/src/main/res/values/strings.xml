@@ -60,6 +60,19 @@
     </plurals>
     <string name="image_tool_EDIT">Edit</string>
     <string name="image_tool_ENHANCE">Enhance</string>
+    <string name="image_tool_BACKGROUND">Remove background</string>
+    <string name="image_bg_title">New background</string>
+    <string name="image_bg_note">The person stays and everything behind them is replaced. Works on photos of people: portraits, selfies and exam photos. It runs on this phone and nothing is uploaded.</string>
+    <string name="image_bg_WHITE">White</string>
+    <string name="image_bg_EXAM_BLUE">Exam blue</string>
+    <string name="image_bg_TRANSPARENT">Transparent</string>
+    <string name="image_bg_COLOR">Colour</string>
+    <string name="image_bg_PICTURE">Your photo</string>
+    <string name="image_bg_color_title">Background colour</string>
+    <string name="image_bg_pick">Choose a background photo</string>
+    <string name="image_bg_change">Change background photo</string>
+    <string name="image_bg_png_note">A transparent background is saved as PNG, or WebP if you choose it.</string>
+    <string name="image_bg_edge">Edge softness: %1$d%%</string>
     <string name="image_format_pdf">PDF</string>
     <string name="image_pdf_note">All the picked images go into one PDF, a page per image at its own size.</string>
     <string name="image_edit_look">Look</string>
@@ -74,7 +87,26 @@
     <string name="image_pos_TOP">Top</string>
     <string name="image_pos_CENTER">Middle</string>
     <string name="image_pos_BOTTOM">Bottom</string>
-    <string name="image_text_dark">Dark text</string>
+    <string name="image_text_size">Text size: %1$d%%</string>
+    <string name="image_text_font">Font</string>
+    <string name="image_text_color">Text colour</string>
+    <string name="image_color_custom">Custom colour</string>
+    <string name="image_color_hue">Colour</string>
+    <string name="image_color_shade">Shade</string>
+    <string name="image_font_SANS">Modern</string>
+    <string name="image_font_SERIF">Classic</string>
+    <string name="image_font_MONO">Typewriter</string>
+    <string name="image_font_CONDENSED">Tall</string>
+    <string name="image_font_HANDWRITING">Handwriting</string>
+    <string name="image_font_CASUAL">Fun</string>
+    <string name="image_color_white">White</string>
+    <string name="image_color_black">Black</string>
+    <string name="image_color_yellow">Yellow</string>
+    <string name="image_color_orange">Orange</string>
+    <string name="image_color_red">Red</string>
+    <string name="image_color_pink">Pink</string>
+    <string name="image_color_blue">Blue</string>
+    <string name="image_color_green">Green</string>
     <string name="image_stamp_title">Name and date bar</string>
     <string name="image_stamp_hint">The strip exam forms ask for, across the bottom of the photo.</string>
     <string name="image_stamp_name">Name</string>
@@ -82,7 +114,12 @@
     <string name="image_stamp_dark">Black bar with white text</string>
     <string name="image_stamp_size">Keep the file between 20 and 50 KB</string>
     <string name="image_stamp_size_hint">Saved as JPEG, the way exam portals ask for it.</string>
-    <string name="image_enhance_scale">Upscale</string>
-    <string name="image_enhance_sharpen">Sharpness: %1$d%%</string>
-    <string name="image_enhance_note">Enlarges the photo with smooth scaling and edge sharpening, all on this phone. The long side is capped at %1$d px.</string>
+    <!-- Natural Enhance -->
+    <string name="image_enhance_title">Natural Enhance</string>
+    <string name="image_enhance_explain">Recovers lost detail and sharpens edges without halos, adds clarity so flat or hazy photos look crisp, reduces noise, softens small blemishes and balances contrast and colour. Skin keeps its natural tone: it is never whitened. Drag the divider above to compare before and after.</string>
+    <string name="image_enhance_strength">Strength: %1$d%%</string>
+    <string name="image_enhance_scale">Output size</string>
+    <string name="image_enhance_scale_original">Original size</string>
+    <string name="image_enhance_note">2× and 4× enlarge with Lanczos resampling before enhancing. The long side is capped at %1$d px. Everything runs on this phone.</string>
+    <string name="image_enhance_preview_note">Preview at reduced size. The saved photo is processed at full resolution.</string>
 </resources>

@@ -28,8 +28,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,7 +42,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextOverflow
 import com.mrfilefixit.core.domain.exam.CertificateFormat
 import com.mrfilefixit.core.domain.exam.CertificateSpec
 import com.mrfilefixit.core.domain.exam.DocumentKind
@@ -56,10 +53,12 @@ import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.components.CropBox
 import com.mrfilefixit.core.ui.components.ErrorCard
 import com.mrfilefixit.core.ui.components.ExamDisclaimerCard
+import com.mrfilefixit.core.ui.components.FullLabelTabRow
 import com.mrfilefixit.core.ui.components.JobProgressCard
 import com.mrfilefixit.core.ui.components.PrimaryActionButton
 import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.components.SpecChecklist
+import com.mrfilefixit.core.ui.components.TabItem
 import com.mrfilefixit.core.ui.components.boundsText
 import com.mrfilefixit.core.ui.components.displayName
 import com.mrfilefixit.core.ui.format.formatIsoDate
@@ -89,11 +88,16 @@ internal interface ExamFlowActions {
     fun onCompressPdf(certificate: CertificateSpec)
 }
 
-/** Detail tabs. Photo and signature always come first; Certificates is always shown so users see its status. */
+/**
+ * Detail tabs, one per upload type the exam asks for. Photo and signature always come first; Other Documents
+ * also holds the photo-and-signature composite; Certificates is always shown so users see its status.
+ */
 internal enum class ExamTab(val kinds: Set<DocumentKind>) {
     PHOTO(setOf(DocumentKind.PHOTO, DocumentKind.POSTCARD_PHOTO)),
     SIGNATURE(setOf(DocumentKind.SIGNATURE)),
-    OTHER(setOf(DocumentKind.LEFT_THUMB, DocumentKind.DECLARATION, DocumentKind.OTHER)),
+    LEFT_THUMB(setOf(DocumentKind.LEFT_THUMB)),
+    DECLARATION(setOf(DocumentKind.DECLARATION)),
+    OTHER(setOf(DocumentKind.OTHER)),
     CERTIFICATES(emptySet()),
 }
 
@@ -140,19 +144,13 @@ private fun ExamDetail(profile: ExamProfile, state: ExamFlowUiState, actions: Ex
         }
         item(key = "disclaimer") { ExamDisclaimerCard(Modifier.sectionWidth()) }
         item(key = "tabs") {
-            PrimaryTabRow(
-                selectedTabIndex = tabs.indexOf(tab),
+            // Full names on one line ("Left Thumb Impression", "Handwritten Declaration"); the row scrolls.
+            FullLabelTabRow(
+                tabs = tabs.map { TabItem(tabLabel(it), "exam_tab_${it.name.lowercase()}") },
+                selectedIndex = tabs.indexOf(tab),
+                onSelect = { tabIndex = it },
                 modifier = Modifier.widthIn(max = Dimens.CardMaxWidth),
-            ) {
-                tabs.forEachIndexed { index, item ->
-                    Tab(
-                        selected = item == tab,
-                        onClick = { tabIndex = index },
-                        text = { Text(tabLabel(item), maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                        modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
-                    )
-                }
-            }
+            )
         }
         if (tab == ExamTab.CERTIFICATES) {
             certificateItems(profile, actions)
@@ -257,6 +255,8 @@ private fun tabLabel(tab: ExamTab): String = stringResource(
     when (tab) {
         ExamTab.PHOTO -> R.string.exam_tab_photo
         ExamTab.SIGNATURE -> R.string.exam_tab_signature
+        ExamTab.LEFT_THUMB -> R.string.exam_tab_left_thumb
+        ExamTab.DECLARATION -> R.string.exam_tab_declaration
         ExamTab.OTHER -> R.string.exam_tab_other
         ExamTab.CERTIFICATES -> R.string.exam_tab_certificates
     },

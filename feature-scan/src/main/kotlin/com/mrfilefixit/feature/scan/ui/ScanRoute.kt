@@ -8,30 +8,26 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
 import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.share.shareFile
 import com.mrfilefixit.core.ui.share.shareText
 import com.mrfilefixit.feature.scan.R
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 
-@Serializable
-data object ScanRoute
-
-fun NavGraphBuilder.scanScreen(onOpenOcr: (List<String>) -> Unit = {}) {
-    composable<ScanRoute> { ScanRouteContent(onOpenOcr) }
-}
-
+/** The Scan tab. With pages or text on screen it is an inner screen whose back button starts over. */
 @Composable
-private fun ScanRouteContent(onOpenOcr: (List<String>) -> Unit, viewModel: ScanViewModel = hiltViewModel()) {
+fun ScanTab(
+    onOpenOcr: (List<String>) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ScanViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val clipboard = LocalClipboard.current
@@ -70,5 +66,5 @@ private fun ScanRouteContent(onOpenOcr: (List<String>) -> Unit, viewModel: ScanV
             onReset = viewModel::onReset,
         )
     }
-    ScanScreen(state, actions, snackbarHost = { SnackbarHost(snackbar) }, onOpenOcr = onOpenOcr)
+    ScanScreen(state, actions, modifier = modifier, snackbarHost = { SnackbarHost(snackbar) }, onOpenOcr = onOpenOcr)
 }

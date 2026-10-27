@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="resume_title">Resume builder</string>
-    <string name="resume_intro">Pick one of 15 ATS-friendly templates, edit every section, and export a PDF or Word file. Everything stays on your phone.</string>
-    <string name="resume_create">Create a new resume</string>
+    <string name="resume_title">Resume &amp; Biodata</string>
     <string name="resume_import">Open an exported Word file</string>
     <string name="resume_import_hint">Re-open a .docx you exported from here to keep editing it.</string>
     <string name="resume_saved_title">Your resumes</string>
@@ -113,7 +111,6 @@
         <item quantity="other">%1$s · %2$d pages</item>
     </plurals>
     <string name="resume_preview">Preview</string>
-    <string name="resume_preview_page">Page %1$d</string>
     <string name="resume_ats_tips">ATS tips: keep standard section names, use one column, and put key skills from the job post in your Skills and Experience. These templates already use real text and headings that applicant tracking systems can read.</string>
 
     <string name="resume_template_SOFTWARE">Software and IT</string>
@@ -146,4 +143,129 @@
     <string name="resume_template_desc_OPERATIONS">Logistics, procurement and warehouse results.</string>
     <string name="resume_template_ACADEMIC_CV">Academic CV</string>
     <string name="resume_template_desc_ACADEMIC_CV">Research, publications, grants and teaching.</string>
+    <!-- Resume & Biodata hub -->
+    <string name="resume_hub_resume_title">Create a Professional Resume</string>
+    <string name="resume_hub_resume_body">15 ATS-friendly templates. Export as PDF or Word.</string>
+    <string name="resume_hub_biodata_title">Create a Biodata</string>
+    <string name="resume_hub_biodata_body">Marriage biodata or a creative portfolio with 1 to 5 photos. Export as PDF or Word.</string>
+    <string name="resume_tab_resumes">Resumes</string>
+    <string name="resume_tab_biodata">Biodata</string>
+    <string name="biodata_saved_empty">No saved biodata yet. Drafts stay on this phone until you delete them.</string>
+    <plurals name="biodata_draft_photos">
+        <item quantity="one">%1$s · %2$d photo · %3$s</item>
+        <item quantity="other">%1$s · %2$d photos · %3$s</item>
+    </plurals>
+    <!-- Biodata designs -->
+    <string name="biodata_pick_template">Choose a biodata design</string>
+    <string name="biodata_pick_hint">You can switch to another design of the same type at any time. Everything is made on this phone.</string>
+    <string name="biodata_kind_marriage">Marriage biodata</string>
+    <string name="biodata_kind_portfolio">Creative portfolio</string>
+    <string name="biodata_template_traditional">Traditional</string>
+    <string name="biodata_template_traditional_desc">Maroon and gold with an ornate border and serif type.</string>
+    <string name="biodata_template_classic">Classic</string>
+    <string name="biodata_template_classic_desc">Navy with a double border and banded headings.</string>
+    <string name="biodata_template_modern">Modern</string>
+    <string name="biodata_template_modern_desc">Teal with a clean single border and sans-serif type.</string>
+    <string name="biodata_template_photographer">Photographer</string>
+    <string name="biodata_template_photographer_desc">Your best shot large across the page, then a gallery.</string>
+    <string name="biodata_template_creative">Creative</string>
+    <string name="biodata_template_creative_desc">Corner frame and an even gallery grid.</string>
+    <!-- Biodata editor -->
+    <string name="biodata_mode_edit">Edit</string>
+    <string name="biodata_mode_preview">Preview</string>
+    <string name="biodata_change_design">Change design</string>
+    <string name="biodata_name">Full name</string>
+    <string name="biodata_tagline">Profession, e.g. Wedding and portrait photographer</string>
+    <string name="biodata_invocation">Top line (optional), such as a blessing</string>
+    <string name="biodata_cultural_switch">Include cultural and astrological details</string>
+    <string name="biodata_cultural_hint">Optional. Switch off to leave the whole section out, or hide single fields below.</string>
+    <string name="biodata_field_show">Show %1$s on the biodata</string>
+    <string name="biodata_age_auto">Leave blank to use the age from the date of birth: %1$s</string>
+    <string name="biodata_date_hint">dd-mm-yyyy</string>
+    <string name="biodata_pick_date">Pick a date</string>
+    <string name="biodata_list_hint">One per line</string>
+    <string name="biodata_date_ok">OK</string>
+    <!-- Biodata photos -->
+    <string name="biodata_photos_title">Photos (%1$d of %2$d)</string>
+    <string name="biodata_photos_hint_marriage">Add 1 to 5 photos. The first is the main portrait beside your details; the others go in a gallery.</string>
+    <string name="biodata_photos_hint_portfolio">Add 1 to 5 photos. The first is your profile photo; the others are work samples.</string>
+    <string name="biodata_photo_add">Add photo</string>
+    <string name="biodata_photo_main">Main</string>
+    <string name="biodata_photo_cd">Photo %1$d</string>
+    <string name="biodata_photo_make_main">Make main photo</string>
+    <string name="biodata_photo_remove">Remove photo</string>
+    <string name="biodata_photo_earlier">Move earlier</string>
+    <string name="biodata_photo_later">Move later</string>
+    <string name="biodata_crop_title">Frame the photo</string>
+    <string name="biodata_aspect_portrait">Portrait 3:4</string>
+    <string name="biodata_aspect_square">Square</string>
+    <string name="biodata_aspect_landscape">Landscape 4:3</string>
+    <string name="biodata_aspect_original">Original</string>
+    <string name="biodata_crop_use">Use photo</string>
+    <string name="biodata_preview_need_photo">Add at least one photo to see the biodata.</string>
+    <string name="biodata_preview_live">This preview updates as you edit. The saved PDF is exactly this.</string>
+    <!-- Printed labels -->
+    <string name="biodata_print_title">Biodata</string>
+    <string name="biodata_print_photos">Photos</string>
+    <string name="biodata_print_work">Work samples</string>
+    <plurals name="biodata_print_age">
+        <item quantity="one">%1$d year</item>
+        <item quantity="other">%1$d years</item>
+    </plurals>
+    <string name="biodata_section_personal">Personal details</string>
+    <string name="biodata_section_cultural">Cultural and astrological details</string>
+    <string name="biodata_section_education_career">Education and career</string>
+    <string name="biodata_section_family">Family background</string>
+    <string name="biodata_section_about">About</string>
+    <string name="biodata_section_skills">Skills and equipment</string>
+    <string name="biodata_section_services">Services</string>
+    <string name="biodata_section_experience">Experience</string>
+    <string name="biodata_section_expectations">Partner expectations</string>
+    <string name="biodata_section_contact">Contact details</string>
+    <string name="biodata_f_date_of_birth">Date of birth</string>
+    <string name="biodata_f_time_of_birth">Time of birth</string>
+    <string name="biodata_f_place_of_birth">Place of birth</string>
+    <string name="biodata_f_age">Age</string>
+    <string name="biodata_f_height">Height</string>
+    <string name="biodata_f_weight">Weight</string>
+    <string name="biodata_f_complexion">Complexion</string>
+    <string name="biodata_f_blood_group">Blood group</string>
+    <string name="biodata_f_marital_status">Marital status</string>
+    <string name="biodata_f_religion">Religion</string>
+    <string name="biodata_f_caste">Caste</string>
+    <string name="biodata_f_sub_caste">Sub-caste</string>
+    <string name="biodata_f_gotra">Gotra</string>
+    <string name="biodata_f_rashi">Rashi (moon sign)</string>
+    <string name="biodata_f_nakshatra">Nakshatra</string>
+    <string name="biodata_f_manglik">Manglik</string>
+    <string name="biodata_f_mother_tongue">Mother tongue</string>
+    <string name="biodata_f_diet">Diet</string>
+    <string name="biodata_f_qualification">Highest qualification</string>
+    <string name="biodata_f_college">College / university</string>
+    <string name="biodata_f_designation">Designation</string>
+    <string name="biodata_f_company">Company</string>
+    <string name="biodata_f_annual_income">Annual income</string>
+    <string name="biodata_f_father_name">Father\'s name</string>
+    <string name="biodata_f_father_occupation">Father\'s occupation</string>
+    <string name="biodata_f_mother_name">Mother\'s name</string>
+    <string name="biodata_f_mother_occupation">Mother\'s occupation</string>
+    <string name="biodata_f_brothers">Brothers</string>
+    <string name="biodata_f_sisters">Sisters</string>
+    <string name="biodata_f_family_type">Family type</string>
+    <string name="biodata_f_family_values">Family values</string>
+    <string name="biodata_f_native_place">Native place</string>
+    <string name="biodata_f_bio">About me</string>
+    <string name="biodata_f_skills">Skills</string>
+    <string name="biodata_f_equipment">Equipment</string>
+    <string name="biodata_f_services">Services</string>
+    <string name="biodata_f_years_experience">Years of experience</string>
+    <string name="biodata_f_clients">Clients and projects</string>
+    <string name="biodata_f_awards">Awards and features</string>
+    <string name="biodata_f_partner_expectations">Partner expectations</string>
+    <string name="biodata_f_address">Address</string>
+    <string name="biodata_f_location">Location</string>
+    <string name="biodata_f_phone">Phone</string>
+    <string name="biodata_f_email">Email</string>
+    <string name="biodata_f_website">Website</string>
+    <string name="biodata_f_social">Instagram / social</string>
 </resources>

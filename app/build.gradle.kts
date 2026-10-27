@@ -16,6 +16,13 @@ android {
         applicationId = "com.mrfilefixit.app"
         versionCode = 2
         versionName = "1.0.0"
+        // The optional UPI / PayPal donation screen. Build with -Pmff.donations=false to leave it out, for
+        // example for a store listing whose payments policy does not allow external donation links.
+        val donations = providers.gradleProperty("mff.donations").orNull?.toBooleanStrict() ?: true
+        buildConfigField("boolean", "DONATIONS_ENABLED", donations.toString())
+        // Phone builds pass -Pmff.abis=arm64-v8a,armeabi-v7a so the APK carries native code only for phone chips;
+        // x86 and x86_64 are for emulators. Without the property every chip type is kept, for local emulators.
+        providers.gradleProperty("mff.abis").orNull?.let { abis -> ndk { abiFilters += abis.split(",") } }
     }
 
     androidResources {

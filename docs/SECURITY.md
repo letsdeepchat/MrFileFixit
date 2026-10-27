@@ -12,6 +12,7 @@ Each rule from the product spec is listed with where it is enforced and how it i
 | Validate before decoding: 50 MB, max pixels, page count | `InputLimits` (50 MB, 64 MP, 16 384 px side, 1 000 pages, 100 files). Sizes are checked from SAF metadata, then again while streaming (`LimitedInputStream`); dimensions from the header before any bitmap is allocated; page count before rendering | `InputLimitsTest`, `BatchImageUseCaseTest`, `ScanUseCasesTest` |
 | Office files are untrusted input | `:core-office` parses DOCX/PPTX/XLSX with a strict XML pull parser that rejects DTDs (no XXE, no entity expansion) and reads ZIPs with entry-count, per-entry and total expanded-size caps (zip bombs); legacy DOC/PPT/XLS go through a Compound File reader with bounds and cycle checks; row, column, slide and paragraph counts are capped (`OfficeLimits`). Macros, OLE objects and external links are never executed or followed | `XmlReaderTest`, `DocxRoundTripTest`, `SheetFormatsTest` |
 | Resume drafts stay private | Drafts and photos live in app-private `files/resumes/` (excluded from backup like everything else); ids are validated against `[A-Za-z0-9-]`; a photo is only copied from this app's own cache; JSON is size-capped and parsed without reflection (kotlinx-serialization) | `ResumeTest`, `ResumeViewModelTest` |
+| Biodata drafts stay private | Same rules as resumes: app-private `files/biodata/`, ids and photo keys limited to `[A-Za-z0-9]`, photos copied only from this app's cache (4 MB cap), atomic writes | `BiodataModelTest`, `BiodataViewModelTest` |
 | Sanitize file names | `FilenameSanitizer`: removes path separators, control and format characters (including RTL overrides), `..` runs, reserved Windows names; 100-char cap | `FilenameSanitizerTest` |
 | Temp files in app-private cache; narrow share grants | Every job writes only to `cache/jobs/<uuid>/`. Output paths are canonical-checked against that root before save/share. `FileProvider` exposes `cache/jobs/` only; shares grant read on the single URI via `ClipData` | `SafFileRepository.jobFile`, `file_provider_paths.xml` |
 | Temp files are cleaned up | Job dir deleted on failure/cancel, on reset, when the screen's ViewModel is cleared, and stale dirs (> 6 h) at app start | `JobRunnerTest` (cleanup runs on cancel) |
@@ -48,6 +49,12 @@ passes. The same dependency brings in `firebase-encoders*`, `firebase-components
   opt-outs only for some APIs; the robust option is excluding the transport backend in `:app` and verifying OCR
   still works. Needs a device test before shipping.
 
+### Remove background
+
+`com.google.mlkit:segmentation-selfie` ships its model inside the app, so Remove background never downloads
+anything. It runs on the photo in memory and returns only a mask. It shares ML Kit's `datatransport` telemetry
+described above (no images or results are included).
+
 ### Document scanner
 
 `play-services-mlkit-document-scanner` runs its UI inside Google Play services. Its model is downloaded once by
@@ -58,6 +65,20 @@ URIs inside this app's own storage) and never send them anywhere.
 ### Ads
 
 There are none. The ads SDK, consent SDK and advertising ID were removed; every feature is free with no limits.
+
+### Donations
+
+Settings → Support and the card on Home offer optional donations. The app itself sends nothing:
+
+* **UPI.** The QR code is a bundled image of a fixed `upi://pay` link (payee and UPI ID only, see
+  `Donation.QR_PAYLOAD`). "Pay with a UPI app" opens the user's own UPI app with an `ACTION_VIEW` intent. The
+  manifest's `<queries>` entries (the `upi` scheme, plus GPay, Paytm, PhonePe and BHIM by package name) only let
+  the app see which UPI apps are installed. A preset amount adds `am=` (for example `am=51.00`); "Any amount"
+  leaves it out so the UPI app asks.
+* **PayPal.** Opens `https://paypal.me/MrFileFixit` in the user's browser.
+
+No payment data passes through the app, and nothing is recorded about whether anyone donated. A build can leave
+the feature out with `-Pmff.donations=false`. See [PLAY_STORE.md](PLAY_STORE.md#donations).
 
 ## Adding a crash reporter
 

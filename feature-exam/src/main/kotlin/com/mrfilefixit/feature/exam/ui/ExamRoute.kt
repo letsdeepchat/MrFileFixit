@@ -25,36 +25,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
 import com.mrfilefixit.core.domain.exam.CertificateSpec
 import com.mrfilefixit.core.domain.exam.DocumentKind
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.components.ToolScaffold
+import com.mrfilefixit.core.ui.navigation.ReportInnerScreen
 import com.mrfilefixit.core.ui.share.shareFile
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.feature.exam.R
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
-
-@Serializable
-data object ExamRoute
 
 /**
+ * The Exams tab. Exam picker and exam flow as list-detail: one pane on phones, side by side on tablets,
+ * foldables and wide landscape windows. The scaffold handles back navigation between panes.
+ *
  * [onPrepareInImageTools] opens Image tools with the exam's limits for one document; [onCompressPdf]
  * opens PDF Compress with a KB target. Both are wired by the app, since features do not see each other.
- */
-fun NavGraphBuilder.examScreen(
-    onPrepareInImageTools: (examId: String, kind: DocumentKind) -> Unit,
-    onCompressPdf: (minKb: Int, maxKb: Int) -> Unit,
-) {
-    composable<ExamRoute> { ExamListDetail(onPrepareInImageTools, onCompressPdf) }
-}
-
-/**
- * Exam picker and exam flow as list-detail: one pane on phones, side by side on tablets, foldables and
- * wide landscape windows. The scaffold handles back navigation between panes.
  */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -71,6 +58,8 @@ fun ExamListDetail(
     // One pane (phones, split screen): the detail replaces the list, so it needs a visible back button.
     val singlePane = navigator.scaffoldValue[ListDetailPaneScaffoldRole.List] == PaneAdaptedValue.Hidden
     val back: () -> Unit = { scope.launch { navigator.navigateBack() } }
+    // An exam open on its own is an inner screen: it has a back button and the main tabs do not swipe.
+    ReportInnerScreen(inner = singlePane && selectedId != null)
     val catalogActions = remember(pickerViewModel) {
         ExamCatalogActions(
             onSelect = { id -> scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, id) } },
