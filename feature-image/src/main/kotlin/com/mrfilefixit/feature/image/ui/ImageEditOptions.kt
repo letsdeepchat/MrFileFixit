@@ -23,6 +23,8 @@ data class EditOptions(
     /** Text colour as ARGB, from the swatches or the custom picker. */
     val textColor: Int = TextOverlay.WHITE,
     val textFont: OverlayFont = OverlayFont.SANS,
+    /** Text height as a share of the picture height. */
+    val textSize: Float = TextOverlay.DEFAULT_SIZE,
     val stamp: Boolean = false,
     val stampName: String = "",
     val stampDate: String = "",
@@ -45,12 +47,23 @@ data class EditOptions(
         stamp = if (stamp && stampLines.isNotEmpty()) PhotoStamp(stampLines, dark = stampDark) else null,
         texts = text.trim().takeIf { it.isNotEmpty() }?.let {
             // Every colour gets a soft outline in the opposite tone, so it reads on bright and dark photos alike.
-            listOf(TextOverlay(it, y = textPosition.y, colorArgb = opaque(textColor), font = textFont))
+            val size = textSize.coerceIn(TextOverlay.MIN_SIZE, MAX_TEXT_SIZE)
+            val overlay = TextOverlay(
+                it,
+                y = textPosition.y,
+                sizeFraction = size,
+                colorArgb = opaque(textColor),
+                font = textFont,
+            )
+            listOf(overlay)
         }.orEmpty(),
     )
 
     companion object {
         const val BLACK = -0x1000000
+
+        /** The size slider stops at a fifth of the picture height; bigger text rarely fits a line. */
+        const val MAX_TEXT_SIZE = 0.2f
         private const val OPAQUE = -0x1000000
 
         /** Text is always fully opaque, whatever a picker hands over. */

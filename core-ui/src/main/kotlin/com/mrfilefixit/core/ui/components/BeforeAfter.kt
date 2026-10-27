@@ -43,8 +43,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -144,7 +146,7 @@ fun BeforeAfterCard(
                 Modifier
                     .aspectRatio(aspect.coerceIn(MIN_ASPECT, MAX_ASPECT), matchHeightConstraintsFirst = aspect < 1f)
                     .clip(RoundedCornerShape(Dimens.ButtonCorner))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                    .checkerboard(),
             ) {
                 when (effectiveMode) {
                     CompareMode.SLIDER -> SplitCompare(beforeUri, afterUri ?: beforeUri)
@@ -170,6 +172,23 @@ fun BeforeAfterCard(
     if (fullScreen) {
         val uri = if (effectiveMode == CompareMode.BEFORE || afterUri == null) beforeUri else afterUri
         ZoomableImageDialog(uri = uri, onDismiss = { fullScreen = false })
+    }
+}
+
+/** The usual "see-through" pattern, so a cut-out with a transparent background shows as one. */
+private fun Modifier.checkerboard(): Modifier = drawBehind {
+    val cell = CHECKER_CELL.toPx()
+    drawRect(CHECKER_LIGHT)
+    var y = 0f
+    var row = 0
+    while (y < size.height) {
+        var x = if (row % 2 == 0) 0f else cell
+        while (x < size.width) {
+            drawRect(CHECKER_DARK, Offset(x, y), Size(cell, cell))
+            x += 2 * cell
+        }
+        y += cell
+        row++
     }
 }
 
@@ -387,10 +406,13 @@ private const val HALF = 0.5f
 private const val DEFAULT_ASPECT = 3f / 4f
 private const val MIN_ASPECT = 0.25f
 private const val MAX_ASPECT = 4f
-private const val MAX_HEIGHT_SHARE = 0.5f
+private const val MAX_HEIGHT_SHARE = 0.6f
 private const val MAX_DECODE_PX = 2048
 private const val MAX_ZOOM = 5f
 private const val SAME_SHAPE_TOLERANCE = 0.02f
 private const val LABEL_SCRIM = 0.55f
-private val DIVIDER_WIDTH = 2.dp
-private val HANDLE_SIZE = 36.dp
+private val DIVIDER_WIDTH = 3.dp
+private val HANDLE_SIZE = 44.dp
+private val CHECKER_CELL = 8.dp
+private val CHECKER_LIGHT = Color(0xFFFFFFFF)
+private val CHECKER_DARK = Color(0xFFDADCE0)

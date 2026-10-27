@@ -60,6 +60,7 @@ internal class AndroidImageProcessor @Inject constructor(
     private val dispatchers: DispatcherProvider,
     private val logger: AppLogger,
     private val backgroundRemoval: BackgroundRemoval,
+    private val typefaces: OverlayTypefaces,
 ) : ImageProcessor {
 
     override fun canEncode(format: ImageFormat): Boolean = encoding.canEncode(format)
@@ -106,7 +107,7 @@ internal class AndroidImageProcessor @Inject constructor(
                 }
                 coroutineContext.ensureActive()
                 val bitmap = try {
-                    ImageEffectsRendering.apply(rendered, request.effects)
+                    ImageEffectsRendering.apply(rendered, request.effects) { typefaces[it] }
                 } catch (e: Throwable) {
                     if (!rendered.isRecycled) rendered.recycle()
                     throw e

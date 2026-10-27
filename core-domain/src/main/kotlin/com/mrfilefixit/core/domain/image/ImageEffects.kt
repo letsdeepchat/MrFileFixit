@@ -117,15 +117,31 @@ data class TextOverlay(
     }
 }
 
-/** Font families for text on a picture; [family] is the Android system font family name (always installed). */
+/**
+ * Fonts for text on a picture. Each is bundled with the app ([asset] is its path in the app's assets), so it
+ * looks the same on every phone, and each covers both English and Hindi (Devanagari). The system font families
+ * were not used because many phones map several of them to the same font, and none of them changes Hindi text.
+ * All are SIL Open Font License fonts from Google Fonts; the licence ships next to them (fonts/OFL.txt).
+ */
 @Serializable
-enum class OverlayFont(val family: String) {
-    SANS("sans-serif"),
-    SERIF("serif"),
-    MONO("monospace"),
-    CONDENSED("sans-serif-condensed"),
-    HANDWRITING("cursive"),
-    CASUAL("casual"),
+enum class OverlayFont(val asset: String) {
+    /** Poppins SemiBold: clean and modern. */
+    SANS("fonts/poppins_semibold.ttf"),
+
+    /** Martel ExtraBold: a classic serif. */
+    SERIF("fonts/martel_extrabold.ttf"),
+
+    /** Glegoo Bold: a slab face with a typewriter feel. */
+    MONO("fonts/glegoo_bold.ttf"),
+
+    /** Khand SemiBold: tall and narrow, fits long names. */
+    CONDENSED("fonts/khand_semibold.ttf"),
+
+    /** Kalam Bold: handwriting. */
+    HANDWRITING("fonts/kalam_bold.ttf"),
+
+    /** Yatra One: rounded and playful. */
+    CASUAL("fonts/yatraone_regular.ttf"),
 }
 
 /**

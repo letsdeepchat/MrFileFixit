@@ -87,17 +87,18 @@
     <string name="image_pos_TOP">Top</string>
     <string name="image_pos_CENTER">Middle</string>
     <string name="image_pos_BOTTOM">Bottom</string>
+    <string name="image_text_size">Text size: %1$d%%</string>
     <string name="image_text_font">Font</string>
     <string name="image_text_color">Text colour</string>
     <string name="image_color_custom">Custom colour</string>
     <string name="image_color_hue">Colour</string>
     <string name="image_color_shade">Shade</string>
-    <string name="image_font_SANS">Sans</string>
-    <string name="image_font_SERIF">Serif</string>
-    <string name="image_font_MONO">Mono</string>
-    <string name="image_font_CONDENSED">Condensed</string>
+    <string name="image_font_SANS">Modern</string>
+    <string name="image_font_SERIF">Classic</string>
+    <string name="image_font_MONO">Typewriter</string>
+    <string name="image_font_CONDENSED">Tall</string>
     <string name="image_font_HANDWRITING">Handwriting</string>
-    <string name="image_font_CASUAL">Casual</string>
+    <string name="image_font_CASUAL">Fun</string>
     <string name="image_color_white">White</string>
     <string name="image_color_black">Black</string>
     <string name="image_color_yellow">Yellow</string>
@@ -115,7 +116,7 @@
     <string name="image_stamp_size_hint">Saved as JPEG, the way exam portals ask for it.</string>
     <!-- Natural Enhance -->
     <string name="image_enhance_title">Natural Enhance</string>
-    <string name="image_enhance_explain">Sharpens fine detail, reduces noise, softens small blemishes and balances contrast and colour, so dull or flat photos come alive. Skin keeps its natural tone: it is never whitened. Compare before and after above while you adjust.</string>
+    <string name="image_enhance_explain">Recovers lost detail and sharpens edges without halos, adds clarity so flat or hazy photos look crisp, reduces noise, softens small blemishes and balances contrast and colour. Skin keeps its natural tone: it is never whitened. Drag the divider above to compare before and after.</string>
     <string name="image_enhance_strength">Strength: %1$d%%</string>
     <string name="image_enhance_scale">Output size</string>
     <string name="image_enhance_scale_original">Original size</string>

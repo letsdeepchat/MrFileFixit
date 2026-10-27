@@ -3,6 +3,8 @@ package com.mrfilefixit.core.processing.image
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.net.Uri
 import androidx.core.graphics.createBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -17,6 +19,7 @@ import com.mrfilefixit.core.domain.image.ImageOp
 import com.mrfilefixit.core.domain.image.ImageRequest
 import com.mrfilefixit.core.domain.image.NaturalEnhance
 import com.mrfilefixit.core.domain.image.OutputSpec
+import com.mrfilefixit.core.domain.image.OverlayFont
 import com.mrfilefixit.core.domain.image.ProcessedImage
 import com.mrfilefixit.core.domain.image.ResizeMode
 import com.mrfilefixit.core.domain.logging.NoOpLogger
@@ -25,6 +28,7 @@ import com.mrfilefixit.core.domain.result.Result
 import com.mrfilefixit.core.domain.security.InputLimits
 import java.io.File
 import kotlin.math.abs
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlinx.coroutines.CoroutineDispatcher
@@ -57,6 +61,7 @@ class ImageProcessorTest {
             dispatchers,
             NoOpLogger,
             BackgroundRemoval(),
+            OverlayTypefaces(context),
         )
     }
 
@@ -264,5 +269,23 @@ class ImageProcessorTest {
 
     private companion object {
         const val KB = 1024L
+    }
+
+    @Test
+    fun everyOverlayFontIsBundledAndLooksDifferentInHindiToo() {
+        val typefaces = OverlayTypefaces(context)
+        val text = "नमस्ते Hello"
+        val widths = OverlayFont.entries.map { font ->
+            val typeface = typefaces[font]
+            assertTrue("${font.name} was not loaded from ${font.asset}", typeface !== Typeface.DEFAULT_BOLD)
+            val paint = Paint().apply {
+                this.typeface = typeface
+                textSize = 100f
+            }
+            // Every glyph is drawn by this font: the Devanagari line is as wide as real letters, not boxes.
+            assertTrue(paint.hasGlyph("न") && paint.hasGlyph("H"))
+            paint.measureText(text).roundToInt()
+        }
+        assertEquals("fonts should not look alike: $widths", OverlayFont.entries.size, widths.toSet().size)
     }
 }

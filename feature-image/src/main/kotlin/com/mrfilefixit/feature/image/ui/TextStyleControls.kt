@@ -1,5 +1,6 @@
 package com.mrfilefixit.feature.image.ui
 
+import android.content.res.AssetManager
 import android.graphics.Color as AndroidColor
 import android.graphics.Typeface as AndroidTypeface
 import androidx.compose.foundation.background
@@ -7,9 +8,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Palette
@@ -31,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -38,6 +44,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.Typeface
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mrfilefixit.core.domain.image.OverlayFont
 import com.mrfilefixit.core.domain.image.TextOverlay
@@ -45,18 +52,17 @@ import com.mrfilefixit.core.ui.components.SectionHeader
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.feature.image.R
 
-/** Font family chips, each label drawn in its own font. */
+/** Font chips, each label drawn in its own bundled font (the same file the picture is drawn with). */
 @Composable
 internal fun FontChips(selected: OverlayFont, onSelect: (OverlayFont) -> Unit) {
     SectionHeader(stringResource(R.string.image_text_font))
+    val assets = LocalContext.current.assets
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
         verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXs),
     ) {
         OverlayFont.entries.forEach { font ->
-            val family = remember(font) {
-                FontFamily(Typeface(AndroidTypeface.create(font.family, AndroidTypeface.NORMAL)))
-            }
+            val family = remember(font) { fontFamily(assets, font) }
             FilterChip(
                 selected = font == selected,
                 onClick = { onSelect(font) },
@@ -64,6 +70,43 @@ internal fun FontChips(selected: OverlayFont, onSelect: (OverlayFont) -> Unit) {
                 modifier = Modifier.testTag("edit_font_${font.name.lowercase()}"),
             )
         }
+    }
+}
+
+/** The bundled font as a Compose family, or the default family if the asset cannot be read. */
+private fun fontFamily(assets: AssetManager, font: OverlayFont): FontFamily = try {
+    FontFamily(Typeface(AndroidTypeface.createFromAsset(assets, font.asset)))
+} catch (_: RuntimeException) {
+    FontFamily.Default
+}
+
+/**
+ * The caption as it will look: the typed text (or a sample in English and Hindi) in the chosen font and colour,
+ * on a backdrop that contrasts with the colour, so a change of font or colour shows at once.
+ */
+@Composable
+internal fun TextStyleSample(text: String, font: OverlayFont, color: Int, modifier: Modifier = Modifier) {
+    val assets = LocalContext.current.assets
+    val family = remember(font) { fontFamily(assets, font) }
+    val backdrop = if (TextOverlay.isLightColor(color)) SAMPLE_DARK else SAMPLE_LIGHT
+    Box(
+        modifier
+            .fillMaxWidth()
+            .heightIn(min = SAMPLE_HEIGHT)
+            .clip(RoundedCornerShape(Dimens.ButtonCorner))
+            .background(backdrop)
+            .padding(horizontal = Dimens.SpaceM, vertical = Dimens.SpaceS)
+            .testTag("edit_text_sample"),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text.trim().ifEmpty { SAMPLE_TEXT },
+            fontFamily = family,
+            color = Color(EditOptions.opaque(color)),
+            style = MaterialTheme.typography.headlineSmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -203,6 +246,10 @@ private val SWATCH_NAMES = listOf(
     R.string.image_color_green,
 )
 
+private const val SAMPLE_TEXT = "Aa अआ 123"
+private val SAMPLE_DARK = Color(0xFF37474F)
+private val SAMPLE_LIGHT = Color(0xFFECEFF1)
+private val SAMPLE_HEIGHT = 64.dp
 private val RAINBOW = listOf(Color.Red, Color.Yellow, Color.Green, Color.Cyan, Color.Blue, Color.Magenta, Color.Red)
 private val SWATCH_SIZE = 36.dp
 private val PREVIEW_SIZE = 32.dp

@@ -81,4 +81,22 @@ class EditOptionsTest {
         assertEquals(1, EnhanceOptions(scale = 3).toEffects().enhance?.scale)
         assertEquals(0f, EnhanceOptions(strength = -1f).toEffects().enhance?.strength)
     }
+
+    @Test
+    fun `text size is passed on and kept within what fits`() {
+        assertEquals(0.12f, EditOptions(text = "x", textSize = 0.12f).toEffects().texts.single().sizeFraction)
+        assertEquals(
+            EditOptions.MAX_TEXT_SIZE,
+            EditOptions(text = "x", textSize = 0.9f).toEffects().texts.single().sizeFraction,
+        )
+        val tiny = EditOptions(text = "x", textSize = 0f).toEffects().texts.single()
+        assertEquals(TextOverlay.MIN_SIZE, tiny.sizeFraction)
+    }
+
+    @Test
+    fun `every font is a bundled asset with its own file`() {
+        val assets = OverlayFont.entries.map { it.asset }
+        assertEquals(assets.size, assets.distinct().size)
+        assets.forEach { assertTrue(it.startsWith("fonts/") && it.endsWith(".ttf"), it) }
+    }
 }

@@ -40,8 +40,11 @@ internal object ImageEffectsRendering {
     private const val OUTLINE_SHARE = 0.12f
     private const val SAMPLE_SIDE = 256
 
-    /** Returns [source] itself when there is nothing to do, otherwise a new bitmap ([source] is recycled). */
-    suspend fun apply(source: Bitmap, effects: ImageEffects): Bitmap {
+    /**
+     * Returns [source] itself when there is nothing to do, otherwise a new bitmap ([source] is recycled).
+     * [fonts] gives the typeface of each overlay font.
+     */
+    suspend fun apply(source: Bitmap, effects: ImageEffects, fonts: (OverlayFont) -> Typeface): Bitmap {
         if (effects.isNone) return source
         var bitmap = source
         effects.enhance?.let { bitmap = replace(bitmap, enhance(bitmap, it)) }
@@ -59,7 +62,7 @@ internal object ImageEffectsRendering {
             if (!bitmap.isMutable) bitmap = replace(bitmap, mutableCopy(bitmap))
             val canvas = Canvas(bitmap)
             effects.stamp?.let { drawStamp(canvas, bitmap.width, bitmap.height, it) }
-            effects.texts.forEach { drawOverlay(canvas, bitmap.width, bitmap.height, it) }
+            effects.texts.forEach { drawOverlay(canvas, bitmap.width, bitmap.height, it, fonts(it.font)) }
         }
         return bitmap
     }
@@ -176,10 +179,10 @@ internal object ImageEffectsRendering {
         }
     }
 
-    private fun drawOverlay(canvas: Canvas, width: Int, height: Int, overlay: TextOverlay) {
+    private fun drawOverlay(canvas: Canvas, width: Int, height: Int, overlay: TextOverlay, typeface: Typeface) {
         if (overlay.text.isBlank()) return
         val size = height * overlay.sizeFraction
-        val fill = textPaint(overlay.colorArgb, size, overlay.font)
+        val fill = textPaint(overlay.colorArgb, size, typeface)
         fitWidth(fill, overlay.text, width, size)
         val x = width * overlay.x
         // Centre the text vertically on y: the baseline sits half the cap height below it.
@@ -201,12 +204,13 @@ internal object ImageEffectsRendering {
 
     private const val OUTLINE_ALPHA = 200
 
-    private fun textPaint(color: Int, size: Float, font: OverlayFont = OverlayFont.SANS) =
+    /** The exam stamp keeps the plain system bold sans, the look exam portals expect. */
+    private fun textPaint(color: Int, size: Float, typeface: Typeface = Typeface.DEFAULT_BOLD) =
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
             this.color = color
             textSize = size
             textAlign = Paint.Align.CENTER
-            typeface = Typeface.create(font.family, Typeface.BOLD)
+            this.typeface = typeface
         }
 
     private fun fitWidth(paint: Paint, text: String, width: Int, size: Float) {

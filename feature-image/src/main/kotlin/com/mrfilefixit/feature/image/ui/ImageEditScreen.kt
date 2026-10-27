@@ -19,6 +19,7 @@ import com.mrfilefixit.core.domain.image.ColorAdjust
 import com.mrfilefixit.core.domain.image.ImageFilter
 import com.mrfilefixit.core.domain.image.NaturalEnhance
 import com.mrfilefixit.core.domain.image.OverlayPosition
+import com.mrfilefixit.core.domain.image.TextOverlay
 import com.mrfilefixit.core.ui.components.BeforeAfterCard
 import com.mrfilefixit.core.ui.components.ImageFacts
 import com.mrfilefixit.core.ui.components.SectionCard
@@ -69,12 +70,28 @@ internal fun EditOptionsCards(state: ImageToolUiState, actions: ImageToolActions
             ChipRow(OverlayPosition.entries, edit.textPosition, { positionLabel(it) }) { p ->
                 update { it.copy(textPosition = p) }
             }
+            TextStyleSample(edit.text, edit.textFont, edit.textColor)
             FontChips(edit.textFont) { f -> update { it.copy(textFont = f) } }
+            TextSizeSlider(edit.textSize) { size -> update { it.copy(textSize = size) } }
             ColorPicker(edit.textColor, { c -> update { it.copy(textColor = c) } })
         }
         StampCard(edit, update)
         if (!edit.usesStampSize) FormatCard(state, actions)
     }
+}
+
+/** Text height as a share of the picture; like the other sliders here it updates the preview when released. */
+@Composable
+private fun TextSizeSlider(size: Float, onSize: (Float) -> Unit) {
+    var value by remember(size) { mutableFloatStateOf(size) }
+    Text(stringResource(R.string.image_text_size, (value * PERCENT).roundToInt()))
+    Slider(
+        value = value,
+        onValueChange = { value = it },
+        onValueChangeFinished = { onSize(value) },
+        valueRange = TextOverlay.MIN_SIZE..EditOptions.MAX_TEXT_SIZE,
+        modifier = Modifier.testTag("edit_text_size"),
+    )
 }
 
 @Composable
