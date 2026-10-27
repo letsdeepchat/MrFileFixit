@@ -93,4 +93,35 @@
     <!-- Upload zones -->
     <string name="upload_limit_hint">Max file size %1$s</string>
     <string name="cd_drag_handle">Drag to reorder</string>
+    <!-- Added: errors -->
+    <string name="error_empty_output">The result came out empty, so nothing was saved. Try again or pick another file.</string>
+    <string name="error_photo_required">Add at least one photo to make the biodata.</string>
+    <!-- Before / after preview -->
+    <string name="preview_title">Preview</string>
+    <string name="preview_before">Before</string>
+    <string name="preview_after">After</string>
+    <string name="preview_mode_slider">Slider</string>
+    <string name="preview_original">Original</string>
+    <string name="preview_processed">Result</string>
+    <string name="preview_dimensions">Dimensions</string>
+    <string name="preview_format">Format</string>
+    <string name="preview_file_size">File size</string>
+    <string name="preview_open_full">View full screen</string>
+    <string name="preview_zoom_hint">Pinch to zoom, drag to move. Double-tap to reset.</string>
+    <string name="cd_compare_divider">Comparison divider. Drag left or right to compare before and after.</string>
+    <string name="cd_before_after">Before and after comparison</string>
+    <string name="preview_loading">Making the preview…</string>
+    <string name="preview_page">Page %1$d</string>
+    <string name="preview_pages_title">Pages</string>
+    <plurals name="preview_page_count">
+        <item quantity="one">%1$d page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
+    <string name="preview_unavailable">A preview is not available for this file.</string>
+    <!-- Unsaved results -->
+    <string name="discard_title">Leave without saving?</string>
+    <string name="discard_body">Your result has not been saved or shared yet. If you leave now, it will be deleted.</string>
+    <string name="discard_leave">Leave</string>
+    <string name="discard_stay">Stay</string>
+    <string name="action_close">Close</string>
 </resources>

@@ -49,5 +49,7 @@ fun appErrorMessage(error: AppError): String = when (error) {
     AppError.DocumentTooComplex -> stringResource(R.string.error_document_too_complex)
     AppError.NoTextFound -> stringResource(R.string.error_no_text_found)
     AppError.NotAResume -> stringResource(R.string.error_not_a_resume)
+    AppError.EmptyOutput -> stringResource(R.string.error_empty_output)
+    AppError.PhotoRequired -> stringResource(R.string.error_photo_required)
     is AppError.Unexpected -> stringResource(R.string.error_unexpected)
 }
