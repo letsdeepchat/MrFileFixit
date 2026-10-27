@@ -247,6 +247,8 @@ class BiodataViewModelTest {
         val output = checkNotNull(vm.state.value.exported)
         assertTrue(output.displayName.endsWith(".docx"))
         vm.edit { BiodataEdits.setValue(it, BiodataField.PHONE, "98765") }
+        // The export state reaches the UI state through a collector, so let it run.
+        advanceUntilIdle()
         assertTrue(vm.state.value.export is JobState.Idle)
     }
 
