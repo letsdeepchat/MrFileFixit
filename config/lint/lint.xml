@@ -15,6 +15,7 @@
       without it, keeps x86_64, and Play serves each device just its own ABI, so ChromeOS is still covered.
     -->
     <issue id="ChromeOsAbiSupport">
+        <ignore path="build.gradle.kts" />
         <ignore path="**/app/build.gradle.kts" />
     </issue>
 </lint>
