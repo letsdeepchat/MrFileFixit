@@ -112,6 +112,15 @@ jobs:
         run: |
           tasks=$(for d in */src/androidTest; do printf ':%s:connectedDebugAndroidTest ' "${d%%/src/androidTest}"; done)
           echo "tasks=$tasks" >> "$GITHUB_OUTPUT"
+          echo "builds=${tasks//connectedDebugAndroidTest/assembleDebugAndroidTest}" >> "$GITHUB_OUTPUT"
+      # Compiling and dexing the test APKs while the emulator boots overloads the runner: QEMU stalls and
+      # GitHub has shut the runner down mid-build. So build them first, then stop the build daemons to free
+      # their memory, and the emulator step only installs and runs the tests.
+      - name: Build test APKs
+        run: |
+          ./gradlew ${{ steps.modules.outputs.builds }}
+          ./gradlew --stop
+          pkill -f KotlinCompileDaemon || true
       - uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
