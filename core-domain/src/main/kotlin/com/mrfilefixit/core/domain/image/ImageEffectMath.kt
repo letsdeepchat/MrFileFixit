@@ -57,59 +57,15 @@ object ImageEffectMath {
         return (a shl ALPHA_SHIFT) or (row(0) shl RED_SHIFT) or (row(ROW) shl GREEN_SHIFT) or row(2 * ROW)
     }
 
-    /** Output size of an [Upscale]: [factor] times bigger, scaled back so the long side fits [Upscale.MAX_SIDE]. */
-    fun upscaledSize(width: Int, height: Int, upscale: Upscale): Pair<Int, Int> {
-        val wanted = max(width, height) * upscale.factor
-        val scale = upscale.factor * min(1f, Upscale.MAX_SIDE.toFloat() / wanted)
-        return max(1, (width * scale).roundToInt()) to max(1, (height * scale).roundToInt())
-    }
-
     /**
-     * Unsharp mask in place: each channel moves away from its local (box-blurred, [radius]) average by
-     * [amount]. Edges get crisper; flat areas are unchanged, so noise is not amplified much at small radii.
+     * Output size of a [NaturalEnhance]: [NaturalEnhance.scale] times bigger, scaled back so the long side fits
+     * [NaturalEnhance.MAX_SIDE]. An image already at or above the cap keeps its size (never shrinks).
      */
-    fun sharpen(pixels: IntArray, width: Int, height: Int, amount: Float, radius: Int = 1) {
-        require(pixels.size == width * height) { "pixels must be width * height" }
-        if (amount <= 0f || width < MIN_SHARPEN_SIDE || height < MIN_SHARPEN_SIDE) return
-        val blurred = boxBlur(pixels, width, height, radius)
-        for (i in pixels.indices) {
-            val p = pixels[i]
-            val q = blurred[i]
-            fun channel(shift: Int): Int {
-                val v = (p shr shift) and CHANNEL_MAX
-                val avg = (q shr shift) and CHANNEL_MAX
-                return (v + amount * (v - avg)).roundToInt().coerceIn(0, CHANNEL_MAX)
-            }
-            pixels[i] = (p and ALPHA_MASK) or (channel(RED_SHIFT) shl RED_SHIFT) or
-                (channel(GREEN_SHIFT) shl GREEN_SHIFT) or channel(0)
-        }
-    }
-
-    /** Separable box blur of each colour channel, clamping at the borders. Alpha is kept. */
-    fun boxBlur(pixels: IntArray, width: Int, height: Int, radius: Int): IntArray {
-        val horizontal = IntArray(pixels.size)
-        for (y in 0 until height) blurLine(pixels, horizontal, y * width, 1, width, radius)
-        val out = IntArray(pixels.size)
-        for (x in 0 until width) blurLine(horizontal, out, x, width, height, radius)
-        return out
-    }
-
-    private fun blurLine(src: IntArray, dst: IntArray, start: Int, step: Int, length: Int, radius: Int) {
-        for (i in 0 until length) {
-            var r = 0
-            var g = 0
-            var b = 0
-            var n = 0
-            for (k in max(0, i - radius)..min(length - 1, i + radius)) {
-                val p = src[start + k * step]
-                r += (p shr RED_SHIFT) and CHANNEL_MAX
-                g += (p shr GREEN_SHIFT) and CHANNEL_MAX
-                b += p and CHANNEL_MAX
-                n++
-            }
-            val alpha = src[start + i * step] and ALPHA_MASK
-            dst[start + i * step] = alpha or ((r / n) shl RED_SHIFT) or ((g / n) shl GREEN_SHIFT) or (b / n)
-        }
+    fun enhancedSize(width: Int, height: Int, enhance: NaturalEnhance): Pair<Int, Int> {
+        if (enhance.scale == 1) return width to height
+        val wanted = max(width, height) * enhance.scale
+        val scale = max(1f, enhance.scale * min(1f, NaturalEnhance.MAX_SIDE.toFloat() / wanted))
+        return max(1, (width * scale).roundToInt()) to max(1, (height * scale).roundToInt())
     }
 
     /** Where the [PhotoStamp] band and its lines go on a [width] x [height] photo. */
@@ -142,6 +98,4 @@ object ImageEffectMath {
     private const val B = 2
     private const val A = 3
     private const val OFFSET = 4
-    private const val MIN_SHARPEN_SIDE = 3
-    private const val ALPHA_MASK = -0x1000000
 }

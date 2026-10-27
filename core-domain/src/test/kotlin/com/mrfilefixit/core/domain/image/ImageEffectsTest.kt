@@ -40,22 +40,17 @@ class ImageEffectsTest {
     }
 
     @Test
-    fun `upscale multiplies the size but keeps the long side under the cap`() {
-        assertEquals(1200 to 800, ImageEffectMath.upscaledSize(600, 400, Upscale(2)))
-        assertEquals(Upscale.MAX_SIDE to Upscale.MAX_SIDE / 2, ImageEffectMath.upscaledSize(1000, 500, Upscale(4)))
-        assertThrows<IllegalArgumentException> { Upscale(3) }
-    }
-
-    @Test
-    fun `sharpening raises edge contrast and leaves flat areas alone`() {
-        val w = 6
-        val h = 3
-        val pixels = IntArray(w * h) { i -> if (i % w < 3) argb(100, 100, 100) else argb(160, 160, 160) }
-        ImageEffectMath.sharpen(pixels, w, h, amount = 1f)
-        assertTrue(channels(pixels[w + 2]).first < 100) // dark side of the edge gets darker
-        assertTrue(channels(pixels[w + 3]).first > 160) // light side gets lighter
-        assertEquals(100, channels(pixels[w]).first)
-        assertEquals(160, channels(pixels[w + 5]).first)
+    fun `enhance upscale multiplies the size but keeps the long side under the cap`() {
+        assertEquals(1200 to 800, ImageEffectMath.enhancedSize(600, 400, NaturalEnhance(scale = 2)))
+        assertEquals(
+            NaturalEnhance.MAX_SIDE to NaturalEnhance.MAX_SIDE / 2,
+            ImageEffectMath.enhancedSize(1000, 500, NaturalEnhance(scale = 4)),
+        )
+        assertEquals(600 to 400, ImageEffectMath.enhancedSize(600, 400, NaturalEnhance(scale = 1)))
+        // Already above the cap: never shrinks.
+        assertEquals(4000 to 3000, ImageEffectMath.enhancedSize(4000, 3000, NaturalEnhance(scale = 2)))
+        assertThrows<IllegalArgumentException> { NaturalEnhance(scale = 3) }
+        assertThrows<IllegalArgumentException> { NaturalEnhance(strength = 1.5f) }
     }
 
     @Test
@@ -77,7 +72,7 @@ class ImageEffectsTest {
             filter = ImageFilter.DOCUMENT,
             stamp = PhotoStamp(listOf("Name"), dark = false),
             texts = listOf(TextOverlay("Hello", y = OverlayPosition.TOP.y)),
-            upscale = Upscale(2, 0.5f),
+            enhance = NaturalEnhance(0.5f, 2),
         )
         val json = Json.encodeToString(ImageEffects.serializer(), effects)
         assertEquals(effects, Json.decodeFromString(ImageEffects.serializer(), json))

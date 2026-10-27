@@ -4,10 +4,10 @@ import com.mrfilefixit.core.domain.image.ColorAdjust
 import com.mrfilefixit.core.domain.image.EncodeTarget
 import com.mrfilefixit.core.domain.image.ImageEffects
 import com.mrfilefixit.core.domain.image.ImageFilter
+import com.mrfilefixit.core.domain.image.NaturalEnhance
 import com.mrfilefixit.core.domain.image.OverlayPosition
 import com.mrfilefixit.core.domain.image.PhotoStamp
 import com.mrfilefixit.core.domain.image.TextOverlay
-import com.mrfilefixit.core.domain.image.Upscale
 
 /** The Edit tab: a look, three sliders, an optional line of text and the exam name and date bar. */
 data class EditOptions(
@@ -64,7 +64,12 @@ data class EditOptions(
     }
 }
 
-/** The Enhance tab: a 2x or 4x upscale with sharpening. */
-data class EnhanceOptions(val factor: Int = 2, val sharpen: Float = Upscale.DEFAULT_SHARPEN) {
-    fun toEffects(): ImageEffects = ImageEffects(upscale = Upscale(factor, sharpen.coerceIn(0f, 1f)))
+/** The Enhance tab: Natural Enhance at [strength] (0..1), optionally upscaled 2x or 4x first. */
+data class EnhanceOptions(val strength: Float = NaturalEnhance.DEFAULT_STRENGTH, val scale: Int = 1) {
+    fun toEffects(): ImageEffects = ImageEffects(
+        enhance = NaturalEnhance(
+            strength = strength.coerceIn(0f, 1f),
+            scale = scale.takeIf { it in NaturalEnhance.SCALES } ?: 1,
+        ),
+    )
 }

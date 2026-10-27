@@ -61,9 +61,11 @@ class EditOptionsTest {
     }
 
     @Test
-    fun `enhance becomes an upscale`() {
-        val upscale = EnhanceOptions(factor = 4, sharpen = 2f).toEffects().upscale
-        assertEquals(4, upscale?.factor)
-        assertEquals(1f, upscale?.sharpen)
+    fun `enhance becomes a natural enhance with a safe strength and scale`() {
+        val enhance = EnhanceOptions(strength = 2f, scale = 4).toEffects().enhance
+        assertEquals(4, enhance?.scale)
+        assertEquals(1f, enhance?.strength)
+        assertEquals(1, EnhanceOptions(scale = 3).toEffects().enhance?.scale)
+        assertEquals(0f, EnhanceOptions(strength = -1f).toEffects().enhance?.strength)
     }
 }

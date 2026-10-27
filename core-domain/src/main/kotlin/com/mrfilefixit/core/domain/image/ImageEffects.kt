@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Pixel edits applied after the geometry of an [ImageRequest] (rotate, crop, resize), in this order:
- * [upscale], then [filter] and [adjust], then the exam [stamp] bar, then the [texts]. Serializable so a batch
+ * [enhance], then [filter] and [adjust], then the exam [stamp] bar, then the [texts]. Serializable so a batch
  * handed to WorkManager carries them.
  */
 @Serializable
@@ -13,7 +13,7 @@ data class ImageEffects(
     val filter: ImageFilter = ImageFilter.NONE,
     val stamp: PhotoStamp? = null,
     val texts: List<TextOverlay> = emptyList(),
-    val upscale: Upscale? = null,
+    val enhance: NaturalEnhance? = null,
 ) {
     val isNone: Boolean get() = this == NONE
 
@@ -98,18 +98,22 @@ data class TextOverlay(
     }
 }
 
-/** Upscaling by [factor] (2 or 4) with smooth interpolation, then sharpening of [sharpen] (0..1). */
+/**
+ * Natural Enhance: an optional [scale]x Lanczos upscale, then luminance-only denoise, gentle spot healing and
+ * clarity at [strength] (0..1). Colours and skin tone are never changed (see NaturalEnhancer).
+ */
 @Serializable
-data class Upscale(val factor: Int, val sharpen: Float = DEFAULT_SHARPEN) {
+data class NaturalEnhance(val strength: Float = DEFAULT_STRENGTH, val scale: Int = 1) {
     init {
-        require(factor == 2 || factor == 4) { "Upscale factor must be 2 or 4" }
-        require(sharpen in 0f..1f) { "Sharpen must be 0..1" }
+        require(strength in 0f..1f) { "Strength must be 0..1" }
+        require(scale in SCALES) { "Scale must be one of $SCALES" }
     }
 
     companion object {
-        const val DEFAULT_SHARPEN = 0.6f
+        const val DEFAULT_STRENGTH = 0.6f
+        val SCALES = listOf(1, 2, 4)
 
-        /** Long side cap of the result, so a 4x upscale stays within a phone's memory. */
+        /** Long side cap of an upscaled result, so a 4x upscale stays within a phone's memory. */
         const val MAX_SIDE = 3072
     }
 }

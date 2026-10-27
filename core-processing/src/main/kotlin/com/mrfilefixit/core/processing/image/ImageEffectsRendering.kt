@@ -8,17 +8,17 @@ import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.Typeface
 import androidx.core.graphics.createBitmap
-import androidx.core.graphics.scale
 import com.mrfilefixit.core.domain.image.ImageEffectMath
 import com.mrfilefixit.core.domain.image.ImageEffects
 import com.mrfilefixit.core.domain.image.ImageFilter
+import com.mrfilefixit.core.domain.image.NaturalEnhance
 import com.mrfilefixit.core.domain.image.PhotoStamp
 import com.mrfilefixit.core.domain.image.TextOverlay
-import com.mrfilefixit.core.domain.image.Upscale
+import com.mrfilefixit.core.domain.image.enhance.LanczosResampler
+import com.mrfilefixit.core.domain.image.enhance.NaturalEnhancer
 import com.mrfilefixit.core.domain.scan.ScanFilter
 import com.mrfilefixit.core.processing.scan.ScanFiltering
 import kotlin.coroutines.coroutineContext
-import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.ensureActive
 
@@ -27,9 +27,8 @@ import kotlinx.coroutines.ensureActive
  * recycles the one before it, so at most two full-size bitmaps are alive at a time.
  */
 internal object ImageEffectsRendering {
-    /** Rows sharpened per pass; the blur needs only this band (plus its radius) in memory. */
-    private const val SHARPEN_BAND = 256
-    private const val SHARPEN_RADIUS = 1
+    /** Rows resampled or enhanced per pass; only this band (plus the enhancer's halo) is held as pixels. */
+    private const val BAND = 256
 
     /** Stamp lines and overlays are shrunk to fit this share of the width. */
     private const val FIT_WIDTH = 0.92f
@@ -39,7 +38,7 @@ internal object ImageEffectsRendering {
     suspend fun apply(source: Bitmap, effects: ImageEffects): Bitmap {
         if (effects.isNone) return source
         var bitmap = source
-        effects.upscale?.let { bitmap = replace(bitmap, upscale(bitmap, it)) }
+        effects.enhance?.let { bitmap = replace(bitmap, enhance(bitmap, it)) }
         coroutineContext.ensureActive()
         if (effects.filter == ImageFilter.DOCUMENT) {
             bitmap = replace(bitmap, ScanFiltering.apply(bitmap, ScanFilter.DOCUMENT_CLEAN))
@@ -62,42 +61,46 @@ internal object ImageEffectsRendering {
         return new
     }
 
-    /** Smooth upscaling in 2x steps (each bilinear step stays sharp), then an unsharp mask. */
-    private suspend fun upscale(source: Bitmap, upscale: Upscale): Bitmap {
-        val (targetW, targetH) = ImageEffectMath.upscaledSize(source.width, source.height, upscale)
-        var bitmap = source
-        while (bitmap.width * 2 < targetW) {
-            coroutineContext.ensureActive()
-            val next = bitmap.scale(bitmap.width * 2, bitmap.height * 2, filter = true)
-            if (bitmap !== source) bitmap.recycle()
-            bitmap = next
+    /**
+     * Natural Enhance: a Lanczos upscale when asked for, then the luminance-only clarity pipeline, band by band
+     * on the (mutable) result so a large photo is never copied as a whole pixel array twice.
+     */
+    private suspend fun enhance(source: Bitmap, enhance: NaturalEnhance): Bitmap {
+        val (targetW, targetH) = ImageEffectMath.enhancedSize(source.width, source.height, enhance)
+        val out = when {
+            targetW != source.width || targetH != source.height -> lanczos(source, targetW, targetH)
+            source.isMutable -> source
+            else -> mutableCopy(source)
         }
-        val sized = bitmap.scale(targetW, targetH, filter = true)
-        if (bitmap !== source && bitmap !== sized) bitmap.recycle()
-        val out = if (sized === source || !sized.isMutable) mutableCopy(sized) else sized
-        if (out !== sized && sized !== source) sized.recycle()
-        sharpen(out, upscale.sharpen)
+        if (enhance.strength > 0f) {
+            val width = out.width
+            NaturalEnhancer.enhanceInBands(
+                width = width,
+                height = out.height,
+                strength = enhance.strength,
+                bandRows = BAND,
+                read = { top, count, into, offset -> out.getPixels(into, offset, width, 0, top, width, count) },
+                write = { top, count, from, offset -> out.setPixels(from, offset, width, 0, top, width, count) },
+            )
+        }
         return out
     }
 
-    /** Sharpens [bitmap] in place, band by band, reading [SHARPEN_RADIUS] extra rows around each band. */
-    private suspend fun sharpen(bitmap: Bitmap, amount: Float) {
-        if (amount <= 0f) return
-        val width = bitmap.width
-        val height = bitmap.height
+    /** Lanczos-3 resize: one horizontal pass over the source, then the output written band by band. */
+    private suspend fun lanczos(source: Bitmap, width: Int, height: Int): Bitmap {
+        val pixels = IntArray(source.width * source.height)
+        source.getPixels(pixels, 0, source.width, 0, 0, source.width, source.height)
+        val resampler = LanczosResampler(source.width, source.height, width, height)
+        val horizontal = resampler.horizontal(pixels)
+        val out = createBitmap(width, height)
         var top = 0
         while (top < height) {
             coroutineContext.ensureActive()
-            val bottom = min(height, top + SHARPEN_BAND)
-            val readTop = max(0, top - SHARPEN_RADIUS)
-            val readBottom = min(height, bottom + SHARPEN_RADIUS)
-            val rows = readBottom - readTop
-            val pixels = IntArray(width * rows)
-            bitmap.getPixels(pixels, 0, width, 0, readTop, width, rows)
-            ImageEffectMath.sharpen(pixels, width, rows, amount, SHARPEN_RADIUS)
-            bitmap.setPixels(pixels, (top - readTop) * width, width, 0, top, width, bottom - top)
+            val bottom = min(height, top + BAND)
+            out.setPixels(resampler.vertical(horizontal, top, bottom), 0, width, 0, top, width, bottom - top)
             top = bottom
         }
+        return out
     }
 
     /** A drawable copy; drawing it ourselves avoids [Bitmap.copy], which can return null when memory is short. */
