@@ -7,16 +7,18 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 
 /**
@@ -39,11 +41,12 @@ fun SwipeableTabs(
     page: @Composable (Int) -> Unit,
 ) {
     val edgePx = with(LocalDensity.current) { systemEdge.toPx() }
-    var edgeDrag by remember { mutableStateOf(false) }
+    // Plain flag, read synchronously by the scroll connection below: a recomposition would come too late.
+    val edgeDrag = remember { EdgeDrag() }
     val currentInner = trackers.getOrNull(pagerState.currentPage)?.isInner == true
     HorizontalPager(
         state = pagerState,
-        userScrollEnabled = !currentInner && !edgeDrag,
+        userScrollEnabled = !currentInner,
         beyondViewportPageCount = 0,
         key = { it },
         modifier = modifier
@@ -53,16 +56,29 @@ fun SwipeableTabs(
                 // Watches touches without consuming them, before the pager sees them.
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                    edgeDrag = SwipePolicy.isSystemEdge(down.position.x, size.width.toFloat(), edgePx)
+                    edgeDrag.active = SwipePolicy.isSystemEdge(down.position.x, size.width.toFloat(), edgePx)
                     do {
                         val event = awaitPointerEvent(PointerEventPass.Initial)
                     } while (event.changes.any { it.pressed })
-                    edgeDrag = false
+                    edgeDrag.active = false
                 }
-            },
+            }
+            // Outside the pager's own scrolling, so it is asked first and can take the whole edge drag.
+            .nestedScroll(edgeDrag),
     ) { index ->
         CompositionLocalProvider(LocalInnerScreenTracker provides trackers[index]) { page(index) }
     }
+}
+
+/** Swallows the pager's scroll while the current drag started in a system edge zone. */
+private class EdgeDrag : NestedScrollConnection {
+    var active = false
+
+    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset =
+        if (active) Offset(available.x, 0f) else Offset.Zero
+
+    override suspend fun onPreFling(available: Velocity): Velocity =
+        if (active) Velocity(available.x, 0f) else Velocity.Zero
 }
 
 /** Pure rules behind [SwipeableTabs], unit-tested. */

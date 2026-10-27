@@ -88,7 +88,8 @@ enum class CompareMode { SLIDER, BEFORE, AFTER }
  * rotate) a toggle switches between them. A full-screen view supports pinch-to-zoom, and a small table compares
  * dimensions, format and exact file size.
  *
- * [beforeUri] and [afterUri] are `content://` or `file://` URIs.
+ * [beforeUri] and [afterUri] are `content://` or `file://` URIs. A live preview (made at a reduced size) passes
+ * [showFacts] false, since its sizes are not the ones the saved file will have.
  */
 @Composable
 fun BeforeAfterCard(
@@ -98,9 +99,10 @@ fun BeforeAfterCard(
     after: ImageFacts?,
     modifier: Modifier = Modifier,
     loading: Boolean = false,
+    showFacts: Boolean = true,
 ) {
     val sameShape = sameShape(before?.aspect, after?.aspect)
-    var mode by rememberSaveable(afterUri, sameShape) {
+    var mode by rememberSaveable(sameShape) {
         mutableStateOf(if (sameShape) CompareMode.SLIDER else CompareMode.AFTER)
     }
     val effectiveMode = when {
@@ -164,7 +166,7 @@ fun BeforeAfterCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        FactsTable(before, after.takeIf { afterUri != null })
+        if (showFacts) FactsTable(before, after.takeIf { afterUri != null })
     }
     if (fullScreen) {
         val uri = if (effectiveMode == CompareMode.BEFORE || afterUri == null) beforeUri else afterUri

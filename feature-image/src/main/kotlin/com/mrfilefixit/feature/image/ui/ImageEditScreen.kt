@@ -8,14 +8,19 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.mrfilefixit.core.domain.image.ColorAdjust
 import com.mrfilefixit.core.domain.image.ImageFilter
+import com.mrfilefixit.core.domain.image.NaturalEnhance
 import com.mrfilefixit.core.domain.image.OverlayPosition
-import com.mrfilefixit.core.domain.image.Upscale
+import com.mrfilefixit.core.ui.components.BeforeAfterCard
+import com.mrfilefixit.core.ui.components.ImageFacts
 import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.components.SectionHeader
 import com.mrfilefixit.core.ui.components.SwitchRow
@@ -113,26 +118,38 @@ private fun StampCard(edit: EditOptions, update: ((EditOptions) -> EditOptions) 
     }
 }
 
-/** The Enhance tab: 2x or 4x, how much to sharpen, then the output format. */
+/**
+ * The Enhance tab: Natural Enhance strength (0 to 100%) with a live before / after preview, the output size
+ * (original, 2x or 4x with Lanczos resampling), then the output format.
+ */
 @Composable
 internal fun EnhanceOptionsCards(state: ImageToolUiState, actions: ImageToolActions, modifier: Modifier = Modifier) {
     val enhance = state.options.enhance
     val update = { change: (EnhanceOptions) -> EnhanceOptions ->
         actions.onOptions { it.copy(enhance = change(it.enhance)) }
     }
+    // The slider moves freely; the strength (and so the preview) is only updated when it is released.
+    var strength by remember(enhance.strength) { mutableFloatStateOf(enhance.strength) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Dimens.SpaceM)) {
         SectionCard(Modifier.fillMaxWidth()) {
-            SectionHeader(stringResource(R.string.image_enhance_scale))
-            ChipRow(UPSCALE_FACTORS, enhance.factor, { "$it×" }) { f -> update { it.copy(factor = f) } }
-            Text(stringResource(R.string.image_enhance_sharpen, (enhance.sharpen * PERCENT).roundToInt()))
-            Slider(
-                value = enhance.sharpen,
-                onValueChange = { v -> update { it.copy(sharpen = v) } },
-                valueRange = 0f..1f,
-                modifier = Modifier.testTag("enhance_sharpen"),
-            )
+            SectionHeader(stringResource(R.string.image_enhance_title))
             Text(
-                stringResource(R.string.image_enhance_note, Upscale.MAX_SIDE),
+                stringResource(R.string.image_enhance_explain),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(stringResource(R.string.image_enhance_strength, (strength * PERCENT).roundToInt()))
+            Slider(
+                value = strength,
+                onValueChange = { strength = it },
+                onValueChangeFinished = { update { it.copy(strength = strength) } },
+                valueRange = 0f..1f,
+                modifier = Modifier.testTag("enhance_strength"),
+            )
+            SectionHeader(stringResource(R.string.image_enhance_scale))
+            ChipRow(NaturalEnhance.SCALES, enhance.scale, { scaleLabel(it) }) { f -> update { it.copy(scale = f) } }
+            Text(
+                stringResource(R.string.image_enhance_note, NaturalEnhance.MAX_SIDE),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -140,6 +157,32 @@ internal fun EnhanceOptionsCards(state: ImageToolUiState, actions: ImageToolActi
         FormatCard(state, actions)
     }
 }
+
+/** Live Natural Enhance preview of the first image: split slider, toggle and full-screen zoom. */
+@Composable
+internal fun EnhancePreviewCard(preview: EnhancePreview, modifier: Modifier = Modifier) {
+    val facts = ImageFacts(preview.width, preview.height, null, null)
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXs)) {
+        BeforeAfterCard(
+            beforeUri = preview.beforeUri,
+            afterUri = preview.afterUri,
+            before = facts,
+            after = facts,
+            loading = preview.afterUri == null,
+            showFacts = false,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            stringResource(R.string.image_enhance_preview_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun scaleLabel(scale: Int): String =
+    if (scale == 1) stringResource(R.string.image_enhance_scale_original) else "$scale×"
 
 @Composable
 private fun FormatCard(state: ImageToolUiState, actions: ImageToolActions) {
@@ -178,7 +221,6 @@ private fun positionLabel(position: OverlayPosition): String = stringResource(
     },
 )
 
-private val UPSCALE_FACTORS = listOf(2, 4)
 private const val PERCENT = 100
 private const val DATE_PATTERN = "dd-MM-yyyy"
 

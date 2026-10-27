@@ -15,6 +15,11 @@ class DonationTest {
     }
 
     @Test
+    fun `the bundled QR payload is the plain link without amount or note`() {
+        assertEquals(Donation.QR_PAYLOAD, Donation.upiUri(note = ""))
+    }
+
+    @Test
     fun `a suggested amount is prefilled with paise`() {
         assertTrue(Donation.upiUri(101).contains("&am=101.00&cu=INR"))
     }

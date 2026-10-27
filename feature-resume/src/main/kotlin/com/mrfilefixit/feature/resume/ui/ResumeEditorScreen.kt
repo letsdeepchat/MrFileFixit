@@ -71,6 +71,7 @@ import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.components.CropBox
 import com.mrfilefixit.core.ui.components.ErrorCard
 import com.mrfilefixit.core.ui.components.JobProgressCard
+import com.mrfilefixit.core.ui.components.PdfPagesColumn
 import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.components.SectionHeader
 import com.mrfilefixit.core.ui.components.SegmentedChoice
@@ -477,7 +478,7 @@ private fun ExportResult(output: OutputFile, actions: ResumeEditorActions, modif
         }
         if (isPdf) {
             SectionHeader(stringResource(R.string.resume_preview), Modifier.padding(top = Dimens.SpaceS))
-            PdfPagesPreview(output.path, Modifier.fillMaxWidth())
+            PdfPagesColumn(output.path, Modifier.fillMaxWidth())
         }
     }
 }

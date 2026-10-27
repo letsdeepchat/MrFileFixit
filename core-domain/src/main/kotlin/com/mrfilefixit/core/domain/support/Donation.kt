@@ -13,6 +13,12 @@ object Donation {
     /** Suggested amounts in rupees. The user can always pay any amount, including none of these. */
     val suggestedRupees = listOf(51, 101, 251, 501)
 
+    /**
+     * What the bundled QR code (`upi_qr.png`) encodes: [upiUri] with no amount and no note, so any UPI app can
+     * scan it from a second phone or a screenshot. Regenerate the image if this changes.
+     */
+    const val QR_PAYLOAD = "upi://pay?pa=deepakchaudhari705-1@okaxis&pn=Deepak%20Chaudhari&cu=INR"
+
     /** Upper bound for a prefilled amount; anything else is left for the user to type in their UPI app. */
     const val MAX_RUPEES = 100_000
 

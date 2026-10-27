@@ -1,10 +1,12 @@
 package com.mrfilefixit.core.storage.di
 
+import com.mrfilefixit.core.domain.biodata.BiodataRepository
 import com.mrfilefixit.core.domain.file.FileRepository
 import com.mrfilefixit.core.domain.file.JobIdGenerator
 import com.mrfilefixit.core.domain.file.TempFileStore
 import com.mrfilefixit.core.domain.prefs.UserPreferencesRepository
 import com.mrfilefixit.core.domain.resume.ResumeRepository
+import com.mrfilefixit.core.storage.biodata.FileBiodataRepository
 import com.mrfilefixit.core.storage.files.CacheTempFileStore
 import com.mrfilefixit.core.storage.files.SafFileRepository
 import com.mrfilefixit.core.storage.prefs.DataStoreUserPreferences
@@ -30,6 +32,9 @@ internal interface StorageModule {
 
     @Binds
     fun bindResumeRepository(impl: FileResumeRepository): ResumeRepository
+
+    @Binds
+    fun bindBiodataRepository(impl: FileBiodataRepository): BiodataRepository
 
     companion object {
         @Provides

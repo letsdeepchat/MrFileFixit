@@ -3,16 +3,22 @@ package com.mrfilefixit.feature.pdf.ui
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -24,6 +30,7 @@ import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,37 +43,50 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 import com.mrfilefixit.core.domain.convert.SheetOutput
 import com.mrfilefixit.core.domain.file.FileRef
+import com.mrfilefixit.core.domain.file.OutputFile
 import com.mrfilefixit.core.domain.job.JobState
 import com.mrfilefixit.core.domain.pdf.CompressionLevel
 import com.mrfilefixit.core.domain.pdf.PageSize
 import com.mrfilefixit.core.domain.pdf.PdfInfo
 import com.mrfilefixit.core.domain.pdf.Position
 import com.mrfilefixit.core.domain.result.Result
+import com.mrfilefixit.core.domain.scan.asSource
 import com.mrfilefixit.core.domain.security.InputLimits
 import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.components.CenteredEmptyState
 import com.mrfilefixit.core.ui.components.ChoiceGrid
 import com.mrfilefixit.core.ui.components.ErrorCard
 import com.mrfilefixit.core.ui.components.JobProgressCard
+import com.mrfilefixit.core.ui.components.KeepHorizontalScroll
 import com.mrfilefixit.core.ui.components.ListReorderState
+import com.mrfilefixit.core.ui.components.PdfPageStrip
 import com.mrfilefixit.core.ui.components.PrimaryActionButton
+import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.components.SectionHeader
 import com.mrfilefixit.core.ui.components.StickyActionBar
 import com.mrfilefixit.core.ui.components.SwitchRow
 import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.components.UploadDropZone
+import com.mrfilefixit.core.ui.components.UriImage
+import com.mrfilefixit.core.ui.components.ZoomableImageDialog
 import com.mrfilefixit.core.ui.components.rememberListReorderState
 import com.mrfilefixit.core.ui.format.formatBytes
 import com.mrfilefixit.core.ui.preview.AllPreviews
@@ -216,6 +236,13 @@ private fun DocumentContent(
                 item(key = "summary") {
                     DocumentSummary(file, state.info, onChange = onAddMore, Modifier.contentWidth())
                 }
+                // The pages, so page numbers for split, extract, delete or reorder can be picked by eye.
+                val info = state.info
+                if (info != null && !info.encrypted && file.mimeType == PDF_MIME && state.job !is JobState.Success) {
+                    item(key = "input-pages") {
+                        SectionCard(Modifier.contentWidth()) { PdfPageStrip(file.uri) }
+                    }
+                }
             }
         }
         if (state.job !is JobState.Success) {
@@ -318,9 +345,28 @@ private fun Results(state: PdfToolUiState, actions: PdfToolActions) {
             if (uri != null && index != null) actions.onSave(index, uri.toString())
             pendingSave = null
         }
+    var previewIndex by remember(outputs) { mutableIntStateOf(0) }
+    OutputPreview(state, outputs.getOrNull(previewIndex))
     SectionHeader(pluralStringResource(R.plurals.pdf_result_files, outputs.size, outputs.size))
+    if (outputs.size > 1 && outputs.first().mimeType == PDF_MIME) {
+        Text(
+            stringResource(R.string.pdf_preview_pick),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
     outputs.forEachIndexed { index, file ->
-        Card(Modifier.fillMaxWidth()) {
+        Card(
+            onClick = { previewIndex = index },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("pdf_result_$index"),
+            colors = if (index == previewIndex && outputs.size > 1) {
+                CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            } else {
+                CardDefaults.cardColors()
+            },
+        ) {
             ListItem(
                 headlineContent = { Text(file.displayName) },
                 supportingContent = {
@@ -346,6 +392,69 @@ private fun Results(state: PdfToolUiState, actions: PdfToolActions) {
         }
     }
 }
+
+/**
+ * What the result looks like before it is saved: its pages for a PDF, the pictures for page images. Word,
+ * PowerPoint and Excel files cannot be drawn on the phone, so their source pages are shown instead.
+ */
+@Composable
+private fun OutputPreview(state: PdfToolUiState, output: OutputFile?) {
+    output ?: return
+    SectionCard(Modifier.fillMaxWidth().testTag("pdf_output_preview")) {
+        SectionHeader(stringResource(CoreR.string.preview_title))
+        when {
+            output.mimeType == PDF_MIME -> key(output.path) { PdfPageStrip(output.asSource().uri) }
+            output.mimeType.startsWith("image/") -> ImageOutputStrip(state.outputs)
+            else -> {
+                val source = state.files.firstOrNull()?.takeIf { it.mimeType == PDF_MIME }
+                if (source != null) {
+                    Text(
+                        stringResource(R.string.pdf_preview_source_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    PdfPageStrip(source.uri)
+                } else {
+                    Text(stringResource(CoreR.string.preview_unavailable), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        }
+    }
+}
+
+/** Page images side by side; tap one for full screen with zoom. */
+@Composable
+private fun ImageOutputStrip(outputs: List<OutputFile>) {
+    var zoom by remember { mutableStateOf<String?>(null) }
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+        modifier = Modifier.nestedScroll(KeepHorizontalScroll),
+    ) {
+        items(outputs, key = { it.path }) { file ->
+            val uri = file.asSource().uri
+            val aspect = if (file.width != null && file.height != null && file.height > 0) {
+                file.width.toFloat() / file.height
+            } else {
+                A4_ASPECT
+            }
+            Box(
+                Modifier
+                    .width(IMAGE_STRIP_WIDTH.dp)
+                    .aspectRatio(aspect.coerceIn(MIN_ASPECT, MAX_ASPECT))
+                    .clip(RoundedCornerShape(Dimens.SpaceS))
+                    .clickable(onClickLabel = stringResource(CoreR.string.preview_open_full)) { zoom = uri },
+            ) {
+                UriImage(uri, file.displayName)
+            }
+        }
+    }
+    zoom?.let { ZoomableImageDialog(it, onDismiss = { zoom = null }) }
+}
+
+private const val IMAGE_STRIP_WIDTH = 120
+private const val A4_ASPECT = 595f / 842f
+private const val MIN_ASPECT = 0.3f
+private const val MAX_ASPECT = 3f
 
 @Composable
 private fun Options(

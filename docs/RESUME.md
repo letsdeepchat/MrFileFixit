@@ -1,7 +1,11 @@
-# Resume builder
+# Resume & Biodata
 
-The Resume tab (also on Home) builds a resume from one of 15 templates and exports it as PDF or Word. It runs
-entirely on the phone: drafts, photos and exports never leave it.
+The **Resume & Biodata** tab (also on Home) has two builders. Its first screen offers two large actions,
+**Create a professional resume** and **Create a biodata**, followed by the saved drafts of each kind. Everything
+runs on the phone, so drafts, photos and exports never leave it.
+
+The resume builder starts from one of 15 templates and exports PDF or Word. The biodata builder is described in
+[Biodata](#biodata) below.
 
 ## Templates
 
@@ -63,6 +67,43 @@ Drafts are `files/resumes/<id>.json` and `files/resumes/<id>.jpg` in app-private
 temporary file that is then renamed. Backup is disabled app-wide, so drafts stay on the phone. The photo can only
 be stored from this app's own cache (the cropped job output).
 
+## Biodata
+
+There are five designs (`BiodataTemplates`):
+
+| Design | Kind | Look |
+| --- | --- | --- |
+| Traditional | Marriage | Serif, maroon and gold, ornate double border with corner diamonds, ornamental headings |
+| Classic | Marriage | Serif, navy and gold, double border, headings on a tinted band |
+| Modern | Marriage | Sans, teal, single frame, underlined headings |
+| Photographer | Portfolio | Sans, charcoal and amber, no border, a large showcase photo, then work samples |
+| Creative | Portfolio | Sans, rust and indigo, corner brackets, banded headings, photo grid |
+
+**Marriage biodata** has these sections:
+
+* Personal details, with age worked out from the date of birth.
+* Cultural and astrological details (religion, caste, gotra, rashi, nakshatra, manglik and so on). The section can
+  be switched off with one switch, and each of its fields can be hidden on its own.
+* Education and career.
+* Family background.
+* Partner expectations.
+* Contact details.
+
+**Portfolio** has an about section, skills, equipment and services, client experience, and work samples.
+
+**Photos.** Each biodata takes 1 to 5 photos. Each photo is cropped in the app with a portrait 3:4, square, 4:3
+or original frame, and stored as a JPEG with a long side of at most 1600 px. A marriage biodata starts with a
+portrait frame. A portfolio starts with a square profile photo, and later photos keep their own shape. Any photo
+can be made the main one, moved or removed. Printed photos are fitted to their slot without distortion.
+
+**Preview and export.** The editor has an Edit/Preview switch. Preview renders the real PDF with `PdfRenderer`,
+and while it is shown the PDF is made again a moment after each change. Export writes a high-resolution PDF
+(photos keep their full stored resolution) or a Word file. The printed labels follow the app language, English
+or Hindi.
+
+Drafts are stored as `files/biodata/<id>.json`, with photos in `files/biodata/<id>-<key>.jpg`. Ids and keys are
+letters and digits only. Orphaned photos are deleted on save.
+
 ## Code map
 
 | Piece | Where |
@@ -70,8 +111,13 @@ be stored from this app's own cache (the cropped job output).
 | Model, JSON, edits, templates, renderer, use cases | `core-domain/.../resume/` |
 | PDF and DOCX export, embedded-data reader | `core-processing/.../convert/AndroidDocumentExporter.kt` |
 | Draft storage | `core-storage/.../resume/FileResumeRepository.kt` |
-| UI | `feature-resume` |
+| Biodata model, templates, renderer, use cases | `core-domain/.../biodata/` |
+| Biodata storage | `core-storage/.../biodata/FileBiodataRepository.kt` |
+| Page borders (biodata designs) | `core-processing/.../convert/PageBorderPainter.kt` |
+| UI | `feature-resume` (`ResumeTab`, `BiodataScreens.kt`, `BiodataViewModel`) |
 
 Tests: `ResumeTest` (domain), `ResumeDocxTest` (every template to DOCX and back), `ResumeViewModelTest`,
 and on the emulator `ResumeExportTest` (every template to PDF, checked with PDFBox text extraction) and
-`ResumeScreensTest`.
+`ResumeScreensTest`. For biodata: `BiodataModelTest` and `BiodataRendererTest` (every design with 1 to 5 photos),
+`BiodataViewModelTest`, and on the emulator `BiodataExportTest` (every design with 1 to 5 photos, written to PDF and
+Word and read back).

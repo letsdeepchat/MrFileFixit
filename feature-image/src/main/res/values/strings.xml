@@ -82,7 +82,12 @@
     <string name="image_stamp_dark">Black bar with white text</string>
     <string name="image_stamp_size">Keep the file between 20 and 50 KB</string>
     <string name="image_stamp_size_hint">Saved as JPEG, the way exam portals ask for it.</string>
-    <string name="image_enhance_scale">Upscale</string>
-    <string name="image_enhance_sharpen">Sharpness: %1$d%%</string>
-    <string name="image_enhance_note">Enlarges the photo with smooth scaling and edge sharpening, all on this phone. The long side is capped at %1$d px.</string>
+    <!-- Natural Enhance -->
+    <string name="image_enhance_title">Natural Enhance</string>
+    <string name="image_enhance_explain">Restores clarity and fine detail, reduces noise and softens small blemishes, while keeping skin texture and true colours. It only works on brightness detail, so skin tones are never whitened.</string>
+    <string name="image_enhance_strength">Strength: %1$d%%</string>
+    <string name="image_enhance_scale">Output size</string>
+    <string name="image_enhance_scale_original">Original size</string>
+    <string name="image_enhance_note">2× and 4× enlarge with Lanczos resampling before enhancing. The long side is capped at %1$d px. Everything runs on this phone.</string>
+    <string name="image_enhance_preview_note">Preview at reduced size. The saved photo is processed at full resolution.</string>
 </resources>

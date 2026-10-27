@@ -48,7 +48,9 @@
     <string name="exam_doc_POSTCARD_PHOTO">Postcard-size photograph</string>
     <string name="exam_tab_photo">Photo</string>
     <string name="exam_tab_signature">Signature</string>
-    <string name="exam_tab_other">Other uploads</string>
+    <string name="exam_tab_other">Other Documents</string>
+    <string name="exam_tab_left_thumb">Left Thumb Impression</string>
+    <string name="exam_tab_declaration">Handwritten Declaration</string>
     <string name="exam_tab_certificates">Certificates</string>
     <string name="exam_prepare_files">Prepare Files for This Exam</string>
     <string name="exam_prepare_files_hint">Opens Image tools with this exam\'s pixel and KB limits already set.</string>

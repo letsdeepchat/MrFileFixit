@@ -3,11 +3,15 @@ package com.mrfilefixit.feature.image.ui
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -16,12 +20,12 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LinkOff
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -29,9 +33,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,6 +43,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
@@ -53,20 +57,31 @@ import com.mrfilefixit.core.domain.exam.DocumentKind
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.domain.job.JobState
+import com.mrfilefixit.core.domain.scan.asSource
 import com.mrfilefixit.core.ui.R as CoreR
+import com.mrfilefixit.core.ui.components.BeforeAfterCard
 import com.mrfilefixit.core.ui.components.CenteredEmptyState
 import com.mrfilefixit.core.ui.components.CropBox
 import com.mrfilefixit.core.ui.components.ErrorCard
+import com.mrfilefixit.core.ui.components.FullLabelTabRow
+import com.mrfilefixit.core.ui.components.ImageFacts
 import com.mrfilefixit.core.ui.components.JobProgressCard
+import com.mrfilefixit.core.ui.components.KeepHorizontalScroll
+import com.mrfilefixit.core.ui.components.PdfPageStrip
 import com.mrfilefixit.core.ui.components.PrimaryActionButton
 import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.components.SectionHeader
 import com.mrfilefixit.core.ui.components.StickyActionBar
 import com.mrfilefixit.core.ui.components.SwitchRow
+import com.mrfilefixit.core.ui.components.TabItem
 import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.components.UploadDropZone
+import com.mrfilefixit.core.ui.components.UriImage
+import com.mrfilefixit.core.ui.components.ZoomableImageDialog
 import com.mrfilefixit.core.ui.components.displayName
 import com.mrfilefixit.core.ui.format.formatBytes
+import com.mrfilefixit.core.ui.navigation.ReportInnerScreen
+import com.mrfilefixit.core.ui.navigation.rememberGuardedBack
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
@@ -102,7 +117,17 @@ internal fun ImageToolScreen(
     modifier: Modifier = Modifier,
     snackbarHost: @Composable () -> Unit = {},
     onOpenOcr: () -> Unit = {},
+    onExit: (() -> Unit)? = null,
 ) {
+    // With images loaded the workspace is an inner screen: Back clears it (asking first if a result would be
+    // lost); empty, Back leaves the tools when they have a screen of their own.
+    val inner = state.files.isNotEmpty()
+    ReportInnerScreen(inner)
+    val clear = rememberGuardedBack(
+        unsaved = state.outputs.isNotEmpty() && !state.delivered,
+        onBack = actions.onReset,
+        enabled = inner,
+    )
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(MAX_PICK)) { uris ->
         actions.onPick(uris.map { it.toString() })
     }
@@ -110,6 +135,7 @@ internal fun ImageToolScreen(
     ToolScaffold(
         title = stringResource(R.string.image_title),
         modifier = modifier,
+        onBack = if (inner) clear else onExit,
         actions = {
             if (state.files.isNotEmpty()) {
                 TextButton(onClick = actions.onReset) { Text(stringResource(CoreR.string.action_clear_all)) }
@@ -142,34 +168,16 @@ internal fun ImageToolScreen(
     }
 }
 
-/** The tools, then a last tab that opens text recognition on its own screen. */
-@OptIn(ExperimentalMaterial3Api::class)
+/** The tools with their full names, then a last tab that opens text recognition on its own screen. */
 @Composable
 private fun ToolTabs(selected: ImageTool, onSelect: (ImageTool) -> Unit, onOpenOcr: () -> Unit) {
-    PrimaryScrollableTabRow(
-        selectedTabIndex = ImageTool.entries.indexOf(selected),
-        edgePadding = Dimens.ScreenPadding,
-        containerColor = MaterialTheme.colorScheme.background,
-    ) {
-        ImageTool.entries.forEach { tool ->
-            Tab(
-                selected = tool == selected,
-                onClick = { onSelect(tool) },
-                text = { Text(toolLabel(tool)) },
-                modifier = Modifier
-                    .heightIn(min = Dimens.MinTouchTarget)
-                    .testTag("image_tab_${tool.name.lowercase()}"),
-            )
-        }
-        Tab(
-            selected = false,
-            onClick = onOpenOcr,
-            text = { Text(stringResource(R.string.image_tool_ocr)) },
-            modifier = Modifier
-                .heightIn(min = Dimens.MinTouchTarget)
-                .testTag("image_tab_ocr"),
-        )
-    }
+    val tabs = ImageTool.entries.map { TabItem(toolLabel(it), "image_tab_${it.name.lowercase()}") } +
+        TabItem(stringResource(R.string.image_tool_ocr), "image_tab_ocr")
+    FullLabelTabRow(
+        tabs = tabs,
+        selectedIndex = ImageTool.entries.indexOf(selected),
+        onSelect = { index -> ImageTool.entries.getOrNull(index)?.let(onSelect) ?: onOpenOcr() },
+    )
 }
 
 @Composable
@@ -204,6 +212,11 @@ private fun LoadedContent(
                 )
             }
         }
+        if (state.tool == ImageTool.ENHANCE && !state.isDone) {
+            state.enhancePreview?.let { preview ->
+                item(key = "enhance-preview") { EnhancePreviewCard(preview, Modifier.contentWidth()) }
+            }
+        }
         when (val job = state.activeJob) {
             is JobState.Failed -> item(key = "job-error") { ErrorCard(job.error, null, Modifier.contentWidth()) }
             is JobState.Cancelled -> item(key = "job-cancelled") {
@@ -217,6 +230,8 @@ private fun LoadedContent(
 
 @Composable
 private fun SelectedFiles(state: ImageToolUiState, onChange: () -> Unit, modifier: Modifier = Modifier) {
+    val first = state.files.firstOrNull() ?: return
+    var zoom by remember { mutableStateOf(false) }
     SectionCard(modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -228,19 +243,47 @@ private fun SelectedFiles(state: ImageToolUiState, onChange: () -> Unit, modifie
                 Text(stringResource(CoreR.string.action_change))
             }
         }
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
-            items(state.files, key = { it.uri }) { file ->
-                Thumbnail(file.uri, stringResource(CoreR.string.cd_thumbnail), Dimens.ThumbnailSize)
+        // The first picked image large right away (tap for full screen with zoom), the rest as thumbnails.
+        val aspect = state.firstInfo?.let { it.width.toFloat() / it.height.coerceAtLeast(1) } ?: 1f
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * PICKED_MAX_HEIGHT_FRACTION),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                Modifier
+                    .aspectRatio(aspect.coerceIn(MIN_ASPECT, MAX_ASPECT), matchHeightConstraintsFirst = aspect < 1f)
+                    .clip(RoundedCornerShape(Dimens.ButtonCorner))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable(onClickLabel = stringResource(CoreR.string.preview_open_full)) { zoom = true }
+                    .testTag("image_picked_preview"),
+            ) {
+                UriImage(first.uri, stringResource(CoreR.string.preview_original))
+            }
+        }
+        if (state.files.size > 1) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+                modifier = Modifier.nestedScroll(KeepHorizontalScroll),
+            ) {
+                items(state.files, key = { it.uri }) { file ->
+                    Thumbnail(file.uri, stringResource(CoreR.string.cd_thumbnail), Dimens.ThumbnailSize)
+                }
             }
         }
         state.firstInfo?.let { info ->
+            val format = info.format?.displayName()
+            val size = formatBytes(info.sizeBytes)
             Text(
-                stringResource(R.string.image_original_size, info.width, info.height),
+                listOfNotNull(stringResource(R.string.image_original_size, info.width, info.height), format, size)
+                    .joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
+    if (zoom) ZoomableImageDialog(first.uri, onDismiss = { zoom = false })
 }
 
 @Composable
@@ -530,6 +573,7 @@ private fun Results(state: ImageToolUiState, actions: ImageToolActions, modifier
         if (uri != null && index != null) actions.onSave(index, uri.toString())
         pendingSave = null
     }
+    ResultPreview(state, modifier)
     SectionCard(modifier) {
         SectionHeader(pluralStringResource(R.plurals.image_done, outputs.size, outputs.size))
         if (failures.isNotEmpty()) {
@@ -560,6 +604,38 @@ private fun Results(state: ImageToolUiState, actions: ImageToolActions, modifier
     }
 }
 
+/**
+ * The first result next to its original: a before / after compare for images, the pages for a PDF. The facts
+ * table shows original and result dimensions, format and exact size.
+ */
+@Composable
+private fun ResultPreview(state: ImageToolUiState, modifier: Modifier = Modifier) {
+    val output = state.outputs.firstOrNull() ?: return
+    val source = state.files.firstOrNull() ?: return
+    if (output.mimeType == PDF_MIME) {
+        SectionCard(modifier) {
+            SectionHeader(stringResource(CoreR.string.preview_pages_title))
+            PdfPageStrip(output.asSource().uri)
+        }
+        return
+    }
+    val info = state.firstInfo
+    BeforeAfterCard(
+        beforeUri = source.uri,
+        afterUri = output.asSource().uri,
+        before = ImageFacts(
+            info?.width,
+            info?.height,
+            info?.format?.displayName(),
+            info?.sizeBytes ?: source.sizeBytes,
+        ),
+        after = ImageFacts(output.width, output.height, formatOf(output.mimeType), output.sizeBytes),
+        modifier = modifier,
+    )
+}
+
+private fun formatOf(mimeType: String): String? = ImageFormat.fromMimeType(mimeType)?.displayName()
+
 private fun Modifier.contentWidth(): Modifier = widthIn(max = Dimens.CardMaxWidth).fillMaxWidth()
 
 @Composable
@@ -586,6 +662,10 @@ private fun aspectLabel(aspect: Float?): String = when (aspect) {
 }
 
 private const val MAX_PICK = 100
+private const val PDF_MIME = "application/pdf"
+private const val PICKED_MAX_HEIGHT_FRACTION = 0.4f
+private const val MIN_ASPECT = 0.3f
+private const val MAX_ASPECT = 3f
 private const val ANY_IMAGE = "image/*"
 private const val CROP_MAX_HEIGHT_FRACTION = 0.45f
 private const val MAX_DIGITS = 5

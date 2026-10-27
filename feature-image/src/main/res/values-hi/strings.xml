@@ -82,7 +82,12 @@
     <string name="image_stamp_dark">काली पट्टी, सफ़ेद टेक्स्ट</string>
     <string name="image_stamp_size">फ़ाइल 20 से 50 KB के बीच रखें</string>
     <string name="image_stamp_size_hint">JPEG में सेव होती है, जैसा परीक्षा पोर्टल माँगते हैं।</string>
-    <string name="image_enhance_scale">बड़ा करें</string>
-    <string name="image_enhance_sharpen">शार्पनेस: %1$d%%</string>
-    <string name="image_enhance_note">फ़ोटो को स्मूद स्केलिंग और किनारों की शार्पनिंग से बड़ा करता है, सब इसी फ़ोन पर। लंबी साइड अधिकतम %1$d px।</string>
+    <!-- Natural Enhance -->
+    <string name="image_enhance_title">नैचुरल एन्हांस</string>
+    <string name="image_enhance_explain">साफ़ी और बारीक डिटेल लौटाता है, नॉइज़ कम करता है और छोटे दाग-धब्बे हल्के करता है, त्वचा की बनावट और असली रंग बनाए रखते हुए। यह सिर्फ़ ब्राइटनेस की डिटेल पर काम करता है, इसलिए त्वचा का रंग कभी गोरा नहीं होता।</string>
+    <string name="image_enhance_strength">असर: %1$d%%</string>
+    <string name="image_enhance_scale">आउटपुट साइज़</string>
+    <string name="image_enhance_scale_original">मूल साइज़</string>
+    <string name="image_enhance_note">2× और 4× एन्हांस करने से पहले Lanczos रीसैंपलिंग से बड़ा करते हैं। लंबी साइड अधिकतम %1$d px। सब कुछ इसी फ़ोन पर होता है।</string>
+    <string name="image_enhance_preview_note">प्रीव्यू छोटे साइज़ पर है। सेव होने वाली फ़ोटो पूरे रेज़ोल्यूशन पर प्रोसेस होती है।</string>
 </resources>

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="resume_title">रिज़्यूमे बिल्डर</string>
-    <string name="resume_intro">15 ATS-फ़्रेंडली टेम्पलेट में से एक चुनें, हर सेक्शन बदलें, और PDF या Word फ़ाइल एक्सपोर्ट करें। सब कुछ आपके फ़ोन पर ही रहता है।</string>
-    <string name="resume_create">नया रिज़्यूमे बनाएं</string>
+    <string name="resume_title">रिज़्यूमे और बायोडेटा</string>
     <string name="resume_import">एक्सपोर्ट की गई Word फ़ाइल खोलें</string>
     <string name="resume_import_hint">यहां से एक्सपोर्ट की गई .docx फ़ाइल को फिर से खोलकर बदलाव जारी रखें।</string>
     <string name="resume_saved_title">आपके रिज़्यूमे</string>
@@ -113,7 +111,6 @@
         <item quantity="other">%1$s · %2$d पेज</item>
     </plurals>
     <string name="resume_preview">प्रीव्यू</string>
-    <string name="resume_preview_page">पेज %1$d</string>
     <string name="resume_ats_tips">ATS टिप्स: सेक्शन के सामान्य नाम रखें, एक ही कॉलम रखें, और नौकरी के विज्ञापन के मुख्य कौशल अपने Skills और Experience में लिखें। ये टेम्पलेट पहले से असली टेक्स्ट और हेडिंग इस्तेमाल करते हैं जिन्हें आवेदक ट्रैकिंग सिस्टम पढ़ सकते हैं।</string>
 
     <string name="resume_template_SOFTWARE">सॉफ़्टवेयर और IT</string>
@@ -146,4 +143,126 @@
     <string name="resume_template_desc_OPERATIONS">लॉजिस्टिक्स, ख़रीद और वेयरहाउस के नतीजे।</string>
     <string name="resume_template_ACADEMIC_CV">अकादमिक CV</string>
     <string name="resume_template_desc_ACADEMIC_CV">शोध, प्रकाशन, अनुदान और शिक्षण।</string>
+    <!-- Resume & Biodata hub -->
+    <string name="resume_hub_resume_title">प्रोफ़ेशनल रिज़्यूमे बनाएँ</string>
+    <string name="resume_hub_resume_body">15 ATS-फ़्रेंडली टेम्पलेट। PDF या Word में एक्सपोर्ट करें।</string>
+    <string name="resume_hub_biodata_title">बायोडेटा बनाएँ</string>
+    <string name="resume_hub_biodata_body">1 से 5 फ़ोटो के साथ शादी का बायोडेटा या क्रिएटिव पोर्टफ़ोलियो। PDF या Word में एक्सपोर्ट करें।</string>
+    <string name="resume_tab_resumes">रिज़्यूमे</string>
+    <string name="resume_tab_biodata">बायोडेटा</string>
+    <string name="biodata_saved_empty">अभी कोई बायोडेटा सेव नहीं है। ड्राफ़्ट तब तक इसी फ़ोन पर रहते हैं जब तक आप उन्हें न हटाएँ।</string>
+    <string name="biodata_draft_photos">%1$s · %2$d फ़ोटो · %3$s</string>
+    <!-- Biodata designs -->
+    <string name="biodata_pick_template">बायोडेटा डिज़ाइन चुनें</string>
+    <string name="biodata_pick_hint">आप कभी भी उसी तरह के दूसरे डिज़ाइन पर जा सकते हैं। सब कुछ इसी फ़ोन पर बनता है।</string>
+    <string name="biodata_kind_marriage">शादी का बायोडेटा</string>
+    <string name="biodata_kind_portfolio">क्रिएटिव पोर्टफ़ोलियो</string>
+    <string name="biodata_template_traditional">पारंपरिक</string>
+    <string name="biodata_template_traditional_desc">मैरून और सुनहरा रंग, सजावटी बॉर्डर और सेरिफ़ फ़ॉन्ट।</string>
+    <string name="biodata_template_classic">क्लासिक</string>
+    <string name="biodata_template_classic_desc">नेवी ब्लू, डबल बॉर्डर और पट्टी वाले शीर्षक।</string>
+    <string name="biodata_template_modern">मॉडर्न</string>
+    <string name="biodata_template_modern_desc">टील रंग, साफ़ सिंगल बॉर्डर और सैन्स-सेरिफ़ फ़ॉन्ट।</string>
+    <string name="biodata_template_photographer">फ़ोटोग्राफ़र</string>
+    <string name="biodata_template_photographer_desc">आपकी सबसे अच्छी फ़ोटो पूरे पेज पर बड़ी, फिर गैलरी।</string>
+    <string name="biodata_template_creative">क्रिएटिव</string>
+    <string name="biodata_template_creative_desc">कोनों वाला फ़्रेम और बराबर गैलरी ग्रिड।</string>
+    <!-- Biodata editor -->
+    <string name="biodata_mode_edit">बदलें</string>
+    <string name="biodata_mode_preview">प्रीव्यू</string>
+    <string name="biodata_change_design">डिज़ाइन बदलें</string>
+    <string name="biodata_name">पूरा नाम</string>
+    <string name="biodata_tagline">पेशा, जैसे वेडिंग और पोर्ट्रेट फ़ोटोग्राफ़र</string>
+    <string name="biodata_invocation">सबसे ऊपर की पंक्ति (वैकल्पिक), जैसे कोई आशीर्वाद</string>
+    <string name="biodata_cultural_switch">सांस्कृतिक और ज्योतिषीय विवरण शामिल करें</string>
+    <string name="biodata_cultural_hint">वैकल्पिक। पूरा भाग हटाने के लिए बंद करें, या नीचे अलग-अलग फ़ील्ड छिपाएँ।</string>
+    <string name="biodata_field_show">%1$s बायोडेटा पर दिखाएँ</string>
+    <string name="biodata_age_auto">जन्म तिथि से आयु लेने के लिए खाली छोड़ें: %1$s</string>
+    <string name="biodata_date_hint">dd-mm-yyyy</string>
+    <string name="biodata_pick_date">तारीख़ चुनें</string>
+    <string name="biodata_list_hint">हर लाइन में एक</string>
+    <string name="biodata_date_ok">ठीक है</string>
+    <!-- Biodata photos -->
+    <string name="biodata_photos_title">फ़ोटो (%2$d में से %1$d)</string>
+    <string name="biodata_photos_hint_marriage">1 से 5 फ़ोटो जोड़ें। पहली फ़ोटो आपके विवरण के पास मुख्य फ़ोटो होगी; बाकी गैलरी में जाएँगी।</string>
+    <string name="biodata_photos_hint_portfolio">1 से 5 फ़ोटो जोड़ें। पहली आपकी प्रोफ़ाइल फ़ोटो है; बाकी काम के नमूने हैं।</string>
+    <string name="biodata_photo_add">फ़ोटो जोड़ें</string>
+    <string name="biodata_photo_main">मुख्य</string>
+    <string name="biodata_photo_cd">फ़ोटो %1$d</string>
+    <string name="biodata_photo_make_main">मुख्य फ़ोटो बनाएँ</string>
+    <string name="biodata_photo_remove">फ़ोटो हटाएँ</string>
+    <string name="biodata_photo_earlier">पहले ले जाएँ</string>
+    <string name="biodata_photo_later">बाद में ले जाएँ</string>
+    <string name="biodata_crop_title">फ़ोटो को फ़्रेम करें</string>
+    <string name="biodata_aspect_portrait">पोर्ट्रेट 3:4</string>
+    <string name="biodata_aspect_square">चौकोर</string>
+    <string name="biodata_aspect_landscape">लैंडस्केप 4:3</string>
+    <string name="biodata_aspect_original">मूल</string>
+    <string name="biodata_crop_use">फ़ोटो इस्तेमाल करें</string>
+    <string name="biodata_preview_need_photo">बायोडेटा देखने के लिए कम से कम एक फ़ोटो जोड़ें।</string>
+    <string name="biodata_preview_live">यह प्रीव्यू बदलाव के साथ अपडेट होता है। सेव होने वाला PDF बिल्कुल ऐसा ही होगा।</string>
+    <!-- Printed labels -->
+    <string name="biodata_print_title">बायोडेटा</string>
+    <string name="biodata_print_photos">फ़ोटो</string>
+    <string name="biodata_print_work">काम के नमूने</string>
+    <plurals name="biodata_print_age">
+        <item quantity="one">%1$d वर्ष</item>
+        <item quantity="other">%1$d वर्ष</item>
+    </plurals>
+    <string name="biodata_section_personal">व्यक्तिगत विवरण</string>
+    <string name="biodata_section_cultural">सांस्कृतिक और ज्योतिषीय विवरण</string>
+    <string name="biodata_section_education_career">शिक्षा और करियर</string>
+    <string name="biodata_section_family">पारिवारिक पृष्ठभूमि</string>
+    <string name="biodata_section_about">परिचय</string>
+    <string name="biodata_section_skills">कौशल और उपकरण</string>
+    <string name="biodata_section_services">सेवाएँ</string>
+    <string name="biodata_section_experience">अनुभव</string>
+    <string name="biodata_section_expectations">जीवनसाथी से अपेक्षाएँ</string>
+    <string name="biodata_section_contact">संपर्क विवरण</string>
+    <string name="biodata_f_date_of_birth">जन्म तिथि</string>
+    <string name="biodata_f_time_of_birth">जन्म समय</string>
+    <string name="biodata_f_place_of_birth">जन्म स्थान</string>
+    <string name="biodata_f_age">आयु</string>
+    <string name="biodata_f_height">ऊँचाई</string>
+    <string name="biodata_f_weight">वज़न</string>
+    <string name="biodata_f_complexion">रंग</string>
+    <string name="biodata_f_blood_group">ब्लड ग्रुप</string>
+    <string name="biodata_f_marital_status">वैवाहिक स्थिति</string>
+    <string name="biodata_f_religion">धर्म</string>
+    <string name="biodata_f_caste">जाति</string>
+    <string name="biodata_f_sub_caste">उपजाति</string>
+    <string name="biodata_f_gotra">गोत्र</string>
+    <string name="biodata_f_rashi">राशि</string>
+    <string name="biodata_f_nakshatra">नक्षत्र</string>
+    <string name="biodata_f_manglik">मांगलिक</string>
+    <string name="biodata_f_mother_tongue">मातृभाषा</string>
+    <string name="biodata_f_diet">खान-पान</string>
+    <string name="biodata_f_qualification">सर्वोच्च शिक्षा</string>
+    <string name="biodata_f_college">कॉलेज / विश्वविद्यालय</string>
+    <string name="biodata_f_designation">पद</string>
+    <string name="biodata_f_company">कंपनी</string>
+    <string name="biodata_f_annual_income">वार्षिक आय</string>
+    <string name="biodata_f_father_name">पिता का नाम</string>
+    <string name="biodata_f_father_occupation">पिता का व्यवसाय</string>
+    <string name="biodata_f_mother_name">माता का नाम</string>
+    <string name="biodata_f_mother_occupation">माता का व्यवसाय</string>
+    <string name="biodata_f_brothers">भाई</string>
+    <string name="biodata_f_sisters">बहनें</string>
+    <string name="biodata_f_family_type">परिवार का प्रकार</string>
+    <string name="biodata_f_family_values">पारिवारिक मूल्य</string>
+    <string name="biodata_f_native_place">मूल निवास</string>
+    <string name="biodata_f_bio">मेरे बारे में</string>
+    <string name="biodata_f_skills">कौशल</string>
+    <string name="biodata_f_equipment">उपकरण</string>
+    <string name="biodata_f_services">सेवाएँ</string>
+    <string name="biodata_f_years_experience">अनुभव (वर्ष)</string>
+    <string name="biodata_f_clients">क्लाइंट और प्रोजेक्ट</string>
+    <string name="biodata_f_awards">पुरस्कार और फ़ीचर</string>
+    <string name="biodata_f_partner_expectations">जीवनसाथी से अपेक्षाएँ</string>
+    <string name="biodata_f_address">पता</string>
+    <string name="biodata_f_location">स्थान</string>
+    <string name="biodata_f_phone">फ़ोन</string>
+    <string name="biodata_f_email">ईमेल</string>
+    <string name="biodata_f_website">वेबसाइट</string>
+    <string name="biodata_f_social">Instagram / सोशल</string>
 </resources>

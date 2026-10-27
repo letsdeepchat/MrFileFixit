@@ -3,7 +3,6 @@ package com.mrfilefixit.feature.image.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.mrfilefixit.core.domain.batch.BatchPolicy
 import com.mrfilefixit.core.domain.dispatchers.ApplicationScope
 import com.mrfilefixit.core.domain.exam.GetExamProfilesUseCase
@@ -23,6 +22,7 @@ import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.ImageInfo
 import com.mrfilefixit.core.domain.image.ImageOp
 import com.mrfilefixit.core.domain.image.ImageProcessor
+import com.mrfilefixit.core.domain.image.ImageRequest
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.domain.image.OutputSpec
 import com.mrfilefixit.core.domain.image.ResizeMode
@@ -39,6 +39,7 @@ import com.mrfilefixit.core.domain.result.failure
 import com.mrfilefixit.core.domain.result.flatMap
 import com.mrfilefixit.core.domain.result.fold
 import com.mrfilefixit.core.domain.result.success
+import com.mrfilefixit.core.domain.scan.asSource
 import com.mrfilefixit.core.domain.security.InputLimits
 import com.mrfilefixit.feature.image.work.ImageBatchScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -47,6 +48,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -88,6 +90,8 @@ sealed interface ResizeEdit {
 }
 
 data class ImageToolUiState(
+    /** A result was saved or shared since the last run, so leaving does not lose anything. */
+    val delivered: Boolean = false,
     val tool: ImageTool = ImageTool.RESIZE,
     val files: List<FileRef> = emptyList(),
     val presets: List<ResizePreset> = listOf(ResizePreset.PASSPORT),
@@ -99,6 +103,8 @@ data class ImageToolUiState(
     /** Convert to PDF: one document from all the picked images. */
     val pdfJob: JobState<OutputFile> = JobState.Idle,
     val runsInBackground: Boolean = false,
+    /** Enhance tab: the first image at preview size, before and after, while the strength is being chosen. */
+    val enhancePreview: EnhancePreview? = null,
 ) {
     val isBatch: Boolean get() = files.size > 1
     val outcome: BatchOutcome? get() = (job as? JobState.Success)?.value
@@ -113,6 +119,9 @@ data class ImageToolUiState(
     val canRun: Boolean get() = files.isNotEmpty() && (tool != ImageTool.CROP || files.size == 1)
     val activePreset: ResizePreset? get() = presets.firstOrNull { it.id == options.presetId }
 }
+
+/** [beforeUri] is the first image scaled to preview size; [afterUri] the same with Natural Enhance applied. */
+data class EnhancePreview(val beforeUri: String, val afterUri: String?, val width: Int, val height: Int)
 
 sealed interface ImageEffect {
     data class Share(val uris: List<String>, val mimeType: String) : ImageEffect
@@ -151,13 +160,20 @@ class ImageToolViewModel @Inject constructor(
     private var jobId: String? = null
     private var workId: UUID? = null
     private var workObserver: Job? = null
+    private var previewJob: Job? = null
+    private var previewDirId: String? = null
+
+    /** The preview-size copy of the first image, by source URI, made once per picked file. */
+    private var previewBase: Pair<String, OutputFile>? = null
+    private var previewCount = 0
 
     init {
         viewModelScope.launch {
             runner.state.collect { job -> if (!state.value.runsInBackground) applyJob(job) }
         }
         viewModelScope.launch { pdfRunner.state.collect { job -> mutableState.update { it.copy(pdfJob = job) } } }
-        val route = savedStateHandle.toRoute<ImageRoute>()
+        // Read by name rather than with toRoute(): in the Images tab the handle belongs to the main tabs entry.
+        val route = ImageRoute(savedStateHandle.get<String>("examId"), savedStateHandle.get<String>("document"))
         viewModelScope.launch { loadPresets(route) }
     }
 
@@ -215,7 +231,10 @@ class ImageToolViewModel @Inject constructor(
 
     fun canEncode(format: ImageFormat): Boolean = imageProcessor.canEncode(format)
 
-    fun onToolSelected(tool: ImageTool) = mutableState.update { it.copy(tool = tool) }
+    fun onToolSelected(tool: ImageTool) {
+        mutableState.update { it.copy(tool = tool) }
+        schedulePreview()
+    }
 
     fun onFilesPicked(uris: List<String>) {
         if (uris.isEmpty()) return
@@ -224,12 +243,15 @@ class ImageToolViewModel @Inject constructor(
                 .flatMap { uris.map { describeFile(it) }.collectAll() }
             when (described) {
                 is Result.Success -> {
-                    mutableState.update { it.copy(files = described.value, firstInfo = null, inputError = null) }
+                    mutableState.update {
+                        it.copy(files = described.value, firstInfo = null, inputError = null, enhancePreview = null)
+                    }
                     imageProcessor.readInfo(described.value.first()).fold(
                         onSuccess = { info ->
                             mutableState.update {
                                 it.copy(firstInfo = info, options = it.options.withSyncedHeight(info))
                             }
+                            schedulePreview(immediately = true)
                         },
                         onFailure = { error -> mutableState.update { it.copy(inputError = error) } },
                     )
@@ -239,12 +261,93 @@ class ImageToolViewModel @Inject constructor(
         }
     }
 
-    fun onOptionsChanged(transform: (ImageOptions) -> ImageOptions) =
+    fun onOptionsChanged(transform: (ImageOptions) -> ImageOptions) {
+        val before = state.value.options.enhance
         mutableState.update { it.copy(options = transform(it.options)) }
+        if (state.value.options.enhance != before) schedulePreview()
+    }
+
+    /**
+     * Enhance tab: renders the first image at [PREVIEW_SIDE] with the chosen strength, a moment after the slider
+     * stops, so the before / after split shows the real effect before the full-size run.
+     */
+    private fun schedulePreview(immediately: Boolean = false) {
+        previewJob?.cancel()
+        val s = state.value
+        val source = s.files.firstOrNull()
+        val info = s.firstInfo
+        if (s.tool != ImageTool.ENHANCE || source == null || info == null || s.isDone) return
+        val effects = s.options.enhance.copy(scale = 1).toEffects()
+        previewJob = viewModelScope.launch {
+            if (!immediately) delay(PREVIEW_DEBOUNCE_MS)
+            val dir = previewDir() ?: return@launch
+            val base = previewBaseFor(source, info, dir) ?: return@launch
+            mutableState.update {
+                val keep = it.enhancePreview?.takeIf { p -> p.beforeUri == base.asSource().uri }
+                it.copy(
+                    enhancePreview = keep ?: EnhancePreview(
+                        base.asSource().uri,
+                        null,
+                        base.width ?: info.width,
+                        base.height ?: info.height,
+                    ),
+                )
+            }
+            val request = ImageRequest(
+                source = base.asSource(),
+                outputDir = dir,
+                outputBaseName = "after-${++previewCount}",
+                operations = emptyList(),
+                output = OutputSpec(ImageFormat.JPEG, EncodeTarget.Quality(PREVIEW_QUALITY)),
+                effects = effects,
+            )
+            imageProcessor.process(request).fold(
+                onSuccess = { after ->
+                    mutableState.update { st ->
+                        st.copy(enhancePreview = st.enhancePreview?.copy(afterUri = after.file.asSource().uri))
+                    }
+                },
+                onFailure = {},
+            )
+        }
+    }
+
+    private suspend fun previewDir(): String? {
+        val id = previewDirId ?: jobIds.next().also { previewDirId = it }
+        return (tempFiles.createJobDir(id) as? Result.Success)?.value
+    }
+
+    private suspend fun previewBaseFor(source: FileRef, info: ImageInfo, dir: String): OutputFile? {
+        previewBase?.takeIf { it.first == source.uri }?.let { return it.second }
+        val ops = if (maxOf(info.width, info.height) > PREVIEW_SIDE) {
+            listOf(ImageOp.Resize(PREVIEW_SIDE, PREVIEW_SIDE, ResizeMode.FIT))
+        } else {
+            emptyList()
+        }
+        val request = ImageRequest(
+            source = source,
+            outputDir = dir,
+            outputBaseName = "before-${++previewCount}",
+            operations = ops,
+            output = OutputSpec(ImageFormat.JPEG, EncodeTarget.Quality(PREVIEW_QUALITY)),
+        )
+        val base = (imageProcessor.process(request) as? Result.Success)?.value?.file ?: return null
+        previewBase = source.uri to base
+        return base
+    }
+
+    private fun discardPreview() {
+        previewJob?.cancel()
+        previewBase = null
+        val id = previewDirId ?: return
+        previewDirId = null
+        appScope.launch { tempFiles.deleteJobDir(id) }
+    }
 
     fun onRun() {
         val s = state.value
         if (!s.canRun) return
+        mutableState.update { it.copy(delivered = false) }
         viewModelScope.launch {
             val id = jobIds.next()
             discardOutputs()
@@ -385,7 +488,10 @@ class ImageToolViewModel @Inject constructor(
 
     fun onSave(output: OutputFile, destination: String) {
         viewModelScope.launch {
-            saveOutput(output, DestinationUri(destination)).fold({}, { effectChannel.send(ImageEffect.ShowError(it)) })
+            saveOutput(output, DestinationUri(destination)).fold(
+                onSuccess = { mutableState.update { it.copy(delivered = true) } },
+                onFailure = { effectChannel.send(ImageEffect.ShowError(it)) },
+            )
         }
     }
 
@@ -396,6 +502,7 @@ class ImageToolViewModel @Inject constructor(
             outputs.map { shareOutput(it) }.collectAll().fold(
                 onSuccess = { uris ->
                     val mime = outputs.map { it.mimeType }.distinct().singleOrNull() ?: "image/*"
+                    mutableState.update { it.copy(delivered = true) }
                     effectChannel.send(ImageEffect.Share(uris, mime))
                 },
                 onFailure = { effectChannel.send(ImageEffect.ShowError(it)) },
@@ -409,6 +516,7 @@ class ImageToolViewModel @Inject constructor(
         pdfRunner.reset()
         workObserver?.cancel()
         discardOutputs()
+        discardPreview()
         mutableState.update { ImageToolUiState(tool = it.tool, presets = it.presets, options = it.options) }
     }
 
@@ -421,6 +529,7 @@ class ImageToolViewModel @Inject constructor(
     override fun onCleared() {
         // Background batches keep their files until the user comes back; stale-file cleanup removes them later.
         if (!state.value.runsInBackground) discardOutputs()
+        discardPreview()
         super.onCleared()
     }
 
@@ -441,5 +550,10 @@ class ImageToolViewModel @Inject constructor(
         const val DEFAULT_SIDE = 1080
         const val KIB = 1024L
         const val PDF_BASE_NAME = "Images"
+
+        /** Long side of the live Enhance preview: sharp on a phone screen, fast to redo while sliding. */
+        const val PREVIEW_SIDE = 1024
+        const val PREVIEW_QUALITY = 92
+        const val PREVIEW_DEBOUNCE_MS = 250L
     }
 }
