@@ -432,8 +432,10 @@ private fun ImageOutputStrip(outputs: List<OutputFile>) {
     ) {
         items(outputs, key = { it.path }) { file ->
             val uri = file.asSource().uri
-            val aspect = if (file.width != null && file.height != null && file.height > 0) {
-                file.width.toFloat() / file.height
+            val pixelsWide = file.width
+            val pixelsHigh = file.height
+            val aspect = if (pixelsWide != null && pixelsHigh != null && pixelsHigh > 0) {
+                pixelsWide.toFloat() / pixelsHigh
             } else {
                 A4_ASPECT
             }
