@@ -151,7 +151,10 @@
     <string name="resume_tab_resumes">Resumes</string>
     <string name="resume_tab_biodata">Biodata</string>
     <string name="biodata_saved_empty">No saved biodata yet. Drafts stay on this phone until you delete them.</string>
-    <string name="biodata_draft_photos">%1$s · %2$d photos · %3$s</string>
+    <plurals name="biodata_draft_photos">
+        <item quantity="one">%1$s · %2$d photo · %3$s</item>
+        <item quantity="other">%1$s · %2$d photos · %3$s</item>
+    </plurals>
     <!-- Biodata designs -->
     <string name="biodata_pick_template">Choose a biodata design</string>
     <string name="biodata_pick_hint">You can switch to another design of the same type at any time. Everything is made on this phone.</string>

@@ -1,5 +1,6 @@
 package com.mrfilefixit.app.support
 
+import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
@@ -260,7 +261,11 @@ private fun openLink(context: Context, url: String): Boolean = try {
     false
 }
 
-/** Copies the QR image into the shareable cache folder and returns its content URI, or null on failure. */
+/**
+ * Copies the QR image into the shareable cache folder and returns its content URI, or null on failure.
+ * The PNG is read byte for byte from `drawable-nodpi`, which is never scaled, so it is the exact verified image.
+ */
+@SuppressLint("ResourceType")
 private suspend fun exportQr(context: Context): String? = withContext(Dispatchers.IO) {
     try {
         val file = File(context.cacheDir, "jobs/support/upi_qr.png").apply { parentFile?.mkdirs() }

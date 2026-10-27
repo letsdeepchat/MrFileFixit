@@ -71,7 +71,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -103,6 +102,7 @@ import com.mrfilefixit.core.ui.components.SegmentedChoice
 import com.mrfilefixit.core.ui.components.StickyActionBar
 import com.mrfilefixit.core.ui.components.SwitchRow
 import com.mrfilefixit.core.ui.components.ToolScaffold
+import com.mrfilefixit.core.ui.components.windowHeight
 import com.mrfilefixit.core.ui.format.formatBytes
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
@@ -627,7 +627,7 @@ private fun PhotoCropper(crop: BiodataPhotoCrop, busy: Boolean, actions: Biodata
         imageAspect = crop.imageAspect,
         frameAspect = crop.aspect.ratio ?: crop.imageAspect,
         onCropChanged = { actions.onPhoto(BiodataPhotoEvent.CropChanged(it)) },
-        maxHeight = LocalConfiguration.current.screenHeightDp.dp * CROP_MAX_HEIGHT_FRACTION,
+        maxHeight = windowHeight() * CROP_MAX_HEIGHT_FRACTION,
     )
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
         PhotoAspect.entries.forEach { aspect ->

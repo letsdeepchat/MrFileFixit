@@ -52,7 +52,6 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -138,7 +137,7 @@ fun BeforeAfterCard(
         Box(
             Modifier
                 .fillMaxWidth()
-                .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * MAX_HEIGHT_SHARE),
+                .heightIn(max = windowHeight() * MAX_HEIGHT_SHARE),
             contentAlignment = Alignment.Center,
         ) {
             Box(
@@ -334,7 +333,7 @@ fun ZoomableImageDialog(uri: String, onDismiss: () -> Unit) {
 fun ZoomableContent(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
-    BoxWithConstraints(
+    Box(
         modifier
             .clipToBounds()
             .testTag("zoomable")

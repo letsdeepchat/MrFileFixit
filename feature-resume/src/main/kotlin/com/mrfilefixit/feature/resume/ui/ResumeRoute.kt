@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,7 +39,8 @@ fun ResumeTab(
     val snackbar = remember { SnackbarHostState() }
     val chooser = stringResource(CoreR.string.share_chooser_title)
     var snackError by remember { mutableStateOf<AppError?>(null) }
-    LaunchedEffect(biodataVm, context) { biodataVm.labels = ResourceBiodataLabels(context.resources) }
+    val resources = LocalResources.current
+    LaunchedEffect(biodataVm, resources) { biodataVm.labels = ResourceBiodataLabels(resources) }
     LaunchedEffect(openBiodata) {
         if (openBiodata) {
             biodataVm.onOpenTemplates(restyle = false)

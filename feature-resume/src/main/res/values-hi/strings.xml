@@ -151,7 +151,10 @@
     <string name="resume_tab_resumes">रिज़्यूमे</string>
     <string name="resume_tab_biodata">बायोडेटा</string>
     <string name="biodata_saved_empty">अभी कोई बायोडेटा सेव नहीं है। ड्राफ़्ट तब तक इसी फ़ोन पर रहते हैं जब तक आप उन्हें न हटाएँ।</string>
-    <string name="biodata_draft_photos">%1$s · %2$d फ़ोटो · %3$s</string>
+    <plurals name="biodata_draft_photos">
+        <item quantity="one">%1$s · %2$d फ़ोटो · %3$s</item>
+        <item quantity="other">%1$s · %2$d फ़ोटो · %3$s</item>
+    </plurals>
     <!-- Biodata designs -->
     <string name="biodata_pick_template">बायोडेटा डिज़ाइन चुनें</string>
     <string name="biodata_pick_hint">आप कभी भी उसी तरह के दूसरे डिज़ाइन पर जा सकते हैं। सब कुछ इसी फ़ोन पर बनता है।</string>

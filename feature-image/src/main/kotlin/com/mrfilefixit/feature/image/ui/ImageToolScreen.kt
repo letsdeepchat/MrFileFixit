@@ -45,14 +45,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import com.mrfilefixit.core.domain.exam.DocumentKind
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.NormalizedRect
@@ -79,6 +77,7 @@ import com.mrfilefixit.core.ui.components.UploadDropZone
 import com.mrfilefixit.core.ui.components.UriImage
 import com.mrfilefixit.core.ui.components.ZoomableImageDialog
 import com.mrfilefixit.core.ui.components.displayName
+import com.mrfilefixit.core.ui.components.windowHeight
 import com.mrfilefixit.core.ui.format.formatBytes
 import com.mrfilefixit.core.ui.navigation.ReportInnerScreen
 import com.mrfilefixit.core.ui.navigation.rememberGuardedBack
@@ -248,7 +247,7 @@ private fun SelectedFiles(state: ImageToolUiState, onChange: () -> Unit, modifie
         Box(
             Modifier
                 .fillMaxWidth()
-                .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * PICKED_MAX_HEIGHT_FRACTION),
+                .heightIn(max = windowHeight() * PICKED_MAX_HEIGHT_FRACTION),
             contentAlignment = Alignment.Center,
         ) {
             Box(
@@ -304,7 +303,7 @@ private fun ToolOptions(state: ImageToolUiState, actions: ImageToolActions, modi
                     imageAspect = imageAspect,
                     frameAspect = o.cropAspect ?: imageAspect,
                     onCropChanged = { rect: NormalizedRect -> actions.onOptions { it.copy(crop = rect) } },
-                    maxHeight = LocalConfiguration.current.screenHeightDp.dp * CROP_MAX_HEIGHT_FRACTION,
+                    maxHeight = windowHeight() * CROP_MAX_HEIGHT_FRACTION,
                 )
             }
             SectionHeader(stringResource(R.string.image_aspect), Modifier.padding(top = Dimens.SpaceS))
