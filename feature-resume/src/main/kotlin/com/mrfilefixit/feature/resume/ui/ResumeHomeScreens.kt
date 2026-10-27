@@ -62,6 +62,7 @@ import com.mrfilefixit.core.domain.biodata.BiodataTemplates
 import com.mrfilefixit.core.domain.convert.DocumentFormat
 import com.mrfilefixit.core.domain.resume.HeaderLayout
 import com.mrfilefixit.core.domain.resume.HeadingStyle
+import com.mrfilefixit.core.domain.resume.ResumeSummary
 import com.mrfilefixit.core.domain.resume.ResumeTemplate
 import com.mrfilefixit.core.domain.resume.ResumeTemplates
 import com.mrfilefixit.core.ui.components.ErrorCard
