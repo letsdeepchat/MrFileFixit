@@ -10,4 +10,11 @@
         <ignore path="**/bcpkix-*.jar" />
         <ignore path="**/org.bouncycastle/**" />
     </issue>
+    <!--
+      Only the sideloaded tester APK is built with -Pmff.abis (phone chips only). The Play Store bundle is built
+      without it, keeps x86_64, and Play serves each device just its own ABI, so ChromeOS is still covered.
+    -->
+    <issue id="ChromeOsAbiSupport">
+        <ignore path="**/app/build.gradle.kts" />
+    </issue>
 </lint>
