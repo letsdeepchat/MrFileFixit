@@ -60,6 +60,18 @@ jobs:
         run: ./gradlew lintDebug --continue
       - name: Assemble debug
         run: ./gradlew :app:assembleDebug
+      # What takes space in the APK, by folder and by largest file, so a size jump is visible in every run.
+      - name: APK size report
+        run: |
+          apk=app/build/outputs/apk/debug/app-debug.apk
+          {
+            echo "### APK size: $(du -m "$apk" | cut -f1) MB"
+            echo '```'
+            unzip -lv "$apk" | awk 'NR>3 && $8 != "" {split($8, p, "/"); key = (p[1] == "lib") ? p[1] "/" p[2] : p[1]; s[key] += $3} END {for (k in s) printf "%8.1f MB  %s\n", s[k]/1048576, k}' | sort -rn | head -20
+            echo '--- largest files (compressed size)'
+            unzip -lv "$apk" | awk 'NR>3 && $8 != "" {printf "%8.1f MB  %s\n", $3/1048576, $8}' | sort -rn | head -25
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Merged manifest has no broad storage permissions and no ads
         run: |
           manifest=$(find app/build/intermediates/merged_manifest -name AndroidManifest.xml | head -n 1)
