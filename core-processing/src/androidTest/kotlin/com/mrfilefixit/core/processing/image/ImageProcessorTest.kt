@@ -173,10 +173,12 @@ class ImageProcessorTest {
         val empty = File(dir, "empty.png").apply { writeBytes(ByteArray(0)) }
         listOf(junk, empty).forEach { file ->
             val ref = FileRef(Uri.fromFile(file).toString(), file.name, "image/jpeg", file.length())
-            val result = run(ref, OutputSpec(ImageFormat.JPEG), name = file.nameWithoutExtension)
-            assertTrue(file.name, result is Result.Failure)
-            val leftovers = dir.listFiles().orEmpty().filter { it.name.startsWith(file.nameWithoutExtension + ".") }
-            assertTrue(file.name, leftovers.none { it.length() == 0L })
+            val outName = "out-${file.nameWithoutExtension}"
+            val result = run(ref, OutputSpec(ImageFormat.JPEG), name = outName)
+            assertTrue("${file.name}: $result", result is Result.Failure)
+            // No output file at all, so nothing empty is ever offered (the input itself may be empty).
+            val leftovers = dir.listFiles().orEmpty().filter { it.name.startsWith("$outName.") }
+            assertTrue("${file.name} left $leftovers", leftovers.none { it.length() == 0L })
         }
     }
 
