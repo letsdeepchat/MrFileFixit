@@ -9,6 +9,7 @@ import com.google.mlkit.vision.segmentation.selfie.SelfieSegmenterOptions
 import com.mrfilefixit.core.domain.image.BackgroundFill
 import com.mrfilefixit.core.domain.image.BackgroundMath
 import com.mrfilefixit.core.domain.image.BackgroundReplace
+import com.mrfilefixit.core.domain.image.PersonMatte
 import javax.inject.Inject
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
@@ -17,21 +18,15 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.tasks.await
 
-/** Per-pixel "person" confidence (0..1), row-major, usually smaller than the photo it was made from. */
-internal class PersonMask(val width: Int, val height: Int, val values: FloatArray) {
-    val hasPerson: Boolean get() = BackgroundMath.hasPerson(values)
-}
-
 /**
  * Remove background on this phone: ML Kit selfie segmentation (its model is bundled in the app, so nothing is
- * downloaded and nothing leaves the phone) finds the person, then the rest of the photo is replaced.
- *
- * The mask is made from a copy at most [MASK_SIDE] pixels on its long side and read back with bilinear
- * interpolation, so a large photo needs only a small mask and the outline stays smooth.
+ * downloaded and nothing leaves the phone) finds the person on a copy about [PersonMatte.GRID_SIDE] pixels on
+ * its long side, then [PersonMatte] snaps that coarse mask to the photo's real edges and cleans the old
+ * background's colour out of hair and shoulder edges, and the rest of the photo is replaced at full size.
  */
 internal class BackgroundRemoval @Inject constructor() {
-    suspend fun mask(bitmap: Bitmap): PersonMask {
-        val scale = min(1f, MASK_SIDE.toFloat() / max(bitmap.width, bitmap.height))
+    suspend fun matte(bitmap: Bitmap, edge: Float): PersonMatte {
+        val scale = min(1f, PersonMatte.GRID_SIDE.toFloat() / max(bitmap.width, bitmap.height))
         val input = if (scale < 1f) {
             bitmap.scale(
                 (bitmap.width * scale).roundToInt().coerceAtLeast(1),
@@ -49,7 +44,17 @@ internal class BackgroundRemoval @Inject constructor() {
             val values = FloatArray(mask.width * mask.height)
             mask.buffer.rewind()
             mask.buffer.asFloatBuffer().get(values)
-            PersonMask(mask.width, mask.height, values)
+            val w = input.width
+            val h = input.height
+            val pixels = IntArray(w * h)
+            input.getPixels(pixels, 0, w, 0, 0, w, h)
+            // The mask is normally the input's size; resample it when a model version returns another size.
+            val confidence = if (mask.width == w && mask.height == h) {
+                values
+            } else {
+                FloatArray(w * h) { BackgroundMath.sample(values, mask.width, mask.height, w, h, it % w, it / w) }
+            }
+            PersonMatte.from(pixels, w, h, confidence, bitmap.width, bitmap.height, edge)
         } finally {
             segmenter.close()
             if (input !== bitmap) input.recycle()
@@ -62,7 +67,7 @@ internal class BackgroundRemoval @Inject constructor() {
      */
     suspend fun composite(
         source: Bitmap,
-        mask: PersonMask,
+        matte: PersonMatte,
         replace: BackgroundReplace,
         backdrop: Bitmap?,
         keepAlpha: Boolean,
@@ -77,6 +82,7 @@ internal class BackgroundRemoval @Inject constructor() {
         val transparent = replace.needsAlpha && keepAlpha
         val rows = min(BAND, height)
         val front = IntArray(width * rows)
+        val alpha = FloatArray(width * rows)
         val back = if (backdrop != null) IntArray(width * rows) else null
         var top = 0
         while (top < height) {
@@ -84,17 +90,12 @@ internal class BackgroundRemoval @Inject constructor() {
             val count = min(BAND, height - top)
             source.getPixels(front, 0, width, 0, top, width, count)
             back?.let { backdrop?.getPixels(it, 0, width, 0, top, width, count) }
-            for (row in 0 until count) {
-                val y = top + row
-                for (x in 0 until width) {
-                    val i = row * width + x
-                    val confidence = BackgroundMath.sample(mask.values, mask.width, mask.height, width, height, x, y)
-                    val alpha = BackgroundMath.alpha(confidence, replace.edge)
-                    front[i] = when {
-                        transparent -> BackgroundMath.cutOut(front[i], alpha)
-                        back != null -> BackgroundMath.blend(front[i], back[i], alpha)
-                        else -> BackgroundMath.blend(front[i], solid, alpha)
-                    }
+            matte.cut(front, 0, top, count, alpha)
+            for (i in 0 until width * count) {
+                front[i] = when {
+                    transparent -> BackgroundMath.cutOut(front[i], alpha[i])
+                    back != null -> BackgroundMath.blend(front[i], back[i], alpha[i])
+                    else -> BackgroundMath.blend(front[i], solid, alpha[i])
                 }
             }
             out.setPixels(front, 0, width, 0, top, width, count)
@@ -104,8 +105,6 @@ internal class BackgroundRemoval @Inject constructor() {
     }
 
     private companion object {
-        /** Long side of the copy that is segmented; ML Kit's model works at a few hundred pixels anyway. */
-        const val MASK_SIDE = 1024
         const val BAND = 256
     }
 }

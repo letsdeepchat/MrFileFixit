@@ -24,12 +24,15 @@ import kotlinx.coroutines.ensureActive
  *    spots smaller than a few pixels are lifted part of the way toward their surroundings. A morphological
  *    closing finds them: it fills dark dots narrower than its window but keeps edges exactly, so eyes, brows,
  *    lips and hair are left alone, and non-skin areas such as text are excluded. Shallow pores stay.
+ * 4. Detail recovery: a stronger unsharp mask at the scale a soft or slightly blurred photo lost (it grows with
+ *    the picture), with overshoot control: the result may not leave the range of its 3 x 3 neighbourhood by
+ *    more than a few levels, which is what keeps strong sharpening free of halos and bright rims.
  *
  * The per-pixel luminance change is capped, so there are no halos even at full strength.
  */
 object NaturalEnhancer {
     /** Rows of context each output row needs above and below it; banded callers read this many extra rows. */
-    const val HALO = 20
+    const val HALO = 32
 
     private const val GUIDE_RADIUS = 2
     private const val MIN_SPOT_RADIUS = 2
@@ -54,9 +57,20 @@ object NaturalEnhancer {
     private const val MEDIUM_AMOUNT = 0.5f
     private const val SKIN_SHARPEN_SHARE = 0.6f
 
+    /** Detail recovery: radius per this many pixels of the long side, its amount, and the allowed overshoot. */
+    private const val DETAIL_RADIUS_STEP = 600
+    private const val MIN_DETAIL_RADIUS = 1
+    private const val MAX_DETAIL_RADIUS = 4
+    private const val DETAIL_AMOUNT = 1.6f
+    private const val SKIN_DETAIL_SHARE = 0.85f
+    private const val OVERSHOOT = 6f
+
+    /** Detail recovery ignores detail within this many noise deviations, so it never brings grain back. */
+    private const val DETAIL_NOISE_FACTOR = 2.5f
+
     /** Detail smaller than this (luminance steps) is treated as noise and not sharpened. */
     private const val CORING = 3f
-    private const val MAX_DELTA = 48f
+    private const val MAX_DELTA = 64f
 
     /**
      * Returns a new array; [pixels] (packed ARGB, row-major) is not modified. Alpha is kept. [noiseSigma] is the
@@ -71,6 +85,7 @@ object NaturalEnhancer {
         strength: Float,
         noiseSigma: Float? = null,
         spotRadius: Int? = null,
+        detailRadius: Int? = null,
     ): IntArray {
         require(width > 0 && height > 0 && pixels.size == width * height) { "pixels must be width * height" }
         val s = strength.coerceIn(0f, 1f)
@@ -97,7 +112,28 @@ object NaturalEnhancer {
         }
         val threshold = SPOT_THRESHOLD + SPOT_NOISE_FACTOR * sigma
         healSpots(sharpened, skin, Spots(width, height, s, spotRadius ?: spotRadiusFor(width, height), threshold))
-        return IntArray(n) { i -> shiftLuma(pixels[i], (sharpened[i] - y[i]).coerceIn(-MAX_DELTA, MAX_DELTA)) }
+        val detail = Detail(s, detailRadius ?: detailRadiusFor(width, height), CORING + DETAIL_NOISE_FACTOR * sigma)
+        val recovered = recoverDetail(sharpened, skin, width, height, detail)
+        return IntArray(n) { i -> shiftLuma(pixels[i], (recovered[i] - y[i]).coerceIn(-MAX_DELTA, MAX_DELTA)) }
+    }
+
+    /** Radius of the detail recovered by step 4 for a picture of this size. */
+    fun detailRadiusFor(width: Int, height: Int): Int =
+        (max(width, height) / DETAIL_RADIUS_STEP).coerceIn(MIN_DETAIL_RADIUS, MAX_DETAIL_RADIUS)
+
+    private class Detail(val strength: Float, val radius: Int, val coring: Float)
+
+    /** Step 4: unsharp mask with noise coring, softer on skin, clamped to the 3 x 3 range plus overshoot. */
+    private fun recoverDetail(y: FloatArray, skin: FloatArray, width: Int, height: Int, detail: Detail): FloatArray {
+        val r = detail.radius
+        val blurred = Box.mean(Box.mean(y, width, height, r), width, height, r)
+        val low = Morphology.erode(y, width, height, 1)
+        val high = Morphology.dilate(y, width, height, 1)
+        return FloatArray(y.size) { i ->
+            val amount = detail.strength * DETAIL_AMOUNT * (1f - SKIN_DETAIL_SHARE * skin[i])
+            val boost = amount * core(y[i] - blurred[i], detail.coring)
+            (y[i] + boost).coerceIn(low[i] - OVERSHOOT, high[i] + OVERSHOOT)
+        }
     }
 
     /** Blemish size to heal for a picture of this size. */
@@ -122,6 +158,7 @@ object NaturalEnhancer {
         require(width > 0 && height > 0 && bandRows > 0) { "Sizes must be positive" }
         val sigma = measureNoise(width, height, bandRows, read)
         val spotRadius = spotRadiusFor(width, height)
+        val detailRadius = detailRadiusFor(width, height)
         var top = 0
         var above: IntArray? = null
         while (top < height) {
@@ -136,7 +173,7 @@ object NaturalEnhancer {
             val keep = min(HALO, bottom)
             val bandEnd = (haloAbove + bottom - top) * width
             above = buffer.copyOfRange(bandEnd - keep * width, bandEnd)
-            val enhanced = enhance(buffer, width, rows, strength, sigma, spotRadius)
+            val enhanced = enhance(buffer, width, rows, strength, sigma, spotRadius, detailRadius)
             write(top, bottom - top, enhanced, haloAbove * width)
             top = bottom
         }
@@ -204,9 +241,9 @@ object NaturalEnhancer {
     }
 
     /** Soft coring: detail below [CORING] fades to zero so flat noise is not amplified. */
-    private fun core(detail: Float): Float {
+    private fun core(detail: Float, coring: Float = CORING): Float {
         val magnitude = abs(detail)
-        return if (magnitude >= CORING) detail else detail * magnitude / CORING
+        return if (magnitude >= coring) detail else detail * magnitude / coring
     }
 
     /** Adds [delta] to every colour channel, which changes Y by [delta] and leaves Cb and Cr untouched. */
@@ -308,6 +345,14 @@ internal object Morphology {
     /** Closing (max, then min): fills dark details narrower than the window and keeps edges where they are. */
     fun close(src: FloatArray, width: Int, height: Int, radius: Int): FloatArray =
         filter(filter(src, width, height, radius, max = true), width, height, radius, max = false)
+
+    /** Local minimum over a (2 * radius + 1) square. */
+    fun erode(src: FloatArray, width: Int, height: Int, radius: Int): FloatArray =
+        filter(src, width, height, radius, max = false)
+
+    /** Local maximum over a (2 * radius + 1) square. */
+    fun dilate(src: FloatArray, width: Int, height: Int, radius: Int): FloatArray =
+        filter(src, width, height, radius, max = true)
 
     private fun filter(src: FloatArray, width: Int, height: Int, radius: Int, max: Boolean): FloatArray {
         val horizontal = FloatArray(src.size)

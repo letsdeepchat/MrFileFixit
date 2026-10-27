@@ -8,6 +8,7 @@ import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.Typeface
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 import com.mrfilefixit.core.domain.image.ImageEffectMath
 import com.mrfilefixit.core.domain.image.ImageEffects
 import com.mrfilefixit.core.domain.image.ImageFilter
@@ -16,6 +17,7 @@ import com.mrfilefixit.core.domain.image.OverlayFont
 import com.mrfilefixit.core.domain.image.PhotoStamp
 import com.mrfilefixit.core.domain.image.TextOverlay
 import com.mrfilefixit.core.domain.image.enhance.LanczosResampler
+import com.mrfilefixit.core.domain.image.enhance.LocalContrast
 import com.mrfilefixit.core.domain.image.enhance.NaturalEnhancer
 import com.mrfilefixit.core.domain.image.enhance.ToneVibrance
 import com.mrfilefixit.core.domain.scan.ScanFilter
@@ -68,9 +70,9 @@ internal object ImageEffectsRendering {
     }
 
     /**
-     * Enhance: a Lanczos upscale when asked for, the luminance clarity pipeline (denoise, sharpen, spot healing),
-     * then auto contrast and vibrance ([ToneVibrance]), all band by band on the (mutable) result so a large photo
-     * is never copied as a whole pixel array twice.
+     * Enhance: a Lanczos upscale when asked for, the luminance pipeline (denoise, sharpen, spot healing, detail
+     * recovery), then large-scale clarity ([LocalContrast]) and auto contrast and vibrance ([ToneVibrance]), all
+     * band by band on the (mutable) result so a large photo is never copied as a whole pixel array twice.
      */
     private suspend fun enhance(source: Bitmap, enhance: NaturalEnhance): Bitmap {
         val (targetW, targetH) = ImageEffectMath.enhancedSize(source.width, source.height, enhance)
@@ -90,18 +92,32 @@ internal object ImageEffectsRendering {
                 write = { top, count, from, offset -> out.setPixels(from, offset, width, 0, top, width, count) },
             )
             val tone = ToneVibrance.from(sample(out), enhance.strength)
+            val clarity = clarity(out, enhance.strength)
             val band = IntArray(width * min(BAND, out.height))
             var top = 0
             while (top < out.height) {
                 coroutineContext.ensureActive()
                 val count = min(BAND, out.height - top)
                 out.getPixels(band, 0, width, 0, top, width, count)
+                clarity.apply(band, 0, top, count)
                 tone.apply(band, 0, width * count)
                 out.setPixels(band, 0, width, 0, top, width, count)
                 top += count
             }
         }
         return out
+    }
+
+    /** Clarity for [bitmap], built from a copy scaled to about [LocalContrast.GRID_SIDE] on its long side. */
+    private fun clarity(bitmap: Bitmap, strength: Float): LocalContrast {
+        val factor = min(1f, LocalContrast.GRID_SIDE.toFloat() / max(bitmap.width, bitmap.height))
+        val w = max(1, (bitmap.width * factor).toInt())
+        val h = max(1, (bitmap.height * factor).toInt())
+        val small = if (w == bitmap.width && h == bitmap.height) bitmap else bitmap.scale(w, h)
+        val pixels = IntArray(w * h)
+        small.getPixels(pixels, 0, w, 0, 0, w, h)
+        if (small !== bitmap) small.recycle()
+        return LocalContrast.from(pixels, w, h, bitmap.width, bitmap.height, strength)
     }
 
     /** An even grid of at most about [SAMPLE_SIDE] x [SAMPLE_SIDE] pixels, enough for a tone histogram. */

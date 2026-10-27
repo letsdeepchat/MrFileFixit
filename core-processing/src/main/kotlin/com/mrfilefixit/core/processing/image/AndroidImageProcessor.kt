@@ -148,17 +148,17 @@ internal class AndroidImageProcessor @Inject constructor(
      * A picture background is decoded and cover-scaled to exactly the photo's size.
      */
     private suspend fun replaceBackground(source: Bitmap, replace: BackgroundReplace, output: OutputSpec): Bitmap? {
-        val mask = backgroundRemoval.mask(source)
-        if (!mask.hasPerson) return null
+        val matte = backgroundRemoval.matte(source, replace.edge)
+        if (!matte.hasPerson) return null
         coroutineContext.ensureActive()
         val keepAlpha = output.format == ImageFormat.PNG || output.format == ImageFormat.WEBP
         val picture = replace.fill as? BackgroundFill.Picture
-            ?: return backgroundRemoval.composite(source, mask, replace, null, keepAlpha)
+            ?: return backgroundRemoval.composite(source, matte, replace, null, keepAlpha)
         val raw = decoding.readRawInfo(picture.uri)
         val fill = ImageOp.Resize(source.width, source.height, ResizeMode.FILL)
         val cover = ImagePlan(0, NormalizedRect.FULL, fill, null)
         return renderPlan(picture.uri, raw, cover, output).use { backdrop ->
-            backgroundRemoval.composite(source, mask, replace, backdrop, keepAlpha)
+            backgroundRemoval.composite(source, matte, replace, backdrop, keepAlpha)
         }
     }
 

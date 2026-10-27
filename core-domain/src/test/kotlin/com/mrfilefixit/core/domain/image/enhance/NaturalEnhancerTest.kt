@@ -33,6 +33,26 @@ class NaturalEnhancerTest {
         )
     }
 
+    @Test
+    fun `a blurred edge becomes clearly steeper without bright or dark rims`() {
+        val w = 64
+        val h = 16
+        // A grey step from 70 to 170, softened over about eight pixels, as a slightly out-of-focus photo has it.
+        val edge = IntArray(w * h) { i ->
+            val x = i % w
+            val v = (70 + 100 / (1 + kotlin.math.exp(-(x - w / 2) / 2.0))).toInt()
+            argb(v, v, v)
+        }
+        val out = NaturalEnhancer.enhance(edge, w, h, 0.6f)
+        val row = h / 2 * w
+        val slopeBefore = luma(edge[row + w / 2 + 1]) - luma(edge[row + w / 2 - 2])
+        val slopeAfter = luma(out[row + w / 2 + 1]) - luma(out[row + w / 2 - 2])
+        assertTrue(slopeAfter > slopeBefore * 1.1, "edge slope $slopeBefore -> $slopeAfter")
+        val darkest = (0 until w).minOf { luma(out[row + it]) }
+        val brightest = (0 until w).maxOf { luma(out[row + it]) }
+        assertTrue(darkest > 70 - 12 && brightest < 170 + 12, "rims: $darkest..$brightest")
+    }
+
     @ParameterizedTest
     @ValueSource(floats = [0.3f, 0.6f, 1f])
     fun `colour and skin tone are preserved at any strength`(strength: Float) {
