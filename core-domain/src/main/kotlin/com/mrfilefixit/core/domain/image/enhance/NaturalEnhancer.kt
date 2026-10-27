@@ -51,7 +51,7 @@ object NaturalEnhancer {
     private const val SPOT_NOISE_FACTOR = 2.5f
     private const val SPOT_MAX_LIFT = 40f
     private const val FINE_AMOUNT = 1.1f
-    private const val MEDIUM_AMOUNT = 0.35f
+    private const val MEDIUM_AMOUNT = 0.5f
     private const val SKIN_SHARPEN_SHARE = 0.6f
 
     /** Detail smaller than this (luminance steps) is treated as noise and not sharpened. */
@@ -93,7 +93,7 @@ object NaturalEnhancer {
         val sharpened = FloatArray(n) { i ->
             val d = denoised[i]
             val skinShare = 1f - SKIN_SHARPEN_SHARE * skin[i]
-            d + s * skinShare * FINE_AMOUNT * core(d - fine[i]) + s * MEDIUM_AMOUNT * (d - medium[i])
+            d + s * skinShare * (FINE_AMOUNT * core(d - fine[i]) + MEDIUM_AMOUNT * (d - medium[i]))
         }
         val threshold = SPOT_THRESHOLD + SPOT_NOISE_FACTOR * sigma
         healSpots(sharpened, skin, Spots(width, height, s, spotRadius ?: spotRadiusFor(width, height), threshold))

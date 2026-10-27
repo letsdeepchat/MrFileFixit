@@ -51,5 +51,6 @@ fun appErrorMessage(error: AppError): String = when (error) {
     AppError.NotAResume -> stringResource(R.string.error_not_a_resume)
     AppError.EmptyOutput -> stringResource(R.string.error_empty_output)
     AppError.PhotoRequired -> stringResource(R.string.error_photo_required)
+    AppError.NoPersonFound -> stringResource(R.string.error_no_person_found)
     is AppError.Unexpected -> stringResource(R.string.error_unexpected)
 }

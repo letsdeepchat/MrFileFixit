@@ -5,7 +5,6 @@ import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -240,13 +239,21 @@ private fun Heading(text: String) {
     Text(text, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
 }
 
-/** Lets the user pick a UPI app for [upiUri]. False when none is installed. */
+/**
+ * Hands [upiUri] to the user's UPI app (GPay, PhonePe, Paytm, BHIM, ...), with a chooser when several are
+ * installed. False only when Android has nothing that opens `upi://` links.
+ *
+ * The lookup uses no flags: several UPI apps do not mark their pay screen as a default handler, so
+ * MATCH_DEFAULT_ONLY reported "no UPI app" on phones that had them. If the lookup still finds nothing (a hidden
+ * package), the link is opened anyway and only a real ActivityNotFoundException counts as "none installed".
+ */
 private fun openUpi(context: Context, upiUri: String, chooserTitle: String): Boolean {
     val intent = Intent(Intent.ACTION_VIEW, upiUri.toUri())
-    val apps = context.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
-    if (apps.isEmpty()) return false
+
+    @Suppress("DEPRECATION") // The flags overload is API 33+; 0 means the same on every version.
+    val found = context.packageManager.queryIntentActivities(intent, 0).size
     return try {
-        context.startActivity(Intent.createChooser(intent, chooserTitle))
+        context.startActivity(if (found > 1) Intent.createChooser(intent, chooserTitle) else intent)
         true
     } catch (_: ActivityNotFoundException) {
         false

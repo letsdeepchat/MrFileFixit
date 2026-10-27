@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.CardDefaults
@@ -66,7 +65,6 @@ private val tools = listOf(
 fun HomeScreen(
     onOpen: (TopLevelDestination) -> Unit,
     onOpenSettings: () -> Unit,
-    onCreateBiodata: () -> Unit,
     onOpenSupport: (() -> Unit)?,
 ) {
     ToolScaffold(
@@ -110,15 +108,6 @@ fun HomeScreen(
                     body = stringResource(body),
                     onClick = { onOpen(destination) },
                     modifier = Modifier.testTag("home_${destination.name.lowercase()}"),
-                )
-            }
-            item(key = "biodata") {
-                ToolCard(
-                    icon = Icons.Filled.Favorite,
-                    title = stringResource(R.string.home_biodata_title),
-                    body = stringResource(R.string.home_biodata_body),
-                    onClick = onCreateBiodata,
-                    modifier = Modifier.testTag("home_biodata"),
                 )
             }
             if (onOpenSupport != null) {
@@ -213,6 +202,6 @@ private fun ToolCard(
 @Composable
 private fun HomePreview() {
     MffTheme(dynamicColor = false) {
-        HomeScreen(onOpen = {}, onOpenSettings = {}, onCreateBiodata = {}, onOpenSupport = {})
+        HomeScreen(onOpen = {}, onOpenSettings = {}, onOpenSupport = {})
     }
 }

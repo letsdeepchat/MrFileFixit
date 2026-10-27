@@ -96,6 +96,7 @@
     <!-- Added: errors -->
     <string name="error_empty_output">The result came out empty, so nothing was saved. Try again or pick another file.</string>
     <string name="error_photo_required">Add at least one photo to make the biodata.</string>
+    <string name="error_no_person_found">No person was found in this photo. Remove background works on photos of people, such as portraits, selfies and exam photos.</string>
     <!-- Before / after preview -->
     <string name="preview_title">Preview</string>
     <string name="preview_before">Before</string>

@@ -1,6 +1,6 @@
 # Resume & Biodata
 
-The **Resume & Biodata** tab (also on Home) has two builders. Its first screen offers two large actions,
+The **Resume & Biodata** tab (its card on Home is the only entry point) has two builders. Its first screen offers two large actions,
 **Create a professional resume** and **Create a biodata**, followed by the saved drafts of each kind. Everything
 runs on the phone, so drafts, photos and exports never leave it.
 

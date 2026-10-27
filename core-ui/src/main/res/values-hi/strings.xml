@@ -89,6 +89,7 @@
     <!-- Added: errors -->
     <string name="error_empty_output">नतीजा खाली निकला, इसलिए कुछ भी सेव नहीं हुआ। फिर से कोशिश करें या दूसरी फ़ाइल चुनें।</string>
     <string name="error_photo_required">बायोडाटा बनाने के लिए कम से कम एक फ़ोटो जोड़ें।</string>
+    <string name="error_no_person_found">इस फ़ोटो में कोई व्यक्ति नहीं मिला। बैकग्राउंड हटाना लोगों की फ़ोटो पर काम करता है, जैसे पोर्ट्रेट, सेल्फ़ी और परीक्षा फ़ोटो।</string>
     <!-- Before / after preview -->
     <string name="preview_title">प्रीव्यू</string>
     <string name="preview_before">पहले</string>

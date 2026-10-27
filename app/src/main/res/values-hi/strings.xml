@@ -35,8 +35,6 @@
     <string name="privacy_metadata_body">एक्सपोर्ट करते समय इमेज से लोकेशन, कैमरा की जानकारी और अन्य EXIF डेटा हटा दिया जाता है।</string>
     <string name="settings_version">वर्शन %1$s</string>
     <!-- Home quick cards -->
-    <string name="home_biodata_title">बायोडेटा बनाएँ</string>
-    <string name="home_biodata_body">1 से 5 फ़ोटो के साथ शादी का बायोडेटा या फ़ोटोग्राफ़र पोर्टफ़ोलियो, PDF या Word में</string>
     <string name="home_support_title">Mr File Fixit को सपोर्ट करें</string>
     <string name="home_support_body">मुफ़्त, बिना विज्ञापन और बिना प्रीमियम। अगर ऐप काम आया हो, तो आपका वैकल्पिक दान इसे बेहतर बनाने में मदद करता है।</string>
     <!-- Settings and support screen -->

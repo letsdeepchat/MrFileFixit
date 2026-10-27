@@ -8,7 +8,6 @@ object Donation {
     const val UPI_ID = "deepakchaudhari705-1@okaxis"
     const val PAYEE_NAME = "Deepak Chaudhari"
     const val PAYPAL_URL = "https://paypal.me/MrFileFixit"
-    const val DEFAULT_NOTE = "Support Mr File Fixit"
 
     /** Suggested amounts in rupees. The user can always pay any amount, including none of these. */
     val suggestedRupees = listOf(51, 101, 251, 501)
@@ -23,10 +22,11 @@ object Donation {
     const val MAX_RUPEES = 100_000
 
     /**
-     * A `upi://pay` link (NPCI UPI linking specification) for any UPI app. [amountRupees] prefills the amount;
-     * null leaves it to the user.
+     * A `upi://pay` link (NPCI UPI linking specification) for any UPI app: `pa`, `pn`, then `am` with paise for a
+     * preset and `cu=INR`. [amountRupees] null ("Any amount") leaves out `am`, so the UPI app asks for the amount.
+     * No note by default: some UPI apps decline person-to-person links that carry one.
      */
-    fun upiUri(amountRupees: Int? = null, note: String = DEFAULT_NOTE): String = buildString {
+    fun upiUri(amountRupees: Int? = null, note: String = ""): String = buildString {
         append("upi://pay?pa=").append(encode(UPI_ID))
         append("&pn=").append(encode(PAYEE_NAME))
         if (amountRupees != null && amountRupees in 1..MAX_RUPEES) append("&am=").append(amountRupees).append(".00")

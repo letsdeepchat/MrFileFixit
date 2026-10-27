@@ -28,6 +28,33 @@ class ImageEffectsTest {
     }
 
     @Test
+    fun `black and white stretches a dull photo to real black and white`() {
+        // A dull, washed-out photo: every tone between 70 and 190.
+        val dull = IntArray(1210) { i -> (70 + i % 121).let { v -> argb(v, (v * 0.9).toInt(), (v * 0.8).toInt()) } }
+        val levels = ImageEffectMath.grayLevels(dull)
+        val matrix = ImageEffectMath.colorMatrix(ColorAdjust(), grayscale = true, levels = levels)
+        val out = dull.map { ImageEffectMath.applyMatrix(matrix, it) }
+        out.forEach {
+            val (r, g, b) = channels(it)
+            assertTrue(r == g && g == b, "not grey: $r $g $b")
+        }
+        val tones = out.map { channels(it).first }
+        assertTrue(tones.min() <= 10, "darkest ${tones.min()}")
+        assertTrue(tones.max() >= 245, "brightest ${tones.max()}")
+        // Far more contrast than the plain luminance copy.
+        val plain = ImageEffectMath.colorMatrix(ColorAdjust(), grayscale = true)
+        val plainTones = dull.map { channels(ImageEffectMath.applyMatrix(plain, it)).first }
+        assertTrue(tones.max() - tones.min() > 2 * (plainTones.max() - plainTones.min()))
+    }
+
+    @Test
+    fun `black and white of a flat grey picture does not explode into noise`() {
+        val flat = IntArray(100) { argb(120, 120, 120) }
+        val levels = ImageEffectMath.grayLevels(flat)
+        assertTrue(levels.gain <= 3f)
+    }
+
+    @Test
     fun `brightness lifts, contrast spreads around mid grey, saturation zero is grey`() {
         val bright = ImageEffectMath.colorMatrix(ColorAdjust(brightness = 50), grayscale = false)
         assertEquals(150, channels(ImageEffectMath.applyMatrix(bright, argb(100, 100, 100))).first)

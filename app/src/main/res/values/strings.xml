@@ -38,8 +38,6 @@
     <string name="privacy_metadata_body">Location, camera details and other EXIF data are stripped from images when you export them.</string>
     <string name="settings_version">Version %1$s</string>
     <!-- Home quick cards -->
-    <string name="home_biodata_title">Create a Biodata</string>
-    <string name="home_biodata_body">Marriage biodata or a photographer portfolio with 1 to 5 photos, as PDF or Word</string>
     <string name="home_support_title">Support Mr File Fixit</string>
     <string name="home_support_body">Free, with no ads and no premium. If it helped you, an optional donation helps it improve.</string>
     <!-- Settings and support screen -->

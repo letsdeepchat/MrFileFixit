@@ -1,15 +1,18 @@
 package com.mrfilefixit.feature.image.ui
 
+import com.mrfilefixit.core.domain.image.BackgroundFill
+import com.mrfilefixit.core.domain.image.BackgroundReplace
 import com.mrfilefixit.core.domain.image.ColorAdjust
 import com.mrfilefixit.core.domain.image.EncodeTarget
 import com.mrfilefixit.core.domain.image.ImageEffects
 import com.mrfilefixit.core.domain.image.ImageFilter
 import com.mrfilefixit.core.domain.image.NaturalEnhance
+import com.mrfilefixit.core.domain.image.OverlayFont
 import com.mrfilefixit.core.domain.image.OverlayPosition
 import com.mrfilefixit.core.domain.image.PhotoStamp
 import com.mrfilefixit.core.domain.image.TextOverlay
 
-/** The Edit tab: a look, three sliders, an optional line of text and the exam name and date bar. */
+/** The Edit tab: a look, three sliders, an optional line of styled text and the exam name and date bar. */
 data class EditOptions(
     val filter: ImageFilter = ImageFilter.NONE,
     val brightness: Int = 0,
@@ -17,7 +20,9 @@ data class EditOptions(
     val saturation: Int = 0,
     val text: String = "",
     val textPosition: OverlayPosition = OverlayPosition.BOTTOM,
-    val textDark: Boolean = false,
+    /** Text colour as ARGB, from the swatches or the custom picker. */
+    val textColor: Int = TextOverlay.WHITE,
+    val textFont: OverlayFont = OverlayFont.SANS,
     val stamp: Boolean = false,
     val stampName: String = "",
     val stampDate: String = "",
@@ -39,20 +44,29 @@ data class EditOptions(
         filter = filter,
         stamp = if (stamp && stampLines.isNotEmpty()) PhotoStamp(stampLines, dark = stampDark) else null,
         texts = text.trim().takeIf { it.isNotEmpty() }?.let {
-            // Dark text needs no outline; light text gets one so it reads on bright photos.
-            listOf(
-                TextOverlay(
-                    it,
-                    y = textPosition.y,
-                    colorArgb = if (textDark) BLACK else TextOverlay.WHITE,
-                    outline = !textDark,
-                ),
-            )
+            // Every colour gets a soft outline in the opposite tone, so it reads on bright and dark photos alike.
+            listOf(TextOverlay(it, y = textPosition.y, colorArgb = opaque(textColor), font = textFont))
         }.orEmpty(),
     )
 
     companion object {
         const val BLACK = -0x1000000
+        private const val OPAQUE = -0x1000000
+
+        /** Text is always fully opaque, whatever a picker hands over. */
+        fun opaque(argb: Int): Int = argb or OPAQUE
+
+        /** The text colour swatches: white, black, then bright colours that read on most photos. */
+        val TEXT_SWATCHES = listOf(
+            TextOverlay.WHITE,
+            BLACK,
+            0xFFFFD600.toInt(), // yellow
+            0xFFFF6D00.toInt(), // orange
+            0xFFE53935.toInt(), // red
+            0xFFD81B60.toInt(), // pink
+            0xFF1E88E5.toInt(), // blue
+            0xFF43A047.toInt(), // green
+        )
 
         /** 20 KB and 50 KB, chosen so the file is inside the window whether a portal counts 1000 or 1024 bytes. */
         val STAMP_TARGET = EncodeTarget.SizeRange(
@@ -72,4 +86,38 @@ data class EnhanceOptions(val strength: Float = NaturalEnhance.DEFAULT_STRENGTH,
             scale = scale.takeIf { it in NaturalEnhance.SCALES } ?: 1,
         ),
     )
+}
+
+/** The background choices of Remove background, in the order the chips show them. */
+enum class BackgroundChoice { WHITE, EXAM_BLUE, TRANSPARENT, COLOR, PICTURE }
+
+/**
+ * The Remove background tab: what goes behind the person ([choice], with [color] or [pictureUri] when those are
+ * chosen) and how soft the outline is ([edge], 0..1).
+ */
+data class BackgroundOptions(
+    val choice: BackgroundChoice = BackgroundChoice.WHITE,
+    val color: Int = DEFAULT_COLOR,
+    val pictureUri: String? = null,
+    val edge: Float = BackgroundReplace.DEFAULT_EDGE,
+) {
+    val fill: BackgroundFill?
+        get() = when (choice) {
+            BackgroundChoice.WHITE -> BackgroundFill.Solid(BackgroundReplace.WHITE)
+            BackgroundChoice.EXAM_BLUE -> BackgroundFill.Solid(BackgroundReplace.EXAM_BLUE)
+            BackgroundChoice.TRANSPARENT -> BackgroundFill.Transparent
+            BackgroundChoice.COLOR -> BackgroundFill.Solid(EditOptions.opaque(color))
+            BackgroundChoice.PICTURE -> pictureUri?.let { BackgroundFill.Picture(it) }
+        }
+
+    /** False only while "Photo" is chosen and no photo has been picked yet. */
+    val isReady: Boolean get() = fill != null
+
+    fun toEffects(): ImageEffects =
+        fill?.let { ImageEffects(background = BackgroundReplace(it, edge.coerceIn(0f, 1f))) } ?: ImageEffects.NONE
+
+    private companion object {
+        /** A studio grey, the usual first pick for a plain portrait background. */
+        const val DEFAULT_COLOR = -0x2a2a2b
+    }
 }

@@ -16,11 +16,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -153,8 +150,6 @@ fun MffApp() {
 @Composable
 private fun MainTabs(navController: NavHostController, pagerState: PagerState, scope: CoroutineScope) {
     val trackers = remember { List(TopLevelDestination.entries.size) { InnerScreenTracker() } }
-    // Home's biodata card opens the Resume & Biodata tab straight on the biodata templates.
-    var openBiodata by rememberSaveable { mutableStateOf(false) }
     val current = pagerState.currentPage
     val backTarget = SwipePolicy.backTarget(current, trackers[current].isInner, TopLevelDestination.HOME.ordinal)
     // Registered before the pages, so a page's own back handling (inner screens) always wins.
@@ -164,10 +159,6 @@ private fun MainTabs(navController: NavHostController, pagerState: PagerState, s
             TopLevelDestination.HOME -> HomeScreen(
                 onOpen = { scope.showTab(pagerState, it.ordinal) },
                 onOpenSettings = { navController.navigate(SettingsRoute) { launchSingleTop = true } },
-                onCreateBiodata = {
-                    openBiodata = true
-                    scope.showTab(pagerState, TopLevelDestination.RESUME.ordinal)
-                },
                 onOpenSupport = { navController.navigate(SupportRoute) { launchSingleTop = true } }
                     .takeIf { BuildConfig.DONATIONS_ENABLED },
             )
@@ -186,10 +177,7 @@ private fun MainTabs(navController: NavHostController, pagerState: PagerState, s
             TopLevelDestination.PDF -> PdfListDetail(PdfRoute(), onOpenOcr = { navController.openOcr() })
             TopLevelDestination.IMAGE -> ImageTab(onOpenOcr = { navController.openOcr() })
             TopLevelDestination.SCAN -> ScanTab(onOpenOcr = { navController.openOcr(it) })
-            TopLevelDestination.RESUME -> ResumeTab(
-                openBiodata = openBiodata,
-                onBiodataOpened = { openBiodata = false },
-            )
+            TopLevelDestination.RESUME -> ResumeTab()
         }
     }
 }

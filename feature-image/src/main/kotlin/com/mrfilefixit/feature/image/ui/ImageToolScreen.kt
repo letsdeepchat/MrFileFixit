@@ -193,13 +193,20 @@ private fun LoadedContent(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         item(key = "files") { SelectedFiles(state, onChange, Modifier.contentWidth()) }
+        // Enhance, Edit and Remove background: the live before / after right under the photo, above the controls.
+        if (state.tool in LIVE_PREVIEW_TOOLS && !state.isDone) {
+            state.livePreview?.let { preview ->
+                item(key = "live-preview") { LivePreviewCard(preview, Modifier.contentWidth()) }
+            }
+        }
         state.inputError?.let { error ->
             item(key = "input-error") {
                 ErrorCard(error, onRetry = null, Modifier.contentWidth())
             }
         }
         if (!state.isDone) {
-            item(key = "options") { ToolOptions(state, actions, Modifier.contentWidth()) }
+            // Keyed by tool, so nothing one tool remembers (a slider drag, a text field) carries into another.
+            item(key = "options-${state.tool}") { ToolOptions(state, actions, Modifier.contentWidth()) }
         }
         if (state.isBatch) {
             item(key = "batch-note") {
@@ -211,12 +218,7 @@ private fun LoadedContent(
                 )
             }
         }
-        if (state.tool == ImageTool.ENHANCE && !state.isDone) {
-            state.enhancePreview?.let { preview ->
-                item(key = "enhance-preview") { EnhancePreviewCard(preview, Modifier.contentWidth()) }
-            }
-        }
-        when (val job = state.activeJob) {
+        when (val job = state.shownJob) {
             is JobState.Failed -> item(key = "job-error") { ErrorCard(job.error, null, Modifier.contentWidth()) }
             is JobState.Cancelled -> item(key = "job-cancelled") {
                 Text(stringResource(CoreR.string.job_cancelled), Modifier.contentWidth())
@@ -337,6 +339,7 @@ private fun ToolOptions(state: ImageToolUiState, actions: ImageToolActions, modi
         }
         ImageTool.EDIT -> EditOptionsCards(state, actions, modifier)
         ImageTool.ENHANCE -> EnhanceOptionsCards(state, actions, modifier)
+        ImageTool.BACKGROUND -> BackgroundOptionsCards(state, actions, modifier)
         ImageTool.STRIP_EXIF -> SectionCard(modifier) {
             Text(stringResource(R.string.image_strip_note), style = MaterialTheme.typography.bodyMedium)
         }
@@ -539,7 +542,7 @@ internal fun <T> ChipRow(values: List<T>, selected: T, label: @Composable (T) ->
 @Composable
 private fun BottomActions(state: ImageToolUiState, actions: ImageToolActions) {
     StickyActionBar {
-        when (val job = state.activeJob) {
+        when (val job = state.shownJob) {
             is JobState.Running -> JobProgressCard(job.progress, actions.onCancel)
             is JobState.Success -> {
                 PrimaryActionButton(stringResource(CoreR.string.action_share), actions.onShareAll)
@@ -647,6 +650,7 @@ private fun toolLabel(tool: ImageTool): String = stringResource(
         ImageTool.CONVERT -> R.string.image_tool_CONVERT
         ImageTool.EDIT -> R.string.image_tool_EDIT
         ImageTool.ENHANCE -> R.string.image_tool_ENHANCE
+        ImageTool.BACKGROUND -> R.string.image_tool_BACKGROUND
         ImageTool.STRIP_EXIF -> R.string.image_tool_STRIP_EXIF
     },
 )
@@ -661,6 +665,7 @@ private fun aspectLabel(aspect: Float?): String = when (aspect) {
 }
 
 private const val MAX_PICK = 100
+private val LIVE_PREVIEW_TOOLS = setOf(ImageTool.ENHANCE, ImageTool.EDIT, ImageTool.BACKGROUND)
 private const val PDF_MIME = "application/pdf"
 private const val PICKED_MAX_HEIGHT_FRACTION = 0.4f
 private const val MIN_ASPECT = 0.3f

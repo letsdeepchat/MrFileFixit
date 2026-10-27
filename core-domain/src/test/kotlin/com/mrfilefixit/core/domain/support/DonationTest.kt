@@ -9,14 +9,24 @@ class DonationTest {
     @Test
     fun `upi link pays the developer's UPI id in rupees with no amount by default`() {
         assertEquals(
-            "upi://pay?pa=deepakchaudhari705-1@okaxis&pn=Deepak%20Chaudhari&cu=INR&tn=Support%20Mr%20File%20Fixit",
+            "upi://pay?pa=deepakchaudhari705-1@okaxis&pn=Deepak%20Chaudhari&cu=INR",
             Donation.upiUri(),
         )
     }
 
     @Test
     fun `the bundled QR payload is the plain link without amount or note`() {
-        assertEquals(Donation.QR_PAYLOAD, Donation.upiUri(note = ""))
+        assertEquals(Donation.QR_PAYLOAD, Donation.upiUri())
+    }
+
+    @Test
+    fun `every preset is prefilled exactly as NPCI expects`() {
+        Donation.suggestedRupees.forEach { rupees ->
+            assertEquals(
+                "upi://pay?pa=deepakchaudhari705-1@okaxis&pn=Deepak%20Chaudhari&am=$rupees.00&cu=INR",
+                Donation.upiUri(rupees),
+            )
+        }
     }
 
     @Test

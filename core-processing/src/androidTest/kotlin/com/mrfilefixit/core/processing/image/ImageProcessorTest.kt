@@ -11,6 +11,7 @@ import com.mrfilefixit.core.domain.dispatchers.DispatcherProvider
 import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.image.EncodeTarget
 import com.mrfilefixit.core.domain.image.ImageEffects
+import com.mrfilefixit.core.domain.image.ImageFilter
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.ImageOp
 import com.mrfilefixit.core.domain.image.ImageRequest
@@ -24,6 +25,7 @@ import com.mrfilefixit.core.domain.result.Result
 import com.mrfilefixit.core.domain.security.InputLimits
 import java.io.File
 import kotlin.math.abs
+import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +37,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** The image engine on a real device: outputs are never empty, size targets hold, Enhance keeps colours. */
+/** The image engine on a real device: outputs are never empty, size targets hold, Enhance and B&W are visible. */
 @RunWith(AndroidJUnit4::class)
 class ImageProcessorTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -54,6 +56,7 @@ class ImageProcessorTest {
             InputLimits.DEFAULT,
             dispatchers,
             NoOpLogger,
+            BackgroundRemoval(),
         )
     }
 
@@ -151,7 +154,7 @@ class ImageProcessorTest {
     }
 
     @Test
-    fun enhanceChangesDetailButNotColour() {
+    fun enhanceVisiblyImprovesButKeepsSkinTone() {
         val source = photo(600, 800)
         val before = ok(run(source, OutputSpec(ImageFormat.PNG), name = "before"))
         val enhance = ImageEffects(enhance = NaturalEnhance(1f))
@@ -161,10 +164,62 @@ class ImageProcessorTest {
         assertEquals(a.width, b.width)
         val meanA = means(a)
         val meanB = means(b)
-        // Colour (each channel's mean) stays put: no whitening, no tint.
-        for (c in 0..2) assertTrue("channel $c: ${meanA[c]} vs ${meanB[c]}", abs(meanA[c] - meanB[c]) < 3.0)
+        // The warm "skin" photo keeps its tone: overall brightness and each channel stay close, nothing whitened.
+        val lumaA = 0.299 * meanA[0] + 0.587 * meanA[1] + 0.114 * meanA[2]
+        val lumaB = 0.299 * meanB[0] + 0.587 * meanB[1] + 0.114 * meanB[2]
+        assertTrue("brightness $lumaA vs $lumaB", abs(lumaA - lumaB) < 4.0)
+        for (c in 0..2) assertTrue("channel $c: ${meanA[c]} vs ${meanB[c]}", abs(meanA[c] - meanB[c]) < 6.0)
+        assertTrue("hue order changed", meanB[0] > meanB[1] && meanB[1] > meanB[2])
         // But the pixels did change.
         assertTrue("enhance changed nothing", meanAbsDiff(a, b) > 0.5)
+    }
+
+    @Test
+    fun enhanceGivesADullFlatPhotoMoreContrast() {
+        val width = 400
+        val height = 300
+        val random = Random(5)
+        val pixels = IntArray(width * height) { i ->
+            val v = 100 + (i % width) * 60 / width + random.nextInt(-3, 4)
+            Color.rgb(v - 6, v + 6, v - 2)
+        }
+        val bitmap = createBitmap(width, height).apply { setPixels(pixels, 0, width, 0, 0, width, height) }
+        val file = File(dir, "dull.png")
+        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        val source = FileRef(Uri.fromFile(file).toString(), file.name, "image/png", file.length())
+        val after = ok(run(source, OutputSpec(ImageFormat.PNG), effects = ImageEffects(enhance = NaturalEnhance(1f))))
+        val before = BitmapFactory.decodeFile(file.path)
+        val out = BitmapFactory.decodeFile(after.file.path)
+        assertTrue("contrast ${lumaSpread(before)} -> ${lumaSpread(out)}", lumaSpread(out) > lumaSpread(before) * 1.25)
+    }
+
+    @Test
+    fun blackAndWhiteIsTrulyMonochromeAndHighContrast() {
+        val source = photo(300, 400)
+        val bw = ImageEffects(filter = ImageFilter.GRAYSCALE)
+        val image = ok(run(source, OutputSpec(ImageFormat.PNG), effects = bw, name = "bw"))
+        val original = BitmapFactory.decodeFile(File(source.uri.removePrefix("file://")).path)
+        val out = BitmapFactory.decodeFile(image.file.path)
+        for (y in 0 until out.height step 7) {
+            for (x in 0 until out.width step 7) {
+                val p = out.getPixel(x, y)
+                assertTrue("not grey at $x,$y", Color.red(p) == Color.green(p) && Color.green(p) == Color.blue(p))
+            }
+        }
+        assertTrue("B&W spread ${lumaSpread(out)} vs ${lumaSpread(original)}", lumaSpread(out) > lumaSpread(original))
+    }
+
+    /** Standard deviation of luminance over a grid of pixels. */
+    private fun lumaSpread(bitmap: Bitmap): Double {
+        val values = ArrayList<Double>()
+        for (y in 0 until bitmap.height step 3) {
+            for (x in 0 until bitmap.width step 3) {
+                val p = bitmap.getPixel(x, y)
+                values += 0.299 * Color.red(p) + 0.587 * Color.green(p) + 0.114 * Color.blue(p)
+            }
+        }
+        val mean = values.average()
+        return sqrt(values.sumOf { (it - mean) * (it - mean) } / values.size)
     }
 
     @Test

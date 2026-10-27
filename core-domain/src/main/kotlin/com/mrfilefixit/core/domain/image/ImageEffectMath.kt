@@ -23,26 +23,72 @@ object ImageEffectMath {
     /**
      * A 4x5 colour matrix (row-major, the layout Android's ColorMatrix uses) that applies [adjust] and, with
      * [grayscale], drops the colour first. Saturation is applied around each pixel's luminance.
+     *
+     * Black & white is a real monochrome print: with [levels] (from [grayLevels]) the picture's own darkest and
+     * brightest tones are stretched to black and white, with a little extra punch ([BW_PUNCH]), so the result is
+     * clearly different from the colour photo even when the photo was dull.
      */
-    fun colorMatrix(adjust: ColorAdjust, grayscale: Boolean): FloatArray {
+    fun colorMatrix(adjust: ColorAdjust, grayscale: Boolean, levels: GrayLevels? = null): FloatArray {
         val saturation = if (grayscale) 0f else 1f + adjust.saturation / PERCENT
         val contrast = if (adjust.contrast >= 0) {
             1f + CONTRAST_UP * adjust.contrast / PERCENT
         } else {
             1f + CONTRAST_DOWN * adjust.contrast / PERCENT
         }
-        val offset = adjust.brightness / PERCENT * BRIGHTNESS_SPAN + MID_GREY * (1f - contrast)
+        // The black & white stretch: luma' = gain * (luma - pivot) + mid grey, folded into the same matrix.
+        val gain = if (grayscale && levels != null) levels.gain else 1f
+        val pivot = if (grayscale && levels != null) levels.pivot else MID_GREY
+        val offset = adjust.brightness / PERCENT * BRIGHTNESS_SPAN + MID_GREY - contrast * gain * pivot
+        val k = contrast * gain
         val inv = 1f - saturation
         val r = inv * RED_WEIGHT
         val g = inv * GREEN_WEIGHT
         val b = inv * BLUE_WEIGHT
         return floatArrayOf(
-            contrast * (r + saturation), contrast * g, contrast * b, 0f, offset,
-            contrast * r, contrast * (g + saturation), contrast * b, 0f, offset,
-            contrast * r, contrast * g, contrast * (b + saturation), 0f, offset,
+            k * (r + saturation), k * g, k * b, 0f, offset,
+            k * r, k * (g + saturation), k * b, 0f, offset,
+            k * r, k * g, k * (b + saturation), 0f, offset,
             0f, 0f, 0f, 1f, 0f,
         )
     }
+
+    /** How black & white stretches a picture's tones: luma' = [gain] * (luma - [pivot]) + 128. */
+    data class GrayLevels(val gain: Float, val pivot: Float)
+
+    /**
+     * The black & white stretch for a picture whose pixels (or an even sample of them) are [sample]: the 1st and
+     * 99th luminance percentiles go to black and white, times [BW_PUNCH], with the gain capped at [MAX_BW_GAIN]
+     * so a nearly flat picture does not turn into noise.
+     */
+    fun grayLevels(sample: IntArray): GrayLevels {
+        if (sample.isEmpty()) return GrayLevels(BW_PUNCH, MID_GREY)
+        val histogram = IntArray(CHANNEL_MAX + 1)
+        sample.forEach { p ->
+            val y = RED_WEIGHT * ((p shr RED_SHIFT) and CHANNEL_MAX) +
+                GREEN_WEIGHT * ((p shr GREEN_SHIFT) and CHANNEL_MAX) + BLUE_WEIGHT * (p and CHANNEL_MAX)
+            histogram[y.roundToInt().coerceIn(0, CHANNEL_MAX)]++
+        }
+        val low = percentile(histogram, sample.size, BW_LOW)
+        val high = percentile(histogram, sample.size, BW_HIGH)
+        val gain = (BW_PUNCH * CHANNEL_MAX / max(1, high - low)).coerceIn(BW_PUNCH, MAX_BW_GAIN)
+        return GrayLevels(gain, (low + high) / 2f)
+    }
+
+    private fun percentile(histogram: IntArray, total: Int, share: Float): Int {
+        val wanted = (total * share).toInt()
+        var seen = 0
+        histogram.forEachIndexed { level, count ->
+            seen += count
+            if (seen > wanted) return level
+        }
+        return CHANNEL_MAX
+    }
+
+    /** Black & white is a little harder than a plain luminance copy, like a monochrome print. */
+    const val BW_PUNCH = 1.15f
+    private const val MAX_BW_GAIN = 3f
+    private const val BW_LOW = 0.01f
+    private const val BW_HIGH = 0.99f
 
     /** Applies a [colorMatrix] to one ARGB pixel, as the platform's ColorMatrixColorFilter does. */
     fun applyMatrix(matrix: FloatArray, argb: Int): Int {

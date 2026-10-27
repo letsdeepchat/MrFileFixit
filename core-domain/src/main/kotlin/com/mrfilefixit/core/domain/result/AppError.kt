@@ -72,6 +72,9 @@ sealed interface AppError {
     /** A biodata needs at least one photo before it can be made. */
     data object PhotoRequired : AppError
 
+    /** Remove background found no person in the photo, so there is nothing to keep in front. */
+    data object NoPersonFound : AppError
+
     /** Anything else. [type] is the exception class name, never its message. */
     data class Unexpected(val type: String) : AppError
 

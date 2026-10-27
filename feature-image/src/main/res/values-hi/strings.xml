@@ -60,6 +60,19 @@
     </plurals>
     <string name="image_tool_EDIT">संपादन</string>
     <string name="image_tool_ENHANCE">बेहतर करें</string>
+    <string name="image_tool_BACKGROUND">बैकग्राउंड हटाएँ</string>
+    <string name="image_bg_title">नया बैकग्राउंड</string>
+    <string name="image_bg_note">व्यक्ति वैसा ही रहता है और पीछे का सब कुछ बदल दिया जाता है। यह लोगों की फ़ोटो पर काम करता है: पोर्ट्रेट, सेल्फ़ी और परीक्षा फ़ोटो। यह इसी फ़ोन पर चलता है, कुछ भी अपलोड नहीं होता।</string>
+    <string name="image_bg_WHITE">सफ़ेद</string>
+    <string name="image_bg_EXAM_BLUE">परीक्षा नीला</string>
+    <string name="image_bg_TRANSPARENT">पारदर्शी</string>
+    <string name="image_bg_COLOR">रंग</string>
+    <string name="image_bg_PICTURE">आपकी फ़ोटो</string>
+    <string name="image_bg_color_title">बैकग्राउंड का रंग</string>
+    <string name="image_bg_pick">बैकग्राउंड फ़ोटो चुनें</string>
+    <string name="image_bg_change">बैकग्राउंड फ़ोटो बदलें</string>
+    <string name="image_bg_png_note">पारदर्शी बैकग्राउंड PNG में सेव होता है, या WebP में अगर आप उसे चुनें।</string>
+    <string name="image_bg_edge">किनारे की कोमलता: %1$d%%</string>
     <string name="image_format_pdf">PDF</string>
     <string name="image_pdf_note">चुनी गई सभी इमेज एक PDF में जाती हैं, हर इमेज अपने साइज़ के एक पेज पर।</string>
     <string name="image_edit_look">लुक</string>
@@ -74,7 +87,25 @@
     <string name="image_pos_TOP">ऊपर</string>
     <string name="image_pos_CENTER">बीच में</string>
     <string name="image_pos_BOTTOM">नीचे</string>
-    <string name="image_text_dark">गहरा टेक्स्ट</string>
+    <string name="image_text_font">फ़ॉन्ट</string>
+    <string name="image_text_color">टेक्स्ट का रंग</string>
+    <string name="image_color_custom">अपना रंग</string>
+    <string name="image_color_hue">रंग</string>
+    <string name="image_color_shade">गहराई</string>
+    <string name="image_font_SANS">सैंस</string>
+    <string name="image_font_SERIF">सेरिफ़</string>
+    <string name="image_font_MONO">मोनो</string>
+    <string name="image_font_CONDENSED">पतला</string>
+    <string name="image_font_HANDWRITING">हस्तलिखित</string>
+    <string name="image_font_CASUAL">कैज़ुअल</string>
+    <string name="image_color_white">सफ़ेद</string>
+    <string name="image_color_black">काला</string>
+    <string name="image_color_yellow">पीला</string>
+    <string name="image_color_orange">नारंगी</string>
+    <string name="image_color_red">लाल</string>
+    <string name="image_color_pink">गुलाबी</string>
+    <string name="image_color_blue">नीला</string>
+    <string name="image_color_green">हरा</string>
     <string name="image_stamp_title">नाम और तारीख़ की पट्टी</string>
     <string name="image_stamp_hint">परीक्षा फ़ॉर्म में माँगी जाने वाली पट्टी, फ़ोटो के नीचे।</string>
     <string name="image_stamp_name">नाम</string>
@@ -84,7 +115,7 @@
     <string name="image_stamp_size_hint">JPEG में सेव होती है, जैसा परीक्षा पोर्टल माँगते हैं।</string>
     <!-- Natural Enhance -->
     <string name="image_enhance_title">नैचुरल एन्हांस</string>
-    <string name="image_enhance_explain">साफ़ी और बारीक डिटेल लौटाता है, नॉइज़ कम करता है और छोटे दाग-धब्बे हल्के करता है, त्वचा की बनावट और असली रंग बनाए रखते हुए। यह सिर्फ़ ब्राइटनेस की डिटेल पर काम करता है, इसलिए त्वचा का रंग कभी गोरा नहीं होता।</string>
+    <string name="image_enhance_explain">बारीक डिटेल को साफ़ करता है, नॉइज़ कम करता है, छोटे दाग-धब्बे हल्के करता है और कंट्रास्ट व रंग संतुलित करता है, ताकि फीकी फ़ोटो जीवंत लगे। त्वचा का रंग प्राकृतिक रहता है, कभी गोरा नहीं किया जाता। बदलाव करते समय ऊपर पहले और बाद की तुलना देखें।</string>
     <string name="image_enhance_strength">असर: %1$d%%</string>
     <string name="image_enhance_scale">आउटपुट साइज़</string>
     <string name="image_enhance_scale_original">मूल साइज़</string>

@@ -49,6 +49,12 @@ passes. The same dependency brings in `firebase-encoders*`, `firebase-components
   opt-outs only for some APIs; the robust option is excluding the transport backend in `:app` and verifying OCR
   still works. Needs a device test before shipping.
 
+### Remove background
+
+`com.google.mlkit:segmentation-selfie` ships its model inside the app, so Remove background never downloads
+anything. It runs on the photo in memory and returns only a mask. It shares ML Kit's `datatransport` telemetry
+described above (no images or results are included).
+
 ### Document scanner
 
 `play-services-mlkit-document-scanner` runs its UI inside Google Play services. Its model is downloaded once by
@@ -66,8 +72,9 @@ Settings → Support and the card on Home offer optional donations. The app itse
 
 * **UPI.** The QR code is a bundled image of a fixed `upi://pay` link (payee and UPI ID only, see
   `Donation.QR_PAYLOAD`). "Pay with a UPI app" opens the user's own UPI app with an `ACTION_VIEW` intent. The
-  manifest's `<queries>` entry for the `upi` scheme only lets the app see which UPI apps are installed. The amount
-  chips add `am=` and a short note (`tn=`) to the link.
+  manifest's `<queries>` entries (the `upi` scheme, plus GPay, Paytm, PhonePe and BHIM by package name) only let
+  the app see which UPI apps are installed. A preset amount adds `am=` (for example `am=51.00`); "Any amount"
+  leaves it out so the UPI app asks.
 * **PayPal.** Opens `https://paypal.me/MrFileFixit` in the user's browser.
 
 No payment data passes through the app, and nothing is recorded about whether anyone donated. A build can leave

@@ -34,13 +34,22 @@
 
     <!--
       Optional donations only hand a upi:// link to the user's own UPI app. Android 11+ hides other apps unless
-      declared, so this lets the Support screen tell whether any UPI app is installed. No data is sent.
+      declared, so this lets the Support screen see the installed UPI apps (any app handling upi://pay, plus the
+      common ones by name) and offer them in a chooser. No data is sent.
     -->
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="upi" android:host="pay" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
             <data android:scheme="upi" />
         </intent>
+        <package android:name="com.google.android.apps.nbu.paisa.user" />
+        <package android:name="net.one97.paytm" />
+        <package android:name="com.phonepe.app" />
+        <package android:name="in.org.npci.upiapp" />
     </queries>
 
     <application

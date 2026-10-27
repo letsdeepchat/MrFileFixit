@@ -8,6 +8,8 @@ import androidx.core.graphics.scale
 import com.mrfilefixit.core.domain.dispatchers.DispatcherProvider
 import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.file.OutputFile
+import com.mrfilefixit.core.domain.image.BackgroundFill
+import com.mrfilefixit.core.domain.image.BackgroundReplace
 import com.mrfilefixit.core.domain.image.CompositeRequest
 import com.mrfilefixit.core.domain.image.EncodeTarget
 import com.mrfilefixit.core.domain.image.ImageFormat
@@ -57,6 +59,7 @@ internal class AndroidImageProcessor @Inject constructor(
     private val limits: InputLimits,
     private val dispatchers: DispatcherProvider,
     private val logger: AppLogger,
+    private val backgroundRemoval: BackgroundRemoval,
 ) : ImageProcessor {
 
     override fun canEncode(format: ImageFormat): Boolean = encoding.canEncode(format)
@@ -94,7 +97,13 @@ internal class AndroidImageProcessor @Inject constructor(
                     losslessStrip(request, raw)?.let { return@runCatchingAppFlat success(it) }
                 }
 
-                val rendered = renderPlan(request.source.uri, raw, plan, output)
+                val background = request.effects.background
+                val rendered = if (background == null) {
+                    renderPlan(request.source.uri, raw, plan, output)
+                } else {
+                    renderPlan(request.source.uri, raw, plan, output).use { replaceBackground(it, background, output) }
+                        ?: return@runCatchingAppFlat failure(AppError.NoPersonFound)
+                }
                 coroutineContext.ensureActive()
                 val bitmap = try {
                     ImageEffectsRendering.apply(rendered, request.effects)
@@ -133,6 +142,25 @@ internal class AndroidImageProcessor @Inject constructor(
                 }
             }
         }
+
+    /**
+     * The person in [source] in front of [replace]'s background, as a new bitmap, or null when no person is found.
+     * A picture background is decoded and cover-scaled to exactly the photo's size.
+     */
+    private suspend fun replaceBackground(source: Bitmap, replace: BackgroundReplace, output: OutputSpec): Bitmap? {
+        val mask = backgroundRemoval.mask(source)
+        if (!mask.hasPerson) return null
+        coroutineContext.ensureActive()
+        val keepAlpha = output.format == ImageFormat.PNG || output.format == ImageFormat.WEBP
+        val picture = replace.fill as? BackgroundFill.Picture
+            ?: return backgroundRemoval.composite(source, mask, replace, null, keepAlpha)
+        val raw = decoding.readRawInfo(picture.uri)
+        val fill = ImageOp.Resize(source.width, source.height, ResizeMode.FILL)
+        val cover = ImagePlan(0, NormalizedRect.FULL, fill, null)
+        return renderPlan(picture.uri, raw, cover, output).use { backdrop ->
+            backgroundRemoval.composite(source, mask, replace, backdrop, keepAlpha)
+        }
+    }
 
     private fun renderPart(source: FileRef, crop: NormalizedRect, width: Int, height: Int, output: OutputSpec): Bitmap {
         val raw = decoding.readRawInfo(source.uri)

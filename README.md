@@ -19,7 +19,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture diagram, m
 | `app` | Android application | Navigation shell, DI wiring, adaptive layout |
 | `feature-exam` | Android library | Exam profile picker, photo/signature flow, live spec checker |
 | `feature-pdf` | Android library | Merge, split, extract, reorder, rotate, delete, compress, image↔PDF, Word/PowerPoint/Excel↔PDF, watermark, page numbers, password |
-| `feature-image` | Android library | Resize, crop, rotate, compress, convert (including to PDF), edit, enhance, batch, strip EXIF ([docs/IMAGE_TOOLS.md](docs/IMAGE_TOOLS.md)) |
+| `feature-image` | Android library | Resize, crop, rotate, compress, convert (including to PDF), edit, enhance, remove background, batch, strip EXIF ([docs/IMAGE_TOOLS.md](docs/IMAGE_TOOLS.md)) |
 | `feature-scan` | Android library | ML Kit document scanner and on-device OCR |
 | `feature-ocr` | Android library | Text recognition for images and PDFs: auto-detect, five scripts, searchable PDF, TXT and Word export ([docs/OCR.md](docs/OCR.md)) |
 | `feature-resume` | Android library | Resume builder: 15 templates, section editor, photo frame, PDF and Word export ([docs/RESUME.md](docs/RESUME.md)) |

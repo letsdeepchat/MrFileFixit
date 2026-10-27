@@ -24,13 +24,17 @@ import com.mrfilefixit.core.ui.components.ImageFacts
 import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.components.SectionHeader
 import com.mrfilefixit.core.ui.components.SwitchRow
+import com.mrfilefixit.core.ui.error.appErrorMessage
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.feature.image.R
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
-/** The Edit tab: look and sliders, a line of text, the exam name and date bar, then the output format. */
+/**
+ * The Edit tab: look and sliders, a line of text with its font and colour, the exam name and date bar, then the
+ * output format. A live preview of all of it sits above these cards.
+ */
 @Composable
 internal fun EditOptionsCards(state: ImageToolUiState, actions: ImageToolActions, modifier: Modifier = Modifier) {
     val edit = state.options.edit
@@ -65,11 +69,8 @@ internal fun EditOptionsCards(state: ImageToolUiState, actions: ImageToolActions
             ChipRow(OverlayPosition.entries, edit.textPosition, { positionLabel(it) }) { p ->
                 update { it.copy(textPosition = p) }
             }
-            SwitchRow(
-                label = stringResource(R.string.image_text_dark),
-                checked = edit.textDark,
-                onChecked = { on -> update { it.copy(textDark = on) } },
-            )
+            FontChips(edit.textFont) { f -> update { it.copy(textFont = f) } }
+            ColorPicker(edit.textColor, { c -> update { it.copy(textColor = c) } })
         }
         StampCard(edit, update)
         if (!edit.usesStampSize) FormatCard(state, actions)
@@ -158,9 +159,12 @@ internal fun EnhanceOptionsCards(state: ImageToolUiState, actions: ImageToolActi
     }
 }
 
-/** Live Natural Enhance preview of the first image: split slider, toggle and full-screen zoom. */
+/**
+ * Live preview of the first image for Enhance, Edit and Remove background: split slider, before/after toggle and
+ * full-screen zoom. When the effect cannot be applied (no person found), the reason shows instead of a spinner.
+ */
 @Composable
-internal fun EnhancePreviewCard(preview: EnhancePreview, modifier: Modifier = Modifier) {
+internal fun LivePreviewCard(preview: LivePreview, modifier: Modifier = Modifier) {
     val facts = ImageFacts(preview.width, preview.height, null, null)
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXs)) {
         BeforeAfterCard(
@@ -168,10 +172,18 @@ internal fun EnhancePreviewCard(preview: EnhancePreview, modifier: Modifier = Mo
             afterUri = preview.afterUri,
             before = facts,
             after = facts,
-            loading = preview.afterUri == null,
+            loading = preview.afterUri == null && preview.error == null,
             showFacts = false,
             modifier = Modifier.fillMaxWidth(),
         )
+        preview.error?.let { error ->
+            Text(
+                appErrorMessage(error),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.testTag("live_preview_error"),
+            )
+        }
         Text(
             stringResource(R.string.image_enhance_preview_note),
             style = MaterialTheme.typography.bodySmall,
@@ -185,7 +197,7 @@ private fun scaleLabel(scale: Int): String =
     if (scale == 1) stringResource(R.string.image_enhance_scale_original) else "$scale×"
 
 @Composable
-private fun FormatCard(state: ImageToolUiState, actions: ImageToolActions) {
+internal fun FormatCard(state: ImageToolUiState, actions: ImageToolActions) {
     SectionCard(Modifier.fillMaxWidth()) {
         SectionHeader(stringResource(R.string.image_format))
         FormatChips(state.options, actions)

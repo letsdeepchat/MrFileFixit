@@ -12,13 +12,16 @@ import com.mrfilefixit.core.domain.image.ImageEffectMath
 import com.mrfilefixit.core.domain.image.ImageEffects
 import com.mrfilefixit.core.domain.image.ImageFilter
 import com.mrfilefixit.core.domain.image.NaturalEnhance
+import com.mrfilefixit.core.domain.image.OverlayFont
 import com.mrfilefixit.core.domain.image.PhotoStamp
 import com.mrfilefixit.core.domain.image.TextOverlay
 import com.mrfilefixit.core.domain.image.enhance.LanczosResampler
 import com.mrfilefixit.core.domain.image.enhance.NaturalEnhancer
+import com.mrfilefixit.core.domain.image.enhance.ToneVibrance
 import com.mrfilefixit.core.domain.scan.ScanFilter
 import com.mrfilefixit.core.processing.scan.ScanFiltering
 import kotlin.coroutines.coroutineContext
+import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.ensureActive
 
@@ -33,6 +36,7 @@ internal object ImageEffectsRendering {
     /** Stamp lines and overlays are shrunk to fit this share of the width. */
     private const val FIT_WIDTH = 0.92f
     private const val OUTLINE_SHARE = 0.12f
+    private const val SAMPLE_SIDE = 256
 
     /** Returns [source] itself when there is nothing to do, otherwise a new bitmap ([source] is recycled). */
     suspend fun apply(source: Bitmap, effects: ImageEffects): Bitmap {
@@ -45,7 +49,9 @@ internal object ImageEffectsRendering {
         }
         val grayscale = effects.filter == ImageFilter.GRAYSCALE
         if (grayscale || !effects.adjust.isNone) {
-            bitmap = replace(bitmap, colorMatrix(bitmap, ImageEffectMath.colorMatrix(effects.adjust, grayscale)))
+            val levels = if (grayscale) ImageEffectMath.grayLevels(sample(bitmap)) else null
+            val matrix = ImageEffectMath.colorMatrix(effects.adjust, grayscale, levels)
+            bitmap = replace(bitmap, colorMatrix(bitmap, matrix))
         }
         if (effects.stamp != null || effects.texts.isNotEmpty()) {
             if (!bitmap.isMutable) bitmap = replace(bitmap, mutableCopy(bitmap))
@@ -62,8 +68,9 @@ internal object ImageEffectsRendering {
     }
 
     /**
-     * Natural Enhance: a Lanczos upscale when asked for, then the luminance-only clarity pipeline, band by band
-     * on the (mutable) result so a large photo is never copied as a whole pixel array twice.
+     * Enhance: a Lanczos upscale when asked for, the luminance clarity pipeline (denoise, sharpen, spot healing),
+     * then auto contrast and vibrance ([ToneVibrance]), all band by band on the (mutable) result so a large photo
+     * is never copied as a whole pixel array twice.
      */
     private suspend fun enhance(source: Bitmap, enhance: NaturalEnhance): Bitmap {
         val (targetW, targetH) = ImageEffectMath.enhancedSize(source.width, source.height, enhance)
@@ -82,6 +89,33 @@ internal object ImageEffectsRendering {
                 read = { top, count, into, offset -> out.getPixels(into, offset, width, 0, top, width, count) },
                 write = { top, count, from, offset -> out.setPixels(from, offset, width, 0, top, width, count) },
             )
+            val tone = ToneVibrance.from(sample(out), enhance.strength)
+            val band = IntArray(width * min(BAND, out.height))
+            var top = 0
+            while (top < out.height) {
+                coroutineContext.ensureActive()
+                val count = min(BAND, out.height - top)
+                out.getPixels(band, 0, width, 0, top, width, count)
+                tone.apply(band, 0, width * count)
+                out.setPixels(band, 0, width, 0, top, width, count)
+                top += count
+            }
+        }
+        return out
+    }
+
+    /** An even grid of at most about [SAMPLE_SIDE] x [SAMPLE_SIDE] pixels, enough for a tone histogram. */
+    private fun sample(bitmap: Bitmap): IntArray {
+        val stepX = max(1, bitmap.width / SAMPLE_SIDE)
+        val stepY = max(1, bitmap.height / SAMPLE_SIDE)
+        val columns = (bitmap.width + stepX - 1) / stepX
+        val rows = (bitmap.height + stepY - 1) / stepY
+        val row = IntArray(bitmap.width)
+        val out = IntArray(columns * rows)
+        var next = 0
+        for (y in 0 until bitmap.height step stepY) {
+            bitmap.getPixels(row, 0, bitmap.width, 0, y, bitmap.width, 1)
+            for (x in 0 until bitmap.width step stepX) out[next++] = row[x]
         }
         return out
     }
@@ -129,7 +163,7 @@ internal object ImageEffectsRendering {
     private fun drawOverlay(canvas: Canvas, width: Int, height: Int, overlay: TextOverlay) {
         if (overlay.text.isBlank()) return
         val size = height * overlay.sizeFraction
-        val fill = textPaint(overlay.colorArgb, size)
+        val fill = textPaint(overlay.colorArgb, size, overlay.font)
         fitWidth(fill, overlay.text, width, size)
         val x = width * overlay.x
         // Centre the text vertically on y: the baseline sits half the cap height below it.
@@ -141,7 +175,7 @@ internal object ImageEffectsRendering {
                 style = Paint.Style.STROKE
                 strokeWidth = fill.textSize * OUTLINE_SHARE
                 strokeJoin = Paint.Join.ROUND
-                color = Color.BLACK
+                color = if (overlay.isLight) Color.BLACK else Color.WHITE
                 alpha = OUTLINE_ALPHA
             }
             canvas.drawText(overlay.text, x, baseline, stroke)
@@ -151,12 +185,13 @@ internal object ImageEffectsRendering {
 
     private const val OUTLINE_ALPHA = 200
 
-    private fun textPaint(color: Int, size: Float) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        this.color = color
-        textSize = size
-        textAlign = Paint.Align.CENTER
-        typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-    }
+    private fun textPaint(color: Int, size: Float, font: OverlayFont = OverlayFont.SANS) =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            textSize = size
+            textAlign = Paint.Align.CENTER
+            typeface = Typeface.create(font.family, Typeface.BOLD)
+        }
 
     private fun fitWidth(paint: Paint, text: String, width: Int, size: Float) {
         paint.textSize = size

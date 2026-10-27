@@ -23,14 +23,10 @@ import com.mrfilefixit.core.ui.share.shareFiles
 
 /**
  * The Resume & Biodata tab: the hub (two create actions and saved drafts), then either the resume builder or
- * the biodata builder. [openBiodata] jumps straight to the biodata designs, for the shortcut on Home.
+ * the biodata builder.
  */
 @Composable
-fun ResumeTab(
-    modifier: Modifier = Modifier,
-    openBiodata: Boolean = false,
-    onBiodataOpened: () -> Unit = {},
-) {
+fun ResumeTab(modifier: Modifier = Modifier) {
     val viewModel: ResumeViewModel = hiltViewModel()
     val biodataVm: BiodataViewModel = hiltViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -41,12 +37,6 @@ fun ResumeTab(
     var snackError by remember { mutableStateOf<AppError?>(null) }
     val resources = LocalResources.current
     LaunchedEffect(biodataVm, resources) { biodataVm.labels = ResourceBiodataLabels(resources) }
-    LaunchedEffect(openBiodata) {
-        if (openBiodata) {
-            biodataVm.onOpenTemplates(restyle = false)
-            onBiodataOpened()
-        }
-    }
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
