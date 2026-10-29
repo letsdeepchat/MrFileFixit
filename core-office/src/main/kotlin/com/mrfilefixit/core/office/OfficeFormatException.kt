@@ -11,10 +11,14 @@ class OfficeEncryptedException : IOException("Encrypted document")
 /** The document is valid but exceeds a safety limit (entries, expanded size, rows, slides). */
 class OfficeLimitException(message: String) : IOException(message)
 
-/** Safety limits for reading office files. Defaults suit a 50 MB input cap. */
+/**
+ * Safety limits for reading office files. Defaults suit a 50 MB input cap and a phone's ~256 MB heap: an XML part is
+ * held as bytes and then as a UTF-16 string (about 3x its size), and pictures stay in memory until the PDF is drawn.
+ */
 data class OfficeLimits(
     val maxZipEntries: Int = 4_000,
     val maxEntryBytes: Long = DEFAULT_ENTRY_BYTES,
+    val maxXmlPartBytes: Long = DEFAULT_XML_PART_BYTES,
     val maxTotalBytes: Long = DEFAULT_TOTAL_BYTES,
     val maxSlides: Int = 500,
     val maxSheetRows: Int = 100_000,
@@ -23,8 +27,9 @@ data class OfficeLimits(
 ) {
     companion object {
         const val MIB = 1024L * 1024L
-        private const val DEFAULT_ENTRY_BYTES = 64L * MIB
-        private const val DEFAULT_TOTAL_BYTES = 256L * MIB
+        private const val DEFAULT_ENTRY_BYTES = 48L * MIB
+        private const val DEFAULT_XML_PART_BYTES = 24L * MIB
+        private const val DEFAULT_TOTAL_BYTES = 128L * MIB
         val DEFAULT = OfficeLimits()
     }
 }

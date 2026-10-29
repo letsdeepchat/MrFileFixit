@@ -31,7 +31,7 @@
     <string name="privacy_offline_title" formatted="false">100% on-device processing</string>
     <string name="privacy_offline_body">Image compression, cropping, PDF tools, scanning and text recognition all run on your phone\'s own processor.</string>
     <string name="privacy_network_title">Nothing is sent anywhere</string>
-    <string name="privacy_network_body">The app has no ads, analytics or servers, and never sends your documents, photos or extracted text over the internet. Google\'s on-device ML Kit, used for scanning and text recognition, may send anonymous usage statistics that never include your files or text.</string>
+    <string name="privacy_network_body">The app has no internet permission, so Android itself stops it from sending anything. There are no ads, analytics or servers, and your documents, photos and extracted text never leave your phone.</string>
     <string name="privacy_cache_title">Temporary files are wiped</string>
     <string name="privacy_cache_body">Working copies are kept in the app\'s private cache and deleted when you leave a tool. Anything left behind when the app is closed is removed the next time it starts.</string>
     <string name="privacy_metadata_title">Metadata is removed</string>
