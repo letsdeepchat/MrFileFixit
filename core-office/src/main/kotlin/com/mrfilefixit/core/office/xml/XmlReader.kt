@@ -1,13 +1,16 @@
 package com.mrfilefixit.core.office.xml
 
 import com.mrfilefixit.core.office.OfficeFormatException
+import com.mrfilefixit.core.office.OfficeLimitException
 
 /**
  * A small, strict pull parser for the XML inside Office files.
  *
  * It resolves namespaces, decodes the five predefined entities and character references, and refuses
  * DOCTYPE declarations outright: Office XML never uses them, and refusing them rules out external
- * entities (XXE) and entity-expansion bombs without relying on a platform parser's settings.
+ * entities (XXE) and entity-expansion bombs without relying on a platform parser's settings. Nesting is capped
+ * at [MAX_DEPTH]: real Office files stay far below it, and deeper input would overflow a worker thread's stack in
+ * the recursive readers and make namespace lookups quadratic.
  */
 class XmlReader(private val input: String) {
     enum class Event { START, END, TEXT, EOF }
@@ -166,6 +169,7 @@ class XmlReader(private val input: String) {
         }
         val declared = raw.filter { (name, _) -> name == "xmlns" || name.startsWith("xmlns:") }
             .associate { (name, value) -> (if (name == "xmlns") "" else name.substringAfter(':')) to value }
+        if (depth >= MAX_DEPTH) throw OfficeLimitException("Elements nested too deeply")
         nsStack.addLast(declared)
         depth++
         resolveElementName(qName)
@@ -220,6 +224,9 @@ class XmlReader(private val input: String) {
 
     companion object {
         const val XML_NS = "http://www.w3.org/XML/1998/namespace"
+
+        /** Deepest element nesting accepted. Word, PowerPoint and Excel files stay well under 100. */
+        const val MAX_DEPTH = 256
         private const val CDATA_OPEN = 9
         private const val CDATA_CLOSE = 3
         private const val HEX = 16

@@ -79,6 +79,17 @@ class SheetFormatsTest {
     }
 
     @Test
+    fun `a cell record cut short is skipped, not a crash`() {
+        // marks.xls with a few bytes flipped by a fuzzer: one LABELSST record is shorter than its header.
+        val bytes = javaClass.getResourceAsStream("/fixtures/damaged-labelsst.xls")!!.readBytes()
+        try {
+            XlsBinaryReader().read(bytes)
+        } catch (_: java.io.IOException) {
+            // A format error is fine too; an IndexOutOfBoundsException is not.
+        }
+    }
+
+    @Test
     fun `sniffs containers`() {
         val bytes = javaClass.getResourceAsStream("/fixtures/marks.xls")!!.readBytes()
         assertEquals(OfficeContainer.COMPOUND, OfficeContainer.sniff(bytes))
