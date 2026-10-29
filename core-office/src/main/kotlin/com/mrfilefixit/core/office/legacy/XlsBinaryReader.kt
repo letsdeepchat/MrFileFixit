@@ -96,7 +96,9 @@ class XlsBinaryReader(private val limits: OfficeLimits = OfficeLimits.DEFAULT) {
         val d = record.data
         val b = le(d)
         when (record.type) {
-            LABELSST -> sst.getOrNull(b.getInt(CELL_HEADER))?.let { put(row(b), col(b), SheetCell.Text(it)) }
+            LABELSST -> if (d.size >= CELL_HEADER + Int.SIZE_BYTES) {
+                sst.getOrNull(b.getInt(CELL_HEADER))?.let { put(row(b), col(b), SheetCell.Text(it)) }
+            }
             NUMBER -> if (d.size >= CELL_HEADER + DOUBLE) {
                 put(
                     row(b),

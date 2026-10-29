@@ -42,6 +42,10 @@ private val FIREBASE_UTILITIES = setOf(
     "com.google.firebase:firebase-encoders-proto",
 )
 
+private val USES_PERMISSION = Regex("<uses-permission[^>]*>")
+private const val INTERNET = "android.permission.INTERNET"
+private const val REMOVE = "tools:node=\"remove\""
+
 /**
  * Fails the build when a module that must stay offline resolves a networking library or
  * declares the INTERNET permission in its own manifest.
@@ -64,8 +68,10 @@ abstract class VerifyNetworkIsolationTask : DefaultTask() {
             coordinate !in FIREBASE_UTILITIES && NETWORK_GROUP_PREFIXES.any { coordinate.startsWith(it) }
         }
         val manifestFile = manifest.orNull?.asFile
+        // A <uses-permission> for INTERNET counts unless it is the tools:node="remove" entry that strips the
+        // permission libraries merge in.
         val declaresInternet = manifestFile?.takeIf { it.exists() }?.readText()
-            ?.contains("android.permission.INTERNET") == true
+            ?.let { xml -> USES_PERMISSION.findAll(xml).any { INTERNET in it.value && REMOVE !in it.value } } == true
         if (offenders.isNotEmpty() || declaresInternet) {
             throw GradleException(
                 buildString {

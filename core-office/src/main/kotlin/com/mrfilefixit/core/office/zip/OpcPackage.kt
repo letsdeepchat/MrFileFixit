@@ -38,7 +38,8 @@ class OpcPackage(file: File, private val limits: OfficeLimits = OfficeLimits.DEF
         val name = partName.trimStart('/')
         if (name !in names) return null
         val entry = zip.getEntry(name) ?: return null
-        return zip.getInputStream(entry).use { readBounded(it) }
+        val cap = if (name.endsWith(".xml") || name.endsWith(".rels")) limits.maxXmlPartBytes else limits.maxEntryBytes
+        return zip.getInputStream(entry).use { readBounded(it, cap, entry.size) }
     }
 
     fun readXml(partName: String): XmlReader? = read(partName)?.let { XmlReader(decodeXml(it)) }
@@ -72,8 +73,10 @@ class OpcPackage(file: File, private val limits: OfficeLimits = OfficeLimits.DEF
 
     override fun close() = zip.close()
 
-    private fun readBounded(input: InputStream): ByteArray {
-        val out = ByteArrayOutputStream()
+    /** Reads at most [cap] bytes. [declaredSize] (from the zip header, untrusted) only pre-sizes the buffer. */
+    private fun readBounded(input: InputStream, cap: Long, declaredSize: Long): ByteArray {
+        val initial = declaredSize.coerceAtMost(minOf(cap, MAX_PRESIZE)).coerceAtLeast(BUFFER.toLong())
+        val out = ByteArrayOutputStream(initial.toInt())
         val buffer = ByteArray(BUFFER)
         var entryBytes = 0L
         while (true) {
@@ -81,7 +84,7 @@ class OpcPackage(file: File, private val limits: OfficeLimits = OfficeLimits.DEF
             if (n < 0) break
             entryBytes += n
             expandedBytes += n
-            if (entryBytes > limits.maxEntryBytes || expandedBytes > limits.maxTotalBytes) {
+            if (entryBytes > cap || expandedBytes > limits.maxTotalBytes) {
                 throw OfficeLimitException("Archive expands beyond the safety limit")
             }
             out.write(buffer, 0, n)
@@ -91,6 +94,7 @@ class OpcPackage(file: File, private val limits: OfficeLimits = OfficeLimits.DEF
 
     companion object {
         private const val BUFFER = 16 * 1024
+        private const val MAX_PRESIZE = 8L * 1024 * 1024
 
         /** Resolves a relationship target against the source part's directory. */
         fun resolve(baseDir: String, target: String): String {

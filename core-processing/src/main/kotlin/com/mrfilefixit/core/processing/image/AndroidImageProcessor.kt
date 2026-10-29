@@ -99,10 +99,12 @@ internal class AndroidImageProcessor @Inject constructor(
                 }
 
                 val background = request.effects.background
+                val maxPixels = if (request.effects.isNone) null else ImagePlan.MAX_EFFECT_PIXELS
                 val rendered = if (background == null) {
-                    renderPlan(request.source.uri, raw, plan, output)
+                    renderPlan(request.source.uri, raw, plan, output, maxPixels)
                 } else {
-                    renderPlan(request.source.uri, raw, plan, output).use { replaceBackground(it, background, output) }
+                    renderPlan(request.source.uri, raw, plan, output, maxPixels)
+                        .use { replaceBackground(it, background, output) }
                         ?: return@runCatchingAppFlat failure(AppError.NoPersonFound)
                 }
                 coroutineContext.ensureActive()
@@ -169,15 +171,25 @@ internal class AndroidImageProcessor @Inject constructor(
         return renderPlan(source.uri, raw, plan, output)
     }
 
-    /** Decode the crop region at the right sample size and draw it into the output canvas. */
-    private fun renderPlan(uri: String, raw: RawImageInfo, plan: ImagePlan, output: OutputSpec): Bitmap {
+    /**
+     * Decode the crop region at the right sample size and draw it into the output canvas. [maxPixels] shrinks a plan
+     * that would otherwise keep a very large photo at full size (see [ImagePlan.limitedTo]).
+     */
+    private fun renderPlan(
+        uri: String,
+        raw: RawImageInfo,
+        plan: ImagePlan,
+        output: OutputSpec,
+        maxPixels: Long? = null,
+    ): Bitmap {
         val rawRect = RectTransforms.displayToRaw(plan.crop, raw.exifRotation, raw.flipped, plan.rotation)
         val regionW = (rawRect.width * raw.width).toInt().coerceAtLeast(1)
         val regionH = (rawRect.height * raw.height).toInt().coerceAtLeast(1)
         val quarterTurns = RectTransforms.quarterTurns(raw.exifRotation + plan.rotation)
         val uprightW = if (quarterTurns % 2 == 0) regionW else regionH
         val uprightH = if (quarterTurns % 2 == 0) regionH else regionW
-        val geometry = OutputGeometry.compute(uprightW, uprightH, plan)
+        val limited = maxPixels?.let { plan.limitedTo(uprightW, uprightH, it) } ?: plan
+        val geometry = OutputGeometry.compute(uprightW, uprightH, limited)
         val neededW = (geometry.drawWidth / geometry.fillCrop.width).toInt()
         val neededH = (geometry.drawHeight / geometry.fillCrop.height).toInt()
         val sample = if (quarterTurns % 2 == 0) {

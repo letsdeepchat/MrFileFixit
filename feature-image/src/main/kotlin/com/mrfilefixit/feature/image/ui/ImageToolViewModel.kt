@@ -267,8 +267,25 @@ class ImageToolViewModel @Inject constructor(
                 .flatMap { uris.map { describeFile(it) }.collectAll() }
             when (described) {
                 is Result.Success -> {
+                    // New pictures start clean: the last run's results, and a crop drawn on the old picture, belong
+                    // to the old picture. A background batch keeps running and is not cancelled here.
+                    if (!state.value.runsInBackground) {
+                        runner.cancel()
+                        pdfRunner.cancel()
+                        discardOutputs()
+                        runner.reset()
+                        pdfRunner.reset()
+                    }
                     mutableState.update {
-                        it.copy(files = described.value, firstInfo = null, inputError = null, livePreview = null)
+                        it.copy(
+                            files = described.value,
+                            firstInfo = null,
+                            inputError = null,
+                            livePreview = null,
+                            ranTool = null,
+                            delivered = false,
+                            options = it.options.copy(crop = NormalizedRect.FULL),
+                        )
                     }
                     imageProcessor.readInfo(described.value.first()).fold(
                         onSuccess = { info ->

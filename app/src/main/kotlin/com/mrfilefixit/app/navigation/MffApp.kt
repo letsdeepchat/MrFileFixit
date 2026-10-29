@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -99,6 +100,9 @@ fun MffApp() {
     val pagerState = rememberPagerState { TopLevelDestination.entries.size }
     val scope = rememberCoroutineScope()
     val selected = selectedTab(destination, pagerState)
+    // Six labels fit at normal text sizes. With large text (130% and up) they would be cut off, so only the selected
+    // item keeps its label and the others are read out from their icons' descriptions.
+    val compactLabels = LocalDensity.current.fontScale >= LARGE_FONT_SCALE
     NavigationSuiteScaffold(
         // Exposes test tags as resource ids so UiAutomator (Baseline Profile, Macrobenchmark) can find them.
         modifier = Modifier.semantics { testTagsAsResourceId = true },
@@ -113,7 +117,11 @@ fun MffApp() {
                         }
                         scope.showTab(pagerState, top.ordinal)
                     },
-                    icon = { Icon(top.icon, contentDescription = null) },
+                    icon = {
+                        val description = stringResource(top.label).takeIf { compactLabels && selected != top }
+                        Icon(top.icon, contentDescription = description)
+                    },
+                    alwaysShowLabel = !compactLabels,
                     label = {
                         Text(
                             stringResource(top.shortLabel),
@@ -208,6 +216,8 @@ private fun NavHostController.openOcr(uris: List<String> = emptyList()) {
 }
 
 private const val PDF_COMPRESS = "COMPRESS"
+
+private const val LARGE_FONT_SCALE = 1.3f
 
 /** 11 sp medium with slight tracking: readable, and short enough that every caption stays on one line. */
 private val NavLabelStyle = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.2.sp)

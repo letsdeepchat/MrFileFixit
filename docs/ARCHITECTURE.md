@@ -76,7 +76,7 @@ Rules enforced by the graph:
 | --- | --- |
 | Dependencies point inward only | `core-domain` is a `kotlin("jvm")` module, so it cannot see Android or any other module. Features only see `core-ui` and `core-domain`. |
 | Features never see implementations | `core-processing` and `core-storage` bind their implementations with Hilt `@Binds`. Only `:app` puts them on the classpath. |
-| Nothing touches the network | `verifyNetworkIsolation` (convention plugins) fails the build if any module, `:app` included, resolves a networking library or declares `INTERNET`; Detekt `ForbiddenImport` bans `java.net.*`, `okhttp3.*`, etc. |
+| Nothing touches the network | The merged manifest has no `INTERNET` permission (removed in `:app`, checked in CI); `verifyNetworkIsolation` (convention plugins) fails the build if any module resolves a networking library or declares `INTERNET`; Detekt `ForbiddenImport` bans `java.net.*`, `okhttp3.*`, etc. |
 
 ## 3. Package layout per module
 

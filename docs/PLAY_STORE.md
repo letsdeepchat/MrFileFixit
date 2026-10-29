@@ -34,10 +34,10 @@ Signing in the console so Google holds the app signing key.
 | --- | --- |
 | `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC`, `FOREGROUND_SERVICE_MEDIA_PROCESSING` | Large batches keep running with a visible notification. The service declares `dataSync|mediaProcessing`. |
 | `POST_NOTIFICATIONS` | Progress notification for that service. Asked at runtime on Android 13+. |
-| `INTERNET` (merged from ML Kit) | Only for ML Kit's model delivery and its anonymous diagnostics. The app's own code has no network calls, which the `verifyNetworkIsolation` CI task enforces. |
+| `ACCESS_NETWORK_STATE` (merged from ML Kit and WorkManager) | Only reads whether a network exists. It cannot send anything. |
 
-Removed on purpose: `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `MANAGE_EXTERNAL_STORAGE`,
-`READ_MEDIA_IMAGES` and `AD_ID`. Files arrive through the system photo picker and document picker, so no
+Removed on purpose: `INTERNET`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `MANAGE_EXTERNAL_STORAGE`,
+`READ_MEDIA_IMAGES` and `AD_ID`. Without `INTERNET` the app cannot open a network connection at all. Files arrive through the system photo picker and document picker, so no
 Photo and Video Permissions declaration is needed. CI fails if any of them reappears in the merged manifest.
 
 ### Foreground service declaration
@@ -59,9 +59,11 @@ notification.
 | Is all user data encrypted in transit? | Not applicable, no user data leaves the device |
 | Can users request that data is deleted? | Not applicable; temporary files are deleted automatically |
 
-Notes for reviewers: documents, images and scans never leave the device. Google ML Kit (document scanner
-and text recognition) may send anonymous usage and performance statistics to Google; this is not user
-data under Play's definition, and the in-app privacy section says so.
+Why "No" is accurate: the release build has no `INTERNET` permission (CI fails if one appears), so neither the
+app nor any SDK inside it can send data. Text recognition and Remove background use ML Kit's bundled models; ML
+Kit's usage statistics, which Google's ML Kit data disclosure lists as device and app information and identifiers,
+can never be uploaded. The document scanner UI runs inside Google Play services, which is covered by Google's own
+disclosures, not this app's.
 
 ## Other App content answers
 
@@ -72,27 +74,39 @@ data under Play's definition, and the in-app privacy section says so.
   location, no purchases. Expected rating: Everyone / 3+.
 * **News app / health / financial features / government app**: No. The exam presets are a convenience
   and the app shows a disclaimer that it is not affiliated with any exam body; always check the official
-  notification.
+  notification. Say the same in the store listing (below), because Play's Misrepresentation policy looks for
+  apps that imply a government connection.
 
 ## Donations
 
-The app has optional donation links (UPI and PayPal) that open outside the app and unlock nothing. Google Play's
-Payments policy allows donations through external links for apps where the donation buys no digital content or
-feature. Even so, review the current policy before release. Individual developers may also need to state who
-receives the money in the store listing. If in doubt, build with `-Pmff.donations=false`: the Support screen, the
-Home card and the Settings row all disappear, and the `<queries>` entries for UPI apps are the only trace left.
+The Play build has **no donation feature**. CI's release job builds the bundle with `-Pmff.donations=false`, which
+removes the Support screen, the Home card and the Settings row; the `<queries>` entries for UPI apps are the only
+trace left. Google Play's Payments policy requires Google Play billing for in-app payments and forbids leading users
+to other payment methods, with an exception for tax-exempt (charitable) donations only. A tip to the developer's
+own UPI ID or PayPal is not covered, and reviewers flag it.
 
-* **Data safety:** unchanged. Donations happen in other apps, and this app collects nothing about them.
+The sideloaded tester build on GitHub releases keeps donations. To accept tips on Play later, add Google Play
+Billing consumable products (for example "Tip ₹51") that unlock nothing.
+
+* **Data safety:** unchanged.
 * **Financial features:** No. The app does not process payments.
 
 ## Privacy policy
 
-Use this URL in the console:
-`https://github.com/letsdeepchat/MrFileFixit/blob/main/docs/PLAY_STORE.md#privacy-policy-text`
+The repository is private, so a GitHub link to this file returns 404 for Play reviewers. Host
+[`docs/privacy-policy.html`](privacy-policy.html) (a standalone page with the text below) at a public address and
+use that URL in the console, for example:
+
+* **GitHub Pages** from a small public repository that holds only that file, or
+* **Vercel**: drag the file into a new static project, or
+* any website you own.
+
+Replace `PRIVACY_CONTACT_EMAIL` in the page with an address you read before publishing. The policy must stay
+reachable for as long as the app is listed.
 
 ### Privacy policy text
 
-_Last updated: 24 October 2026_
+_Last updated: 29 October 2026_
 
 Mr File Fixit ("the app") is a free offline file tool. This policy explains what happens to your data.
 
@@ -105,18 +119,25 @@ files, and it has no accounts, ads, analytics or tracking of its own.
 **Temporary files.** Working copies live in the app's private cache and are deleted when you leave a tool;
 anything left behind is removed the next time the app starts. Results are saved only where you choose.
 
+**Resume and biodata drafts.** What you type into a resume or biodata, and the photos you add to it, are saved
+only in the app's private storage on your phone so you can come back to them. They are not backed up, and they
+are removed when you delete the draft or uninstall the app.
+
 **Metadata.** Image exports strip location, camera details and other EXIF data, and PDF compression
 removes document metadata, so outputs do not reveal where a photo was taken.
 
-**Third-party components.** The document scanner and text recognition use Google ML Kit, which runs on
-the device. ML Kit may send anonymous usage and performance statistics to Google
-([Google privacy policy](https://policies.google.com/privacy)). It does not send your documents.
+**No internet access.** The app does not have Android's internet permission, so it cannot send anything, and
+neither can any component inside it.
+
+**Third-party components.** Text recognition and Remove background use Google ML Kit models that are built into
+the app and run on the device. The document scanner is shown by Google Play services, which processes the scan on
+your device and hands the pages back to the app ([Google privacy policy](https://policies.google.com/privacy)).
 
 **Children.** The app is not directed at children under 13 and collects no personal data from anyone.
 
 **Changes.** Updates to this policy are published at this address with a new date.
 
-**Contact.** Open an issue at <https://github.com/letsdeepchat/MrFileFixit/issues>.
+**Contact.** Email PRIVACY_CONTACT_EMAIL.
 
 ## Store listing assets
 
@@ -124,3 +145,21 @@ the device. ML Kit may send anonymous usage and performance statistics to Google
   Scan screens in light and dark).
 * Short description (80 chars): "Fix photos, signatures and PDFs for exam forms. Free, offline, no ads."
 * Category: Productivity.
+* Full description must include, near the top: "Mr File Fixit is not affiliated with, endorsed by or connected to
+  SSC, UPSC, IBPS, RRB, NTA or any government body. Photo and signature presets are a convenience; always check
+  the official notification for your exam."
+* Don't use exam bodies' logos or emblems in the icon, screenshots or feature graphic.
+
+## Before the first upload
+
+Things only the account owner can do:
+
+1. **Upload key.** Create it and add the four `MFF_KEYSTORE_*` secrets (see "Upload key" above). Then push a
+   `v*` tag; the `release` job uploads `app-release-bundle` (the `.aab`) as a workflow artifact.
+2. **Privacy policy.** Host `docs/privacy-policy.html` publicly and paste its URL in Play Console > App content.
+3. **Exam presets.** Check each profile in `feature-exam/src/main/assets/exam_rules.json` against its latest
+   official notification and set `lastVerified`. Until then the app shows "Not verified" on it.
+4. **Console forms.** Data safety: "No". Ads: No. Foreground service declaration with the video described above.
+   Target audience 18+.
+5. **Device check.** Install the release build from CI (`app-release-ci` artifact) and try OCR, Scan and Remove
+   background once, to confirm they work without internet.

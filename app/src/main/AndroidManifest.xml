@@ -33,6 +33,14 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
 
     <!--
+      No internet at all. The app's own code never used the network; INTERNET only arrived merged from ML Kit, whose
+      bundled models (text recognition, selfie segmentation) run fully offline. Without it ML Kit's anonymous usage
+      statistics cannot be sent either, so "nothing leaves the phone" is enforced by Android, and CI fails if a
+      library brings it back. The document scanner runs inside Google Play services, in its own process.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+
+    <!--
       Optional donations only hand a upi:// link to the user's own UPI app. Android 11+ hides other apps unless
       declared, so this lets the Support screen see the installed UPI apps (any app handling upi://pay, plus the
       common ones by name) and offer them in a chooser. No data is sent.

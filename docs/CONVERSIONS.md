@@ -55,7 +55,7 @@ PDF to office reads the text the PDF draws, with its positions:
 ## Safety limits
 
 Office files are untrusted input. The XML parser rejects DTDs, so external entities and entity-expansion bombs cannot
-run. ZIP packages are capped at 4 000 entries, 64 MiB per entry and 256 MiB expanded in total. Further caps are 500
+run. ZIP packages are capped at 4 000 entries, 24 MiB per XML part, 48 MiB per other entry and 128 MiB expanded in total, so a small file cannot exhaust a phone's heap. XML nesting is capped at 256 levels. Further caps are 500
 slides, 100 000 rows, 1 000 columns, 200 000 paragraphs and 2 000 output pages. Above a cap the app shows "This document
 is too large or complex to convert on this phone" instead of running out of memory. Macros, embedded OLE objects and
 external links are never run or followed.

@@ -59,6 +59,20 @@ class XmlReaderTest {
     }
 
     @Test
+    fun `refuses nesting deeper than the limit`() {
+        fun read(depth: Int) {
+            val xml = XmlReader("<a>".repeat(depth) + "</a>".repeat(depth))
+            while (xml.next() != XmlReader.Event.EOF) {
+                xml.depth
+            }
+        }
+        read(XmlReader.MAX_DEPTH)
+        // 100 000 levels used to take about a minute (namespace lookups walk the whole stack) and deep tables
+        // overflowed a worker thread's stack in DocxReader.
+        assertThrows<OfficeLimitException> { read(100_000) }
+    }
+
+    @Test
     fun `writer escapes text and drops illegal control characters`() {
         val out = XmlWriter().within("a", "q" to "\"x\" & <y>") { text("1 < 2 & \u0001ok") }.toString()
         assertTrue(out.endsWith("""<a q="&quot;x&quot; &amp; &lt;y&gt;">1 &lt; 2 &amp; ok</a>"""), out)
