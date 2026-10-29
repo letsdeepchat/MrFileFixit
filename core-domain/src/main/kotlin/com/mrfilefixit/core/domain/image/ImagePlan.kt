@@ -1,5 +1,8 @@
 package com.mrfilefixit.core.domain.image
 
+import kotlin.math.floor
+import kotlin.math.sqrt
+
 /**
  * Canonical form of an [ImageRequest]'s operations: rotate, then crop, then one resize or scale.
  * Engines execute a plan in a single decode + draw, which is what keeps memory bounded.
@@ -12,8 +15,25 @@ data class ImagePlan(
     val resize: ImageOp.Resize?,
     val scalePercent: Int?,
 ) {
+    /**
+     * This plan, with a fit-inside resize added when it keeps the full [width] x [height] (upright, after the crop)
+     * and that is more than [maxPixels]. Effects (Edit, Enhance) hold several full-size copies of the picture, so a
+     * 50 MP photo would need about 400 MB; capping keeps them safe on phones with 2 to 3 GB of RAM.
+     */
+    fun limitedTo(width: Int, height: Int, maxPixels: Long): ImagePlan {
+        val pixels = width.toLong() * height
+        if (resize != null || scalePercent != null || pixels <= maxPixels) return this
+        val factor = sqrt(maxPixels.toDouble() / pixels)
+        val w = floor(width * factor).toInt().coerceAtLeast(1)
+        val h = floor(height * factor).toInt().coerceAtLeast(1)
+        return copy(resize = ImageOp.Resize(w, h, ResizeMode.FIT))
+    }
+
     companion object {
         private const val FULL_TURN = 360
+
+        /** Largest picture Edit and Enhance work on: 24 MP, for example 6000 x 4000. */
+        const val MAX_EFFECT_PIXELS = 24_000_000L
 
         /**
          * Builds a plan from [ops]. Accepts any number of rotations first, at most one crop, then at most

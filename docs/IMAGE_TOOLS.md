@@ -119,3 +119,8 @@ Effects run after the geometry (rotate, crop, resize), in this order: background
 document filter, colour matrix, name and date bar, text. They are part of `ImageRequest` and `ImageBatchSpec` as `ImageEffects`, which is
 serializable so background batches carry them; batch files written before this change still read back with no
 effects.
+
+Pictures with effects are worked on at no more than 24 megapixels (`ImagePlan.MAX_EFFECT_PIXELS`, for example
+6000 x 4000). Effects keep several full-size copies of the picture, so a 50 MP photo at full size would need about
+400 MB and could be killed on phones with 2 to 3 GB of RAM. Smaller photos, and runs that already resize, are not
+affected.
