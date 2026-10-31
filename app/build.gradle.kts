@@ -50,6 +50,9 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // The app has no C/C++ of its own; this ships whatever symbol tables the bundled ML Kit libraries keep, so
+            // Play Console can symbolicate native crashes where it is able to.
+            ndk { debugSymbolLevel = "SYMBOL_TABLE" }
             // CI passes -Pmff.ciRelease=true to build and launch the minified app without the upload key; that APK is
             // debug-signed and never uploaded. Without the property and without the key, the build stays unsigned.
             signingConfig = signingConfigs.getByName("release").takeIf { it.storeFile != null }
