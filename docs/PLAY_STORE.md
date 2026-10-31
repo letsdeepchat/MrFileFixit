@@ -77,7 +77,10 @@ data under Play's definition, and the in-app privacy section says so.
 ## Privacy policy
 
 Use this URL in the console:
-`https://github.com/letsdeepchat/MrFileFixit/blob/main/docs/PLAY_STORE.md#privacy-policy-text`
+`https://letsdeepchat.github.io/MrFileFixit/privacy.html`
+
+The page is [`docs/privacy.html`](privacy.html), served by GitHub Pages from the `main` branch,
+`/docs` folder (Settings > Pages). Keep it in sync with the text below.
 
 ### Privacy policy text
 
