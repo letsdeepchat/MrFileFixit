@@ -32,8 +32,6 @@
     </plurals>
     <string name="image_batch_background">बड़े बैच नोटिफ़िकेशन के साथ बैकग्राउंड में चलते रहते हैं।</string>
     <string name="image_heic_unavailable">इस डिवाइस पर HEIC आउटपुट सपोर्टेड नहीं है।</string>
-    <string name="notification_channel_jobs">फ़ाइल जॉब</string>
-    <string name="notification_job_running">इमेज प्रोसेस हो रही हैं…</string>
     <string name="image_pick_title">इमेज चुनने के लिए टैप करें</string>
     <string name="image_pick_hint">JPG, PNG, WebP या HEIC • अधिकतम फ़ाइलें: %1$d</string>
     <string name="image_original_size">मूल साइज़: %1$d × %2$d px</string>

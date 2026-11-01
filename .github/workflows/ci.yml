@@ -80,7 +80,7 @@ jobs:
         run: |
           pip install --quiet pyelftools==0.31
           python3 .github/scripts/check_16kb.py app/build/outputs/apk/release/app-release.apk
-      - name: Merged manifests have no network, broad storage permissions or ads
+      - name: Merged manifests have no network, broad storage permissions, foreground services or ads
         run: |
           manifests=$(find app/build/intermediates/merged_manifest -name AndroidManifest.xml)
           test -n "$manifests"
@@ -93,6 +93,11 @@ jobs:
             # Fully offline: the Play data-safety answer "no data collected" relies on this.
             if grep -E 'android.permission.INTERNET' "$manifest"; then
               echo "INTERNET permission found in merged manifest" >&2
+              exit 1
+            fi
+            # No foreground services: Play asks for a video justifying each foreground service type.
+            if grep -E 'FOREGROUND_SERVICE|foregroundServiceType|POST_NOTIFICATIONS' "$manifest"; then
+              echo "Foreground service or notification permission found in merged manifest" >&2
               exit 1
             fi
             grep -q 'android:allowBackup="false"' "$manifest"

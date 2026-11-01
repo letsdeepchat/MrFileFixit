@@ -113,8 +113,8 @@ feature-*/        com.mrfilefixit.feature.<name>    (ui + feature data such as b
 * `DispatcherProvider` is injected everywhere. Decoding/encoding runs on `default`, file I/O on `io`.
 * All loops call `ensureActive()` / `coroutineContext.ensureActive()` between steps, so cancelling a job stops it
   within one image or one PDF page.
-* Batches above `BatchPolicy.INLINE_LIMIT` files are handed to WorkManager. The worker promotes itself to a
-  foreground service (`mediaProcessing` on API 35+, `dataSync` below) only while it is running.
+* Batches above `BatchPolicy.INLINE_LIMIT` files are handed to WorkManager as ordinary background work. There is no
+  foreground service, so Play needs no foreground service declaration.
 
 ## 5. Privacy boundaries
 

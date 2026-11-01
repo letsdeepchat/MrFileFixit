@@ -32,24 +32,17 @@ Signing in the console so Google holds the app signing key.
 
 | Permission | Why |
 | --- | --- |
-| `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC`, `FOREGROUND_SERVICE_MEDIA_PROCESSING` | Large batches keep running with a visible notification. The service declares `dataSync|mediaProcessing`. |
-| `POST_NOTIFICATIONS` | Progress notification for that service. Asked at runtime on Android 13+. |
 | `ACCESS_NETWORK_STATE` (merged from ML Kit and WorkManager) | Only reads whether a network exists. It cannot send anything. |
 
-Removed on purpose: `INTERNET`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `MANAGE_EXTERNAL_STORAGE`,
+Removed on purpose: `INTERNET`, `FOREGROUND_SERVICE` (and its `DATA_SYNC` / `MEDIA_PROCESSING` types),
+`POST_NOTIFICATIONS`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `MANAGE_EXTERNAL_STORAGE`,
 `READ_MEDIA_IMAGES` and `AD_ID`. Without `INTERNET` the app cannot open a network connection at all. Files arrive through the system photo picker and document picker, so no
 Photo and Video Permissions declaration is needed. CI fails if any of them reappears in the merged manifest.
 
-### Foreground service declaration
+### Foreground services
 
-Play Console > App content > Foreground service permissions:
-
-* **Data sync**: copying user-selected files into the app's private cache and writing results back to a
-  user-chosen folder.
-* **Media processing**: converting, compressing and resizing user-selected images and PDFs.
-
-Video for the declaration: start a batch of 20 images in Image tools, leave the app, and show the progress
-notification.
+None. The app declares no foreground service and no foreground service permission, so Play Console asks for no
+foreground service declaration or video. Large image batches run as ordinary WorkManager background work.
 
 ## Data safety form
 
@@ -159,7 +152,7 @@ Things only the account owner can do:
 2. **Privacy policy.** Host `docs/privacy-policy.html` publicly and paste its URL in Play Console > App content.
 3. **Exam presets.** Check each profile in `feature-exam/src/main/assets/exam_rules.json` against its latest
    official notification and set `lastVerified`. Until then the app shows "Not verified" on it.
-4. **Console forms.** Data safety: "No". Ads: No. Foreground service declaration with the video described above.
+4. **Console forms.** Data safety: "No". Ads: No. No foreground service declaration is needed.
    Target audience 18+.
 5. **Device check.** Install the release build from CI (`app-release-ci` artifact) and try OCR, Scan and Remove
    background once, to confirm they work without internet.
