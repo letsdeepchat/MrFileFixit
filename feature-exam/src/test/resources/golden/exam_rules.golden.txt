@@ -15,17 +15,17 @@ ssc-mts | SSC MTS | SSC | COMMUNITY | lastVerified=null
   PHOTO: JPEG 20-50KB(x1024) w=100..600 h=120..800 target=350x450 bytes=20736..49744
   SIGNATURE: JPEG 10-20KB(x1024) w=140..800 h=60..400 target=400x200 bytes=10496..19744
 upsc-cse | UPSC CSE | UPSC | COMMUNITY | lastVerified=null
-  source: https://upsconline.gov.in/
+  source: https://upsc.gov.in/
   PHOTO: JPEG 20-200KB(x1024) w=350..1000 h=350..1000 target=450x550 bytes=20736..199744
   SIGNATURE: JPEG 20-100KB(x1024) w=350..1000 h=350..1000 target=500x700 bytes=20736..99744
   certificate: Photo ID card (Aadhaar, passport, voter ID or driving licence): PDF 20-300KB
 upsc-cds | UPSC CDS | DEFENCE | COMMUNITY | lastVerified=null
-  source: https://upsconline.gov.in/
+  source: https://upsc.gov.in/
   PHOTO: JPEG 20-300KB(x1024) w=350..1000 h=350..1000 target=450x550 bytes=20736..299744
   SIGNATURE: JPEG 20-300KB(x1024) w=350..1000 h=350..1000 target=700x350 bytes=20736..299744
   certificate: Photo ID card (Aadhaar, passport, voter ID or driving licence): PDF 20-300KB
 upsc-nda | UPSC NDA | DEFENCE | COMMUNITY | lastVerified=null
-  source: https://upsconline.gov.in/
+  source: https://upsc.gov.in/
   PHOTO: JPEG 20-300KB(x1024) w=350..1000 h=350..1000 target=450x550 bytes=20736..299744
   SIGNATURE: JPEG 20-300KB(x1024) w=350..1000 h=350..1000 target=700x350 bytes=20736..299744
   certificate: Photo ID card (Aadhaar, passport, voter ID or driving licence): PDF 20-300KB
@@ -42,13 +42,13 @@ ibps-clerk | IBPS Clerk | BANKING | COMMUNITY | lastVerified=null
   LEFT_THUMB: JPEG 20-50KB(x1024) w=240..240 h=240..240 target=240x240 bytes=20736..49744
   DECLARATION: JPEG 50-100KB(x1024) w=800..800 h=400..400 target=800x400 bytes=51456..99744
 sbi-po | SBI PO | BANKING | COMMUNITY | lastVerified=null
-  source: https://sbi.co.in/web/careers
+  source: https://sbi.bank.in/web/careers
   PHOTO: JPEG 20-50KB(x1024) w=200..200 h=230..230 target=200x230 bytes=20736..49744
   SIGNATURE: JPEG 10-20KB(x1024) w=140..140 h=60..60 target=140x60 bytes=10496..19744
   LEFT_THUMB: JPEG 20-50KB(x1024) w=240..240 h=240..240 target=240x240 bytes=20736..49744
   DECLARATION: JPEG 50-100KB(x1024) w=800..800 h=400..400 target=800x400 bytes=51456..99744
 sbi-clerk | SBI Clerk | BANKING | COMMUNITY | lastVerified=null
-  source: https://sbi.co.in/web/careers
+  source: https://sbi.bank.in/web/careers
   PHOTO: JPEG 20-50KB(x1024) w=200..200 h=230..230 target=200x230 bytes=20736..49744
   SIGNATURE: JPEG 10-20KB(x1024) w=140..140 h=60..60 target=140x60 bytes=10496..19744
   LEFT_THUMB: JPEG 20-50KB(x1024) w=240..240 h=240..240 target=240x240 bytes=20736..49744
@@ -98,7 +98,7 @@ afcat | AFCAT | DEFENCE | COMMUNITY | lastVerified=null
   SIGNATURE: JPEG 10-50KB(x1024) w=200..800 h=100..400 target=350x150 bytes=10496..49744
   LEFT_THUMB: JPEG 10-50KB(x1024) w=200..800 h=200..800 target=350x350 bytes=10496..49744
 lic-aao | LIC AAO | BANKING | COMMUNITY | lastVerified=null
-  source: https://licindia.in/
+  source: https://licindia.in/web/guest/careers
   PHOTO: JPEG 20-50KB(x1024) w=200..200 h=230..230 target=200x230 bytes=20736..49744
   SIGNATURE: JPEG 10-20KB(x1024) w=140..140 h=60..60 target=140x60 bytes=10496..19744
   LEFT_THUMB: JPEG 20-50KB(x1024) w=240..240 h=240..240 target=240x240 bytes=20736..49744

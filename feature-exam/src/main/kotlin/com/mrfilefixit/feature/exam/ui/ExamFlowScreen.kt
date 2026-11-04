@@ -292,8 +292,14 @@ private fun ProfileHeader(profile: ExamProfile, onPrepare: () -> Unit, modifier:
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         // Opens the official site in the user's browser. The app itself never fetches anything.
+        // The address is also shown as text so it is readable even when no browser is installed.
+        Text(
+            stringResource(R.string.exam_source, profile.sourceUrl.removePrefix("https://").trimEnd('/')),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         TextButton(
-            onClick = { uriHandler.openUri(profile.sourceUrl) },
+            onClick = { runCatching { uriHandler.openUri(profile.sourceUrl) } },
             modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
         ) {
             Icon(Icons.Filled.Public, contentDescription = null)
