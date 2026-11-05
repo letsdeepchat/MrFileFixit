@@ -6,11 +6,11 @@
 # Build
 agp = "9.0.0"
 kotlin = "2.4.21"
-ksp = "2.3.12"
+ksp = "2.3.13"
 detekt = "1.23.8"
 # Language/runtime
 coroutines = "1.11.0"
-serialization = "1.9.0"
+serialization = "1.12.0"
 javax-inject = "1"
 # AndroidX
 core-ktx = "1.17.0"
