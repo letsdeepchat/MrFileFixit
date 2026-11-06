@@ -3,7 +3,6 @@ package com.mrfilefixit.feature.image.work
 import android.content.Context
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -34,7 +33,6 @@ class ImageBatchScheduler @Inject constructor(
         }
         val request = OneTimeWorkRequestBuilder<BatchImageWorker>()
             .setInputData(workDataOf(BatchImageWorker.KEY_JOB_DIR to jobDir))
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .build()
         workManager.enqueueUniqueWork(UNIQUE_NAME, ExistingWorkPolicy.APPEND_OR_REPLACE, request)
         return request.id

@@ -2,6 +2,7 @@ package com.mrfilefixit.core.domain.image
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -94,5 +95,22 @@ class ImagePlanTest {
         assertEquals(expected.top, actual.top, 1e-5f)
         assertEquals(expected.right, actual.right, 1e-5f)
         assertEquals(expected.bottom, actual.bottom, 1e-5f)
+    }
+
+    @Test
+    fun `a 50 MP photo is capped to 24 MP for effects, keeping its shape`() {
+        val plan = ImagePlan(0, NormalizedRect.FULL, null, null).limitedTo(8160, 6120, ImagePlan.MAX_EFFECT_PIXELS)
+        val resize = requireNotNull(plan.resize)
+        assertEquals(ResizeMode.FIT, resize.mode)
+        assertTrue(resize.width.toLong() * resize.height <= ImagePlan.MAX_EFFECT_PIXELS)
+        assertEquals(8160.0 / 6120, resize.width.toDouble() / resize.height, 0.01)
+    }
+
+    @Test
+    fun `small photos and plans that already resize are left alone`() {
+        val plain = ImagePlan(0, NormalizedRect.FULL, null, null)
+        assertEquals(plain, plain.limitedTo(4000, 3000, ImagePlan.MAX_EFFECT_PIXELS))
+        val resized = plain.copy(resize = ImageOp.Resize(100, 100))
+        assertEquals(resized, resized.limitedTo(8160, 6120, ImagePlan.MAX_EFFECT_PIXELS))
     }
 }

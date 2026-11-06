@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -60,13 +62,17 @@ private val tools = listOf(
 )
 
 @Composable
-fun HomeScreen(onOpen: (TopLevelDestination) -> Unit, onOpenSettings: () -> Unit) {
+fun HomeScreen(
+    onOpen: (TopLevelDestination) -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenSupport: (() -> Unit)?,
+) {
     ToolScaffold(
         title = stringResource(R.string.app_name),
         modifier = Modifier.testTag("home"),
         titleContent = { BrandTitle() },
         actions = {
-            IconButton(onClick = onOpenSettings) {
+            IconButton(onClick = onOpenSettings, modifier = Modifier.testTag("home_settings")) {
                 Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.nav_settings))
             }
         },
@@ -96,7 +102,25 @@ fun HomeScreen(onOpen: (TopLevelDestination) -> Unit, onOpenSettings: () -> Unit
                 }
             }
             items(tools, key = { it.first.name }) { (destination, body) ->
-                ToolCard(destination, body, onClick = { onOpen(destination) })
+                ToolCard(
+                    icon = destination.icon,
+                    title = stringResource(destination.label),
+                    body = stringResource(body),
+                    onClick = { onOpen(destination) },
+                    modifier = Modifier.testTag("home_${destination.name.lowercase()}"),
+                )
+            }
+            if (onOpenSupport != null) {
+                item(key = "support", span = { GridItemSpan(maxLineSpan) }) {
+                    ToolCard(
+                        icon = Icons.Filled.VolunteerActivism,
+                        title = stringResource(R.string.home_support_title),
+                        body = stringResource(R.string.home_support_body),
+                        onClick = onOpenSupport,
+                        modifier = Modifier.testTag("home_support"),
+                        highlighted = true,
+                    )
+                }
             }
         }
     }
@@ -142,14 +166,21 @@ private val BrandStyle = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Ext
 private const val BRAND_EMBLEM = 36
 
 @Composable
-private fun ToolCard(destination: TopLevelDestination, body: Int, onClick: () -> Unit) {
+private fun ToolCard(
+    icon: ImageVector,
+    title: String,
+    body: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    highlighted: Boolean = false,
+) {
     val colors = MaterialTheme.colorScheme
     OutlinedCard(
         onClick = onClick,
         shape = RoundedCornerShape(Dimens.CardCorner),
-        border = BorderStroke(1.dp, colors.outlineVariant),
+        border = BorderStroke(1.dp, if (highlighted) colors.primary else colors.outlineVariant),
         colors = CardDefaults.outlinedCardColors(containerColor = colors.surfaceContainer),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .heightIn(min = Dimens.MinTouchTarget),
     ) {
@@ -158,10 +189,10 @@ private fun ToolCard(destination: TopLevelDestination, body: Int, onClick: () ->
             horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceM),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconBadge(destination.icon)
+            IconBadge(icon)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXs)) {
-                Text(stringResource(destination.label), style = MaterialTheme.typography.titleMedium)
-                Text(stringResource(body), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
+                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(body, style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
             }
         }
     }
@@ -170,5 +201,7 @@ private fun ToolCard(destination: TopLevelDestination, body: Int, onClick: () ->
 @AllPreviews
 @Composable
 private fun HomePreview() {
-    MffTheme(dynamicColor = false) { HomeScreen(onOpen = {}, onOpenSettings = {}) }
+    MffTheme(dynamicColor = false) {
+        HomeScreen(onOpen = {}, onOpenSettings = {}, onOpenSupport = {})
+    }
 }

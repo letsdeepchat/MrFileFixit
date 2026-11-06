@@ -59,21 +59,59 @@ jobs:
       - name: Android Lint (warnings are errors)
         run: ./gradlew lintDebug --continue
       - name: Assemble debug
-        run: ./gradlew :app:assembleDebug
-      - name: Merged manifest has no broad storage permissions and no ads
+        run: ./gradlew :app:assembleDebug -Pmff.abis=arm64-v8a,armeabi-v7a
+      # What takes space in the APK, by folder and by largest file, so a size jump is visible in every run.
+      - name: APK size report
         run: |
-          manifest=$(find app/build/intermediates/merged_manifest -name AndroidManifest.xml | head -n 1)
-          test -n "$manifest"
-          if grep -E 'READ_EXTERNAL_STORAGE|WRITE_EXTERNAL_STORAGE|MANAGE_EXTERNAL_STORAGE|READ_MEDIA_' "$manifest"; then
-            echo "Broad storage permission found in merged manifest" >&2
-            exit 1
-          fi
-          grep -q 'android:allowBackup="false"' "$manifest"
-          # No ads SDK, no advertising ID: the app is free and ad-free.
-          if grep -E 'permission.AD_ID|com.google.android.gms.ads' "$manifest"; then
-            echo "Advertising component found in merged manifest" >&2
-            exit 1
-          fi
+          apk=app/build/outputs/apk/debug/app-debug.apk
+          {
+            echo "### APK size: $(du -m "$apk" | cut -f1) MB"
+            echo '```'
+            unzip -lv "$apk" | awk 'NR>3 && $8 != "" {split($8, p, "/"); key = (p[1] == "lib") ? p[1] "/" p[2] : p[1]; s[key] += $3} END {for (k in s) printf "%8.1f MB  %s\n", s[k]/1048576, k}' | sort -rn | head -20
+            echo '--- largest files (compressed size)'
+            unzip -lv "$apk" | awk 'NR>3 && $8 != "" {printf "%8.1f MB  %s\n", $3/1048576, $8}' | sort -rn | head -25
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      # The Play build: minified with R8 full mode, donations left out (Play's Payments policy), debug-signed only so
+      # CI can launch it. Catches keep-rule problems that the debug build never shows.
+      - name: Assemble release (R8)
+        run: ./gradlew :app:assembleRelease -Pmff.ciRelease=true -Pmff.donations=false
+      - name: 16 KB page alignment of 64-bit native libraries
+        run: |
+          pip install --quiet pyelftools==0.31
+          python3 .github/scripts/check_16kb.py app/build/outputs/apk/release/app-release.apk
+      - name: Merged manifests have no network, broad storage permissions, foreground services or ads
+        run: |
+          manifests=$(find app/build/intermediates/merged_manifest -name AndroidManifest.xml)
+          test -n "$manifests"
+          for manifest in $manifests; do
+            echo "Checking $manifest"
+            if grep -E 'READ_EXTERNAL_STORAGE|WRITE_EXTERNAL_STORAGE|MANAGE_EXTERNAL_STORAGE|READ_MEDIA_' "$manifest"; then
+              echo "Broad storage permission found in merged manifest" >&2
+              exit 1
+            fi
+            # Fully offline: the Play data-safety answer "no data collected" relies on this.
+            if grep -E 'android.permission.INTERNET' "$manifest"; then
+              echo "INTERNET permission found in merged manifest" >&2
+              exit 1
+            fi
+            # No foreground services: Play asks for a video justifying each foreground service type.
+            if grep -E 'FOREGROUND_SERVICE|foregroundServiceType|POST_NOTIFICATIONS' "$manifest"; then
+              echo "Foreground service or notification permission found in merged manifest" >&2
+              exit 1
+            fi
+            grep -q 'android:allowBackup="false"' "$manifest"
+            # No ads SDK, no advertising ID: the app is free and ad-free.
+            if grep -E 'permission.AD_ID|com.google.android.gms.ads' "$manifest"; then
+              echo "Advertising component found in merged manifest" >&2
+              exit 1
+            fi
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release-ci
+          path: app/build/outputs/apk/release/app-release.apk
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -112,13 +150,29 @@ jobs:
         run: |
           tasks=$(for d in */src/androidTest; do printf ':%s:connectedDebugAndroidTest ' "${d%%/src/androidTest}"; done)
           echo "tasks=$tasks" >> "$GITHUB_OUTPUT"
+          echo "builds=${tasks//connectedDebugAndroidTest/assembleDebugAndroidTest}" >> "$GITHUB_OUTPUT"
+      # Compiling and dexing the test APKs while the emulator boots overloads the runner: QEMU stalls and
+      # GitHub has shut the runner down mid-build. So build them first, then stop the build daemons to free
+      # their memory, and the emulator step only installs and runs the tests.
+      - name: Build test APKs
+        run: |
+          ./gradlew ${{ steps.modules.outputs.builds }}
+          ./gradlew --stop
+          pkill -f KotlinCompileDaemon || true
+      - name: Download the release build
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release-ci
+          path: release-apk
       - uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           arch: x86_64
           target: google_apis
           disk-size: 4096M
-          script: ./gradlew ${{ steps.modules.outputs.tasks }}
+          script: |
+            ./gradlew ${{ steps.modules.outputs.tasks }}
+            .github/scripts/release_smoke.sh release-apk/app-release.apk
 
   release:
     name: Release bundle
@@ -158,7 +212,8 @@ jobs:
           MFF_KEYSTORE_PASSWORD: ${{ secrets.MFF_KEYSTORE_PASSWORD }}
           MFF_KEY_ALIAS: ${{ secrets.MFF_KEY_ALIAS }}
           MFF_KEY_PASSWORD: ${{ secrets.MFF_KEY_PASSWORD }}
-        run: ./gradlew :app:bundleRelease
+        # Donations stay out of the Play build: Play's Payments policy only exempts tax-exempt charitable donations.
+        run: ./gradlew :app:bundleRelease -Pmff.donations=false
       - uses: actions/upload-artifact@v4
         if: steps.secrets.outputs.configured == 'true'
         with:
@@ -181,7 +236,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       # A debug build: debug-signed so it installs by sideloading, and installs as
       # com.mrfilefixit.app.debug next to any Play Store copy. No ads, no account, everything free.
-      - run: ./gradlew :app:assembleDebug
+      # Phone chips only (arm64 and 32-bit arm); emulator-only x86 code would add about 60 MB.
+      - run: ./gradlew :app:assembleDebug -Pmff.abis=arm64-v8a,armeabi-v7a
       - name: Publish pre-release with the APK
         env:
           GH_TOKEN: ${{ github.token }}

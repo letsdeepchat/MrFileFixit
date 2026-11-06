@@ -2,11 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- BatchImageWorker runs as a foreground service only while a batch is running. -->
+    <!--
+      BatchImageWorker is plain background work. WorkManager's foreground service is removed so the app declares no
+      foreground service at all, which Play would otherwise ask to justify with a video.
+    -->
     <application>
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="dataSync|mediaProcessing"
-            tools:node="merge" />
+            tools:node="remove" />
     </application>
 </manifest>

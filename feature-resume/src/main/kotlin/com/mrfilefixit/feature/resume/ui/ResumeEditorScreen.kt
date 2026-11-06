@@ -45,7 +45,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -71,11 +70,13 @@ import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.components.CropBox
 import com.mrfilefixit.core.ui.components.ErrorCard
 import com.mrfilefixit.core.ui.components.JobProgressCard
+import com.mrfilefixit.core.ui.components.PdfPagesColumn
 import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.components.SectionHeader
 import com.mrfilefixit.core.ui.components.SegmentedChoice
 import com.mrfilefixit.core.ui.components.StickyActionBar
 import com.mrfilefixit.core.ui.components.ToolScaffold
+import com.mrfilefixit.core.ui.components.windowHeight
 import com.mrfilefixit.core.ui.format.formatBytes
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
@@ -284,7 +285,7 @@ private fun PhotoCard(state: ResumeUiState, actions: ResumeEditorActions, modifi
                 imageAspect = crop.imageAspect,
                 frameAspect = PHOTO_ASPECT,
                 onCropChanged = { actions.onPhoto(PhotoEvent.CropChanged(it)) },
-                maxHeight = LocalConfiguration.current.screenHeightDp.dp * CROP_MAX_HEIGHT_FRACTION,
+                maxHeight = windowHeight() * CROP_MAX_HEIGHT_FRACTION,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
                 Button(
@@ -477,7 +478,7 @@ private fun ExportResult(output: OutputFile, actions: ResumeEditorActions, modif
         }
         if (isPdf) {
             SectionHeader(stringResource(R.string.resume_preview), Modifier.padding(top = Dimens.SpaceS))
-            PdfPagesPreview(output.path, Modifier.fillMaxWidth())
+            PdfPagesColumn(output.path, Modifier.fillMaxWidth())
         }
     }
 }

@@ -14,8 +14,15 @@ android {
 
     defaultConfig {
         applicationId = "com.mrfilefixit.app"
-        versionCode = 2
-        versionName = "1.0.0"
+        versionCode = 4
+        versionName = "1.0.2"
+        // The optional UPI / PayPal donation screen. Build with -Pmff.donations=false to leave it out, for
+        // example for a store listing whose payments policy does not allow external donation links.
+        val donations = providers.gradleProperty("mff.donations").orNull?.toBooleanStrict() ?: true
+        buildConfigField("boolean", "DONATIONS_ENABLED", donations.toString())
+        // Phone builds pass -Pmff.abis=arm64-v8a,armeabi-v7a so the APK carries native code only for phone chips;
+        // x86 and x86_64 are for emulators. Without the property every chip type is kept, for local emulators.
+        providers.gradleProperty("mff.abis").orNull?.let { abis -> ndk { abiFilters += abis.split(",") } }
     }
 
     androidResources {
@@ -43,7 +50,15 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // The app has no C/C++ of its own; this ships whatever symbol tables the bundled ML Kit libraries keep, so
+            // Play Console can symbolicate native crashes where it is able to.
+            ndk { debugSymbolLevel = "SYMBOL_TABLE" }
+            // CI passes -Pmff.ciRelease=true to build and launch the minified app without the upload key; that APK is
+            // debug-signed and never uploaded. Without the property and without the key, the build stays unsigned.
             signingConfig = signingConfigs.getByName("release").takeIf { it.storeFile != null }
+                ?: signingConfigs.getByName("debug").takeIf {
+                    providers.gradleProperty("mff.ciRelease").orNull?.toBooleanStrict() == true
+                }
         }
     }
 

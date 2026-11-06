@@ -1,0 +1,39 @@
+name: Play bundle
+
+# Builds the Play Store release bundle without the upload key. The bundle is signed afterwards, outside CI, so the
+# key never has to be stored as a repository secret. Runs on pushes to the bundle branch or from the Actions tab.
+on:
+  push:
+    branches: [claude/project-thread-gsvv89]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    name: Unsigned release bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      # Donations stay out of the Play build: Play's Payments policy only exempts tax-exempt charitable donations.
+      - run: ./gradlew :app:bundleRelease -Pmff.donations=false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release-unsigned-bundle
+          path: app/build/outputs/bundle/release/*.aab
+      # A draft release is visible only to repository writers, and its asset can be fetched through the API.
+      - name: Attach the bundle to a draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="play-bundle-${GITHUB_SHA::7}"
+          cp app/build/outputs/bundle/release/app-release.aab "MrFileFixit-unsigned.aab"
+          gh release create "$tag" MrFileFixit-unsigned.aab --draft --target "$GITHUB_SHA" \
+            --title "Play bundle ${GITHUB_SHA::7} (unsigned, draft)" --notes "Unsigned. Sign with the upload key before uploading to Play."

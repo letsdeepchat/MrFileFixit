@@ -12,10 +12,14 @@
     -->
     <uses-sdk tools:overrideLibrary="androidx.heifwriter" />
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!--
+      No foreground services and no notifications: every job runs while the app is open, or as plain WorkManager
+      background work. Removed in case a library brings them back; CI fails if one appears in the merged manifest.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" tools:node="remove" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING" tools:node="remove" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" tools:node="remove" />
 
     <!-- Make sure no library sneaks in broad storage access. -->
     <uses-permission
@@ -31,6 +35,34 @@
         tools:ignore="ScopedStorage"
         tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
+
+    <!--
+      No internet at all. The app's own code never used the network; INTERNET only arrived merged from ML Kit, whose
+      bundled models (text recognition, selfie segmentation) run fully offline. Without it ML Kit's anonymous usage
+      statistics cannot be sent either, so "nothing leaves the phone" is enforced by Android, and CI fails if a
+      library brings it back. The document scanner runs inside Google Play services, in its own process.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+
+    <!--
+      Optional donations only hand a upi:// link to the user's own UPI app. Android 11+ hides other apps unless
+      declared, so this lets the Support screen see the installed UPI apps (any app handling upi://pay, plus the
+      common ones by name) and offer them in a chooser. No data is sent.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="upi" android:host="pay" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="upi" />
+        </intent>
+        <package android:name="com.google.android.apps.nbu.paisa.user" />
+        <package android:name="net.one97.paytm" />
+        <package android:name="com.phonepe.app" />
+        <package android:name="in.org.npci.upiapp" />
+    </queries>
 
     <application
         android:name=".MffApplication"

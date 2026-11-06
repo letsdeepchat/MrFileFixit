@@ -39,11 +39,19 @@ internal class CacheTempFileStore @Inject constructor(
         withContext(dispatchers.io) {
             val cutoff = System.currentTimeMillis() - maxAgeMillis
             root.listFiles()?.filter { it.lastModified() < cutoff }?.forEach { it.deleteRecursively() }
+            // PDFBox keeps its scratch pages (which can hold an unlocked PDF's content) in java.io.tmpdir, the cache
+            // root, and deletes them on close. A killed process leaves them behind; anything a few minutes old cannot
+            // belong to a job of this process.
+            val scratchCutoff = System.currentTimeMillis() - SCRATCH_AGE_MILLIS
+            context.cacheDir.listFiles()
+                ?.filter { it.isFile && it.name.endsWith(".tmp") && it.lastModified() < scratchCutoff }
+                ?.forEach { it.delete() }
         }
     }
 
     companion object {
         const val JOBS_DIR = "jobs"
+        private const val SCRATCH_AGE_MILLIS = 10 * 60 * 1000L
         private val JOB_ID = Regex("^[A-Za-z0-9-]{1,64}$")
     }
 }

@@ -74,6 +74,8 @@ import com.mrfilefixit.core.ui.components.JobProgressCard
 import com.mrfilefixit.core.ui.components.PrimaryActionButton
 import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.format.formatBytes
+import com.mrfilefixit.core.ui.navigation.ReportInnerScreen
+import com.mrfilefixit.core.ui.navigation.rememberGuardedBack
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.theme.Dimens
@@ -135,9 +137,17 @@ internal fun ScanScreen(
         actions.onPickOcr(uris.map { it.toString() })
     }
     val hasWork = state.scan !is JobState.Idle || state.ocrFiles.isNotEmpty() || state.ocr !is JobState.Idle
+    // A scan or picked files make this an inner screen: Back starts over, asking first if the scan is unsaved.
+    ReportInnerScreen(hasWork)
+    val startOver = rememberGuardedBack(
+        unsaved = state.document != null && !state.delivered,
+        onBack = actions.onReset,
+        enabled = hasWork,
+    )
     ToolScaffold(
         title = stringResource(R.string.scan_title),
         modifier = modifier,
+        onBack = startOver.takeIf { hasWork },
         actions = {
             if (hasWork) {
                 TextButton(onClick = actions.onReset) { Text(stringResource(CoreR.string.action_clear_all)) }

@@ -1,6 +1,7 @@
 package com.mrfilefixit.feature.image.ui
 
 import com.mrfilefixit.core.domain.image.ImageFilter
+import com.mrfilefixit.core.domain.image.OverlayFont
 import com.mrfilefixit.core.domain.image.OverlayPosition
 import com.mrfilefixit.core.domain.image.TextOverlay
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -41,13 +42,14 @@ class EditOptionsTest {
     }
 
     @Test
-    fun `text and look carry through, dark text without an outline`() {
+    fun `text, font, colour and look carry through, always outlined in the opposite tone`() {
         val effects = EditOptions(
             filter = ImageFilter.GRAYSCALE,
             brightness = 30,
             text = " Hello ",
             textPosition = OverlayPosition.TOP,
-            textDark = true,
+            textColor = EditOptions.BLACK,
+            textFont = OverlayFont.SERIF,
         ).toEffects()
         assertEquals(ImageFilter.GRAYSCALE, effects.filter)
         assertEquals(30, effects.adjust.brightness)
@@ -55,15 +57,46 @@ class EditOptionsTest {
         assertEquals("Hello", overlay.text)
         assertEquals(OverlayPosition.TOP.y, overlay.y)
         assertEquals(EditOptions.BLACK, overlay.colorArgb)
-        assertFalse(overlay.outline)
+        assertEquals(OverlayFont.SERIF, overlay.font)
+        assertTrue(overlay.outline)
+        assertFalse(overlay.isLight)
         val light = EditOptions(text = "Hi").toEffects().texts.single()
-        assertTrue(light.outline && light.colorArgb == TextOverlay.WHITE)
+        assertTrue(light.outline && light.colorArgb == TextOverlay.WHITE && light.isLight)
+        assertEquals(OverlayFont.SANS, light.font)
     }
 
     @Test
-    fun `enhance becomes an upscale`() {
-        val upscale = EnhanceOptions(factor = 4, sharpen = 2f).toEffects().upscale
-        assertEquals(4, upscale?.factor)
-        assertEquals(1f, upscale?.sharpen)
+    fun `a custom colour is made opaque and every swatch is distinct`() {
+        val half = 0x80FF0000.toInt()
+        val overlay = EditOptions(text = "x", textColor = half).toEffects().texts.single()
+        assertEquals(0xFFFF0000.toInt(), overlay.colorArgb)
+        assertEquals(EditOptions.TEXT_SWATCHES.size, EditOptions.TEXT_SWATCHES.distinct().size)
+    }
+
+    @Test
+    fun `enhance becomes a natural enhance with a safe strength and scale`() {
+        val enhance = EnhanceOptions(strength = 2f, scale = 4).toEffects().enhance
+        assertEquals(4, enhance?.scale)
+        assertEquals(1f, enhance?.strength)
+        assertEquals(1, EnhanceOptions(scale = 3).toEffects().enhance?.scale)
+        assertEquals(0f, EnhanceOptions(strength = -1f).toEffects().enhance?.strength)
+    }
+
+    @Test
+    fun `text size is passed on and kept within what fits`() {
+        assertEquals(0.12f, EditOptions(text = "x", textSize = 0.12f).toEffects().texts.single().sizeFraction)
+        assertEquals(
+            EditOptions.MAX_TEXT_SIZE,
+            EditOptions(text = "x", textSize = 0.9f).toEffects().texts.single().sizeFraction,
+        )
+        val tiny = EditOptions(text = "x", textSize = 0f).toEffects().texts.single()
+        assertEquals(TextOverlay.MIN_SIZE, tiny.sizeFraction)
+    }
+
+    @Test
+    fun `every font is a bundled asset with its own file`() {
+        val assets = OverlayFont.entries.map { it.asset }
+        assertEquals(assets.size, assets.distinct().size)
+        assets.forEach { assertTrue(it.startsWith("fonts/") && it.endsWith(".ttf"), it) }
     }
 }

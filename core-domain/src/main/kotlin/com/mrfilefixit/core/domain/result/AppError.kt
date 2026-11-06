@@ -66,6 +66,15 @@ sealed interface AppError {
     /** A file picked to re-open as a resume was not exported by the resume builder. */
     data object NotAResume : AppError
 
+    /** A job finished but wrote an empty (0 byte) file; it is never offered for saving. */
+    data object EmptyOutput : AppError
+
+    /** A biodata needs at least one photo before it can be made. */
+    data object PhotoRequired : AppError
+
+    /** Remove background found no person in the photo, so there is nothing to keep in front. */
+    data object NoPersonFound : AppError
+
     /** Anything else. [type] is the exception class name, never its message. */
     data class Unexpected(val type: String) : AppError
 

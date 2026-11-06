@@ -7,7 +7,7 @@
 | KB targeting capped at 8 encodes | `QualitySearch` | Tries max quality first, then binary search; at most 8 encodes per size, at most 3 downscale steps |
 | Thumbnails cached | `ThumbnailCache` | `LruCache` sized in KB at 1/8 of the app heap; thumbnails come from `ContentResolver.loadThumbnail` on API 29+ |
 | Temp file cleanup | `TempFileStore` | See docs/SECURITY.md |
-| Large batches off the UI process lifecycle | `BatchImageWorker` | Batches above 10 files run in WorkManager as expedited work; foreground service (`mediaProcessing` on 35+, `dataSync` below) only while running |
+| Large batches off the UI process lifecycle | `BatchImageWorker` | Batches above 10 files run in WorkManager as ordinary background work; no foreground service |
 | Cancellation | `JobRunner`, all engines | `ensureActive()` between pages/images, so Cancel stops within one unit of work |
 | Startup | `MffApplication`, `MainActivity` | WorkManager is initialised on demand (startup initializer removed); no ads or consent SDK to initialise; exam rules are parsed lazily on first use |
 | Baseline Profiles | `:benchmark` | Run `BaselineProfileGenerator` on an API 28+ device and copy its output to `app/src/main/baseline-prof.txt` (picked up by AGP and installed by `profileinstaller`). The `androidx.baselineprofile` Gradle plugin 1.4.x rejects AGP 9 modules, so it is not applied until a compatible version is pinned |

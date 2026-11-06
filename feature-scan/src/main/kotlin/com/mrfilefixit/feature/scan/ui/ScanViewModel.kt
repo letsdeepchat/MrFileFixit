@@ -51,6 +51,8 @@ data class ScanUiState(
     val script: OcrScript = OcrScript.LATIN,
     val ocr: JobState<OcrResult> = JobState.Idle,
     val inputError: AppError? = null,
+    /** A result was saved or shared since the last run, so leaving does not lose anything. */
+    val delivered: Boolean = false,
 ) {
     val original: ScanDocument? get() = (scan as? JobState.Success)?.value
 
@@ -119,6 +121,7 @@ class ScanViewModel @Inject constructor(
 
     /** The scanner returned pages. They are copied into our job directory straight away. */
     fun onScanCaptured(capture: ScanCapture) {
+        mutableState.update { it.copy(delivered = false) }
         val id = jobIds.next()
         discardOutputs()
         ocrRunner.reset()
@@ -191,14 +194,20 @@ class ScanViewModel @Inject constructor(
 
     fun onSave(output: OutputFile, destination: String) {
         viewModelScope.launch {
-            saveOutput(output, DestinationUri(destination)).fold({}, { effectChannel.send(ScanEffect.ShowError(it)) })
+            saveOutput(output, DestinationUri(destination)).fold(
+                onSuccess = { mutableState.update { it.copy(delivered = true) } },
+                onFailure = { effectChannel.send(ScanEffect.ShowError(it)) },
+            )
         }
     }
 
     fun onShare(output: OutputFile) {
         viewModelScope.launch {
             shareOutput(output).fold(
-                onSuccess = { effectChannel.send(ScanEffect.Share(it, output.mimeType)) },
+                onSuccess = {
+                    mutableState.update { s -> s.copy(delivered = true) }
+                    effectChannel.send(ScanEffect.Share(it, output.mimeType))
+                },
                 onFailure = { effectChannel.send(ScanEffect.ShowError(it)) },
             )
         }
