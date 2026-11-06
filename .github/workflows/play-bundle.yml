@@ -4,7 +4,7 @@ name: Play bundle
 # key never has to be stored as a repository secret. Runs on pushes to the bundle branch or from the Actions tab.
 on:
   push:
-    branches: [claude/project-thread-gsvv89]
+    branches: [claude/project-thread-gsvv89, claude/project-thread-qtk6po]
   workflow_dispatch:
 
 permissions:

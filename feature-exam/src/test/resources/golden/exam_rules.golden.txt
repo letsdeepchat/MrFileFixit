@@ -54,17 +54,17 @@ sbi-clerk | SBI Clerk | BANKING | COMMUNITY | lastVerified=null
   LEFT_THUMB: JPEG 20-50KB(x1024) w=240..240 h=240..240 target=240x240 bytes=20736..49744
   DECLARATION: JPEG 50-100KB(x1024) w=800..800 h=400..400 target=800x400 bytes=51456..99744
 rrb-ntpc | RRB NTPC | RAILWAYS | COMMUNITY | lastVerified=null
-  source: https://www.rrbapply.gov.in/
+  source: https://indianrailways.gov.in/
   PHOTO: JPEG 50-100KB(x1024) w=240..600 h=320..800 target=240x320 bytes=51456..99744
   SIGNATURE: JPEG 30-49KB(x1024) w=140..800 h=60..400 target=350x200 bytes=30976..48744
   certificate: SC/ST certificate for the free travel pass (if claiming): PDF 0-400KB
 rrb-group-d | RRB Group D | RAILWAYS | COMMUNITY | lastVerified=null
-  source: https://www.rrbapply.gov.in/
+  source: https://indianrailways.gov.in/
   PHOTO: JPEG 50-100KB(x1024) w=240..600 h=320..800 target=240x320 bytes=51456..99744
   SIGNATURE: JPEG 30-49KB(x1024) w=140..800 h=60..400 target=350x200 bytes=30976..48744
   certificate: SC/ST certificate for the free travel pass (if claiming): PDF 0-400KB
 rrb-alp | RRB ALP | RAILWAYS | COMMUNITY | lastVerified=null
-  source: https://www.rrbapply.gov.in/
+  source: https://indianrailways.gov.in/
   PHOTO: JPEG 50-100KB(x1024) w=240..600 h=320..800 target=240x320 bytes=51456..99744
   SIGNATURE: JPEG 30-49KB(x1024) w=140..800 h=60..400 target=350x200 bytes=30976..48744
   certificate: SC/ST certificate for the free travel pass (if claiming): PDF 0-400KB
@@ -98,7 +98,7 @@ afcat | AFCAT | DEFENCE | COMMUNITY | lastVerified=null
   SIGNATURE: JPEG 10-50KB(x1024) w=200..800 h=100..400 target=350x150 bytes=10496..49744
   LEFT_THUMB: JPEG 10-50KB(x1024) w=200..800 h=200..800 target=350x350 bytes=10496..49744
 lic-aao | LIC AAO | BANKING | COMMUNITY | lastVerified=null
-  source: https://licindia.in/web/guest/careers
+  source: https://licindia.in/
   PHOTO: JPEG 20-50KB(x1024) w=200..200 h=230..230 target=200x230 bytes=20736..49744
   SIGNATURE: JPEG 10-20KB(x1024) w=140..140 h=60..60 target=140x60 bytes=10496..19744
   LEFT_THUMB: JPEG 20-50KB(x1024) w=240..240 h=240..240 target=240x240 bytes=20736..49744
