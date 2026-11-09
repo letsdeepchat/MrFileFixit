@@ -6,7 +6,6 @@
     <string name="exam_category_UPSC">UPSC</string>
     <string name="exam_category_STATE_PSC">State PSC</string>
     <string name="exam_category_OTHER">Other</string>
-    <string name="exam_source">Source: %1$s</string>
     <string name="exam_doc_PHOTO">Photograph</string>
     <string name="exam_doc_SIGNATURE">Signature</string>
     <string name="exam_doc_LEFT_THUMB">Left thumb impression</string>

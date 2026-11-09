@@ -7,7 +7,6 @@
     <string name="action_share">शेयर करें</string>
     <string name="action_rotate">90° घुमाएँ</string>
     <string name="action_reset">फिर से शुरू करें</string>
-    <string name="action_open_source">आधिकारिक साइट खोलें</string>
     <string name="action_dismiss">बंद करें</string>
     <string name="action_back">वापस</string>
     <string name="action_remove">हटाएँ</string>
@@ -27,7 +26,7 @@
     <string name="job_done">हो गया</string>
 
     <string name="disclaimer_title">आधिकारिक सूचना ज़रूर देखें</string>
-    <string name="disclaimer_body">Mr File Fixit एक स्वतंत्र ऐप है। यह सरकारी ऐप नहीं है और इसका SSC, UPSC, IBPS, SBI, RRB, NTA या किसी भी सरकारी संस्था से कोई संबंध नहीं है। ये साइज़ सार्वजनिक गाइड और आधिकारिक पेजों से जुटाए गए हैं, पर ये आधिकारिक नियम नहीं हैं और हर साल बदलते हैं। आवेदन जमा करने से पहले अपनी परीक्षा की आधिकारिक अधिसूचना से फ़ोटो, हस्ताक्षर और दस्तावेज़ों की शर्तें हमेशा मिलाएँ। हर परीक्षा पर \"आधिकारिक साइट खोलें\" से उसकी आधिकारिक वेबसाइट देखें।</string>
+    <string name="disclaimer_body">Mr File Fixit एक स्वतंत्र ऐप है। यह सरकारी ऐप नहीं है, किसी भी सरकारी संस्था का प्रतिनिधित्व नहीं करता और इसका किसी परीक्षा संस्था, भर्ती एजेंसी या सरकारी विभाग से कोई संबंध नहीं है। ये प्रीसेट केवल अनौपचारिक सुविधा हैं, आधिकारिक नियम नहीं, और ये गलत हो सकते हैं या हर साल बदल सकते हैं। आवेदन जमा करने से पहले अपनी परीक्षा की आधिकारिक अधिसूचना से फ़ोटो, हस्ताक्षर और दस्तावेज़ों की शर्तें हमेशा मिलाएँ।</string>
     <string name="verification_community">समुदाय से जुटाया गया</string>
     <string name="verification_verified">आधिकारिक पेज से मिलाया, %1$s</string>
     <string name="last_verified">आखिरी जाँच: %1$s</string>

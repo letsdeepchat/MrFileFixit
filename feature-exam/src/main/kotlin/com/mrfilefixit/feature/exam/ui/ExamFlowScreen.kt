@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Compress
-import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Rotate90DegreesCw
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,7 +36,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -264,7 +262,6 @@ private fun tabLabel(tab: ExamTab): String = stringResource(
 
 @Composable
 private fun ProfileHeader(profile: ExamProfile, onPrepare: () -> Unit, modifier: Modifier = Modifier) {
-    val uriHandler = LocalUriHandler.current
     Column(modifier.padding(top = Dimens.SpaceS), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
         Text(profile.name, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
         FlowRow(
@@ -291,20 +288,6 @@ private fun ProfileHeader(profile: ExamProfile, onPrepare: () -> Unit, modifier:
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        // Opens the official site in the user's browser. The app itself never fetches anything.
-        // The address is also shown as text so it is readable even when no browser is installed.
-        Text(
-            stringResource(R.string.exam_source, profile.sourceUrl.removePrefix("https://").trimEnd('/')),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        TextButton(
-            onClick = { runCatching { uriHandler.openUri(profile.sourceUrl) } },
-            modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
-        ) {
-            Icon(Icons.Filled.Public, contentDescription = null)
-            Text(stringResource(CoreR.string.action_open_source), modifier = Modifier.padding(start = Dimens.SpaceXs))
-        }
     }
 }
 
