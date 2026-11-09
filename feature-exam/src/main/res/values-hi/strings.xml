@@ -6,6 +6,7 @@
     <string name="exam_category_UPSC">UPSC</string>
     <string name="exam_category_STATE_PSC">राज्य PSC</string>
     <string name="exam_category_OTHER">अन्य</string>
+    <string name="exam_source">स्रोत: %1$s</string>
     <string name="exam_doc_PHOTO">फ़ोटो</string>
     <string name="exam_doc_SIGNATURE">हस्ताक्षर</string>
     <string name="exam_doc_LEFT_THUMB">बाएँ अंगूठे का निशान</string>
