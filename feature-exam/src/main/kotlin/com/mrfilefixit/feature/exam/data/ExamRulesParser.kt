@@ -24,6 +24,7 @@ import kotlinx.serialization.json.Json
  */
 object ExamRulesParser {
     const val SUPPORTED_SCHEMA_VERSION = 2
+    private const val HTTPS = "https://"
 
     private val json = Json {
         ignoreUnknownKeys = false
@@ -42,6 +43,7 @@ object ExamRulesParser {
     }
 
     private fun ExamProfileDto.toDomain(): ExamProfile {
+        require(sourceUrl.startsWith(HTTPS)) { "$id: sourceUrl must be https" }
         lastVerified?.let { LocalDate.parse(it) } // throws on a malformed date
         return ExamProfile(
             id = id,
@@ -49,6 +51,7 @@ object ExamRulesParser {
             name = name,
             category = ExamCategory.valueOf(category),
             conductingBody = conductingBody,
+            sourceUrl = sourceUrl,
             lastVerified = lastVerified,
             verification = when (verification) {
                 "verified" -> VerificationStatus.VERIFIED

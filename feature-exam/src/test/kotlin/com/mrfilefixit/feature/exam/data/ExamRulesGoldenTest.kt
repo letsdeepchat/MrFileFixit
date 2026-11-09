@@ -57,6 +57,7 @@ class ExamRulesGoldenTest {
     @Test
     fun `bundled profiles are labelled honestly`() {
         for (profile in parseBundled()) {
+            assertTrue(profile.sourceUrl.startsWith("https://"))
             if (profile.verification == VerificationStatus.VERIFIED) {
                 assertTrue(profile.lastVerified != null, "${profile.id} is verified without a date")
             }
@@ -66,6 +67,7 @@ class ExamRulesGoldenTest {
     private fun render(profiles: List<ExamProfile>): String = buildString {
         for (p in profiles) {
             appendLine("${p.id} | ${p.shortName} | ${p.category} | ${p.verification} | lastVerified=${p.lastVerified}")
+            appendLine("  source: ${p.sourceUrl}")
             for (d in p.documents) {
                 appendLine(
                     "  ${d.kind}: ${d.formats.sorted().joinToString("/")} " +

@@ -16,6 +16,7 @@ internal data class ExamProfileDto(
     val name: String,
     val category: String,
     val conductingBody: String,
+    val sourceUrl: String,
     val lastVerified: String?,
     val verification: String,
     val notes: String? = null,

@@ -16,7 +16,7 @@
     <string name="nav_settings">Settings</string>
     <string name="home_title">What do you want to fix?</string>
     <string name="home_offline_note">Everything runs on your phone. Your files are never uploaded.</string>
-    <string name="home_exam_body">Resize and compress photo and signature to the size your form asks for</string>
+    <string name="home_exam_body">Resize and compress photo and signature to exam rules</string>
     <string name="home_pdf_body">Merge, split, compress, protect and more</string>
     <string name="home_image_body">Resize, crop, convert and compress images</string>
     <string name="home_scan_body">Scan documents to PDF and copy text</string>
