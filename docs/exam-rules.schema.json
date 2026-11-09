@@ -30,7 +30,6 @@
         "name",
         "category",
         "conductingBody",
-        "sourceUrl",
         "lastVerified",
         "verification",
         "documents"
@@ -66,11 +65,6 @@
         },
         "conductingBody": {
           "type": "string"
-        },
-        "sourceUrl": {
-          "type": "string",
-          "format": "uri",
-          "pattern": "^https://"
         },
         "lastVerified": {
           "description": "Date the values were last checked against the official notification, or null if never checked.",

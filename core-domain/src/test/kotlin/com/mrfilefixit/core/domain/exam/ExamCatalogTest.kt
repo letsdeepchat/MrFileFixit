@@ -23,7 +23,6 @@ class ExamCatalogTest {
             name = name,
             category = category,
             conductingBody = body,
-            sourceUrl = "https://example.org",
             lastVerified = null,
             verification = VerificationStatus.COMMUNITY,
             documents = listOf(photo),

@@ -31,7 +31,7 @@
     <string name="disclaimer_title">Check the official notice</string>
     <string name="disclaimer_body">Mr File Fixit is an independent app. It is not a government app, does not represent any government entity and is not affiliated with any exam body, recruitment agency or government department. These presets are unofficial conveniences, not official rules, and they can be wrong or change every year. Always verify the photo, signature and document requirements against the official notification of your exam before you submit.</string>
     <string name="verification_community">Community sourced</string>
-    <string name="verification_verified">Checked on official page, %1$s</string>
+    <string name="verification_verified">Sizes last checked %1$s</string>
     <string name="last_verified">Last checked: %1$s</string>
     <string name="last_verified_never">Not yet checked against an official notice</string>
 

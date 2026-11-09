@@ -19,14 +19,13 @@ class ExamRulesParserTest {
 
     private fun profile(
         id: String = "demo",
-        url: String = "https://example.org",
         verification: String = "community",
         lastVerified: String = "null",
         documents: String = document,
         composite: String = "",
         certificates: String = "",
     ) = """{"id":"$id","shortName":"Demo","name":"Demo exam","category":"OTHER","conductingBody":"Demo",""" +
-        """"sourceUrl":"$url","lastVerified":$lastVerified,"verification":"$verification",""" +
+        """"lastVerified":$lastVerified,"verification":"$verification",""" +
         """"documents":[$documents]$certificates$composite}"""
 
     @Test
@@ -53,7 +52,6 @@ class ExamRulesParserTest {
     @ParameterizedTest
     @ValueSource(
         strings = [
-            "url=http://insecure.example",
             "verification=verified",
             "lastVerified=\"22-10-2026\"",
             "documents=",
@@ -66,7 +64,6 @@ class ExamRulesParserTest {
     )
     fun `rejects invalid rule files`(case: String) {
         val text = when (case) {
-            "url=http://insecure.example" -> file(profile(url = "http://insecure.example"))
             "verification=verified" -> file(profile(verification = "verified"))
             "lastVerified=\"22-10-2026\"" -> file(profile(lastVerified = "\"22-10-2026\""))
             "documents=" -> file(profile(documents = ""))

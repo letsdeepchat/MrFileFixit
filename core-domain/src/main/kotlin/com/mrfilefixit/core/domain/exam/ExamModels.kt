@@ -125,7 +125,6 @@ data class ExamProfile(
     val name: String,
     val category: ExamCategory,
     val conductingBody: String,
-    val sourceUrl: String,
     /** ISO-8601 date (yyyy-MM-dd) of the last check against the official notification; null if never checked. */
     val lastVerified: String?,
     val verification: VerificationStatus,

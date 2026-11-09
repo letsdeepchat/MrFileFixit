@@ -52,14 +52,14 @@ checklist, data-safety answers and privacy policy.
 ## Exam rules
 
 Exam profiles live in `feature-exam/src/main/assets/exam_rules.json` and follow
-[`docs/exam-rules.schema.json`](docs/exam-rules.schema.json). Each profile carries a `sourceUrl` and a
+[`docs/exam-rules.schema.json`](docs/exam-rules.schema.json). Profiles carry no web links; each has a
 `lastVerified` date. To update a profile, edit the JSON, update `lastVerified`, and run
 `./gradlew :feature-exam:testDebugUnitTest` (golden tests guard the parsed result).
 
 Schema v2 bundles 19 exams across SSC, UPSC, Banking, Railways, Defence, NTA/Entrance and Teaching, with an
 optional `certificates` list (PDF/JPG uploads with a KB window) and `background` / `ink` notes per document.
-`verification` is `community` unless a maintainer checked the values against the official notice page linked in
-`sourceUrl` on the `lastVerified` date; only then is it `verified`, and the app shows "Checked on official page"
+`verification` is `community` unless a maintainer checked the values against the official notification
+on the `lastVerified` date; only then is it `verified`, and the app shows "Sizes last checked"
 with that date. The in-app disclaimer is shown for every profile either way.
 
 ## Verification status

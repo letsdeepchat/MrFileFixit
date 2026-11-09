@@ -13,7 +13,7 @@
     <string name="nav_settings">सेटिंग</string>
     <string name="home_title">आप क्या ठीक करना चाहते हैं?</string>
     <string name="home_offline_note">सब कुछ आपके फ़ोन पर ही होता है। आपकी फ़ाइलें कभी अपलोड नहीं होतीं।</string>
-    <string name="home_exam_body">फ़ोटो और हस्ताक्षर को परीक्षा के नियमों के अनुसार बदलें</string>
+    <string name="home_exam_body">फ़ोटो और हस्ताक्षर को फ़ॉर्म में मांगे गए साइज़ में बदलें</string>
     <string name="home_pdf_body">जोड़ें, बाँटें, छोटा करें, पासवर्ड लगाएँ और भी बहुत कुछ</string>
     <string name="home_image_body">इमेज का साइज़ बदलें, क्रॉप करें, फ़ॉर्मैट बदलें</string>
     <string name="home_scan_body">दस्तावेज़ स्कैन करके PDF बनाएँ और टेक्स्ट कॉपी करें</string>

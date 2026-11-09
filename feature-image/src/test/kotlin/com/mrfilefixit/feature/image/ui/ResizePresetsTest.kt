@@ -28,7 +28,6 @@ class ResizePresetsTest {
         name = id,
         category = ExamCategory.OTHER,
         conductingBody = "Body",
-        sourceUrl = "https://example.org",
         lastVerified = null,
         verification = VerificationStatus.COMMUNITY,
         documents = docs.toList(),
