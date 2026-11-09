@@ -138,11 +138,12 @@ your device and hands the pages back to the app ([Google privacy policy](https:/
   Scan screens in light and dark).
 * Short description (80 chars): "Fix photos, signatures and PDFs for exam forms. Free, offline, no ads."
 * Category: Productivity.
-* Full description: open with the disclaimer that the app is independent, is not a government app, represents
-  no government entity and is not affiliated with any exam body; presets are unofficial. Do not name exam bodies
-  and do not add website links. Play rejected 1.0.0 to 1.0.3 under Misleading Claims for missing, then
-  unreachable, government source links (afcat.cdac.in was unreachable for Play's reviewers). The current text is in
-  the project's `store-assets/full-description-*.txt`.
+* Full description: open with the disclaimer that the app is independent, is not a government app and is not
+  affiliated with any exam body, then an "Official sources" list with one homepage per exam body named in the app
+  (the same URLs as `sourceUrl` in exam_rules.json). Play rejected earlier versions under Misleading Claims for
+  missing source links, then for an unreachable one (afcat.cdac.in, which Play's reviewers could not open, so the
+  AFCAT preset was removed). Avoid C-DAC and regional hosts. The current text is in the project's
+  `store-assets/full-description-*.txt`.
 * Don't use exam bodies' logos or emblems in the icon, screenshots or feature graphic.
 
 ## Before the first upload

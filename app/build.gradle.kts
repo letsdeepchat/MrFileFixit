@@ -14,8 +14,8 @@ android {
 
     defaultConfig {
         applicationId = "com.mrfilefixit.app"
-        versionCode = 6
-        versionName = "1.0.4"
+        versionCode = 7
+        versionName = "1.0.5"
         // The optional UPI / PayPal donation screen. Build with -Pmff.donations=false to leave it out, for
         // example for a store listing whose payments policy does not allow external donation links.
         val donations = providers.gradleProperty("mff.donations").orNull?.toBooleanStrict() ?: true
