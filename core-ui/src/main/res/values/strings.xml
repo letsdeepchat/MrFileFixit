@@ -30,7 +30,7 @@
 
     <!-- Exam disclaimer (shown on every exam screen) -->
     <string name="disclaimer_title">Check the official notice</string>
-    <string name="disclaimer_body">These sizes are collected from public guides and official pages, but they are not official rules and they change every year. Always verify the photo, signature and document requirements against the official notification of your exam before you submit.</string>
+    <string name="disclaimer_body">Mr File Fixit is an independent app. It is not a government app and is not affiliated with SSC, UPSC, IBPS, SBI, RRB, NTA or any government body. These sizes are collected from public guides and official pages, but they are not official rules and they change every year. Always verify the photo, signature and document requirements against the official notification of your exam before you submit. Use Open official site on each exam for its official website.</string>
     <string name="verification_community">Community sourced</string>
     <string name="verification_verified">Checked on official page, %1$s</string>
     <string name="last_verified">Last checked: %1$s</string>
