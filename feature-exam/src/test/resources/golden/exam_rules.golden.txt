@@ -73,7 +73,7 @@ gate | GATE | ENTRANCE | VERIFIED | lastVerified=2026-10-24
   PHOTO: JPEG 5-600KB(x1024) w=200..530 h=260..690 target=420x540 bytes=5376..599744
   SIGNATURE: JPEG 3-300KB(x1024) w=250..580 h=80..180 target=480x150 bytes=3328..299744
 neet-ug | NEET UG | ENTRANCE | COMMUNITY | lastVerified=null
-  source: https://neet.nta.nic.in/
+  source: https://nta.ac.in/
   PHOTO: JPEG 10-200KB(x1024) w=100..1000 h=120..1400 target=350x450 bytes=10496..199744
   POSTCARD_PHOTO: JPEG 10-200KB(x1024) w=300..1800 h=400..2400 target=600x900 bytes=10496..199744
   SIGNATURE: JPEG 4-30KB(x1024) w=140..800 h=60..400 target=400x200 bytes=4352..29744
@@ -82,7 +82,7 @@ neet-ug | NEET UG | ENTRANCE | COMMUNITY | lastVerified=null
   certificate: PwBD certificate (if claiming): PDF 50-300KB
   certificate: Citizenship certificate or embassy proof (OCI/foreign nationals): PDF 50-300KB
 jee-main | JEE Main | ENTRANCE | COMMUNITY | lastVerified=null
-  source: https://jeemain.nta.nic.in/
+  source: https://nta.ac.in/
   PHOTO: JPEG 10-200KB(x1024) w=100..1000 h=120..1400 target=350x450 bytes=10496..199744
   SIGNATURE: JPEG 4-30KB(x1024) w=140..800 h=60..400 target=350x150 bytes=4352..29744
   certificate: Class 10 certificate or birth certificate: PDF 50-300KB
@@ -92,11 +92,6 @@ ctet | CTET | TEACHING | COMMUNITY | lastVerified=null
   source: https://ctet.nic.in/
   PHOTO: JPEG 10-100KB(x1024) w=100..800 h=120..1000 target=350x450 bytes=10496..99744
   SIGNATURE: JPEG 3-30KB(x1024) w=140..800 h=60..400 target=350x150 bytes=3328..29744
-afcat | AFCAT | DEFENCE | COMMUNITY | lastVerified=null
-  source: https://afcat.cdac.in/
-  PHOTO: JPEG 10-50KB(x1024) w=200..800 h=200..800 target=350x350 bytes=10496..49744
-  SIGNATURE: JPEG 10-50KB(x1024) w=200..800 h=100..400 target=350x150 bytes=10496..49744
-  LEFT_THUMB: JPEG 10-50KB(x1024) w=200..800 h=200..800 target=350x350 bytes=10496..49744
 lic-aao | LIC AAO | BANKING | COMMUNITY | lastVerified=null
   source: https://licindia.in/
   PHOTO: JPEG 20-50KB(x1024) w=200..200 h=230..230 target=200x230 bytes=20736..49744

@@ -1189,7 +1189,7 @@
       "name": "National Eligibility cum Entrance Test (UG)",
       "category": "ENTRANCE",
       "conductingBody": "National Testing Agency",
-      "sourceUrl": "https://neet.nta.nic.in/",
+      "sourceUrl": "https://nta.ac.in/",
       "lastVerified": null,
       "verification": "community",
       "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
@@ -1330,7 +1330,7 @@
       "name": "Joint Entrance Examination (Main)",
       "category": "ENTRANCE",
       "conductingBody": "National Testing Agency",
-      "sourceUrl": "https://jeemain.nta.nic.in/",
+      "sourceUrl": "https://nta.ac.in/",
       "lastVerified": null,
       "verification": "community",
       "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
@@ -1475,91 +1475,6 @@
           },
           "notes": "3.5 cm x 1.5 cm.",
           "ink": "Black or blue"
-        }
-      ]
-    },
-    {
-      "id": "afcat",
-      "shortName": "AFCAT",
-      "name": "Air Force Common Admission Test",
-      "category": "DEFENCE",
-      "conductingBody": "Indian Air Force",
-      "sourceUrl": "https://afcat.cdac.in/",
-      "lastVerified": null,
-      "verification": "community",
-      "notes": "Community sourced from public guides and past notices. Check the current notification before you upload.",
-      "documents": [
-        {
-          "kind": "photo",
-          "formats": [
-            "jpeg"
-          ],
-          "sizeKb": {
-            "min": 10,
-            "max": 50
-          },
-          "widthPx": {
-            "min": 200,
-            "max": 800
-          },
-          "heightPx": {
-            "min": 200,
-            "max": 800
-          },
-          "targetPx": {
-            "width": 350,
-            "height": 350
-          },
-          "notes": "Recent colour photo. Guides quote 350 x 350 px; check the notification for any name or date rule.",
-          "background": "Plain, light"
-        },
-        {
-          "kind": "signature",
-          "formats": [
-            "jpeg"
-          ],
-          "sizeKb": {
-            "min": 10,
-            "max": 50
-          },
-          "widthPx": {
-            "min": 200,
-            "max": 800
-          },
-          "heightPx": {
-            "min": 100,
-            "max": 400
-          },
-          "targetPx": {
-            "width": 350,
-            "height": 150
-          },
-          "notes": "Signed on white paper.",
-          "ink": "Black"
-        },
-        {
-          "kind": "left_thumb",
-          "formats": [
-            "jpeg"
-          ],
-          "sizeKb": {
-            "min": 10,
-            "max": 50
-          },
-          "widthPx": {
-            "min": 200,
-            "max": 800
-          },
-          "heightPx": {
-            "min": 200,
-            "max": 800
-          },
-          "targetPx": {
-            "width": 350,
-            "height": 350
-          },
-          "notes": "Left thumb impression on white paper.",
-          "ink": "Blue or black"
         }
       ]
     },
