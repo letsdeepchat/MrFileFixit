@@ -1,0 +1,747 @@
+MR FILE FIXIT - FULL PROJECT CONTEXT
+====================================
+
+Purpose of this file
+--------------------
+This is the single source of truth for any new Claude session (or person) picking up the
+Mr File Fixit project. It was written on 2026-10-27 from primary sources: the repository at
+main commit 8a74272 (PR #23), the GitHub PR / release / branch lists, and the full history of
+the four earlier project threads. Read it before changing anything. When this file and the code
+disagree, the code wins, and this file should be updated.
+
+Conventions used below:
+  * "PR #N" = a pull request on github.com/letsdeepchat/MrFileFixit.
+  * "the user" = the project owner, DeepChat (GitHub login: letsdeepchat).
+  * Paths are relative to the repository root.
+
+
+=====================================================================
+0. TL;DR (read this if nothing else)
+=====================================================================
+
+* Mr File Fixit is a FREE, FULLY OFFLINE ANDROID APP written in Kotlin + Jetpack Compose
+  (Material 3). It is NOT Flutter and NOT React Native, even though some of the user's prompts
+  were written as if it were. It is NOT a web app (the repo used to hold a React/Vercel web app;
+  that was replaced in PR #1 and kept on the `legacy-web` branch).
+* Repo: https://github.com/letsdeepchat/MrFileFixit  (default branch: main).
+  Package / applicationId: com.mrfilefixit.app (debug builds: com.mrfilefixit.app.debug).
+  versionCode 2, versionName "1.0.0" (not bumped per beta tag).
+* Features (all free, no limits): Exam forms (20 exam profiles, photo/signature/thumb/declaration
+  fixer with live pass/fail checker), PDF tools (19 tools incl. Word/PowerPoint/Excel <-> PDF),
+  Image tools (Resize, Crop, Rotate, Compress, Convert incl. to PDF, Edit, Enhance, Remove
+  metadata), Scan (ML Kit document scanner + filters + quick OCR), Text recognition / OCR screen
+  (5 scripts + auto-detect, searchable PDF, TXT, Word), Resume builder (15 ATS templates, PDF and
+  Word export, re-open exported Word).
+* Hard decisions already made by the user (do not undo without asking):
+    - NO ADS, no AdMob, no UMP consent, no rewarded ads, no premium tier, no usage limits,
+      no accounts, no sign-in. (User, 2026-10-24: "dont use signing or any authentication and no
+      ads as well i wanna easy use no premium features just everything free for best UX".)
+    - No signing setup now: tester builds are debug-signed APKs on GitHub Releases. Play Store
+      upload signing is documented but intentionally not configured.
+    - Enhance = classic 2x/4x upscaling + sharpening, NOT an AI model (decision card, 2026-10-25).
+    - The app has no network code of its own; build fails if a networking library appears.
+* Latest tester build: v1.0.0-beta.4 (2026-10-25), built from main after PR #23:
+  https://github.com/letsdeepchat/MrFileFixit/releases/download/v1.0.0-beta.4/MrFileFixit-v1.0.0-beta.4-tester.apk
+* CI (GitHub Actions, .github/workflows/ci.yml) is the real Android compile check. Claude's cloud
+  sandbox historically could NOT reach Google Maven (dl.google.com / maven.google.com -> 403), so
+  Android modules cannot be compiled locally there; pure-Kotlin modules (core-domain, core-office)
+  can be. Claude's sandbox also cannot push git tags: start tester releases from the Actions tab
+  (workflow_dispatch with a version like v1.0.0-beta.5).
+* Exam data is NOT official. Only GATE is marked "verified" (checked 2026-10-24 against the GATE
+  2027 page). The other 19 are "community" sourced. The in-app disclaimer must stay.
+
+
+=====================================================================
+1. PRODUCT SUMMARY
+=====================================================================
+
+Target users: Indian government-exam and entrance-exam applicants (and general users) who must
+upload photos, signatures, thumb impressions, handwritten declarations and certificate PDFs within
+strict pixel/KB/format limits, plus everyday PDF/image/office/resume tasks.
+
+Core promises (shown in Settings > Privacy and docs/PLAY_STORE.md privacy policy):
+  1. 100% on-device processing (image, PDF, office conversion, OCR, resume).
+  2. Nothing is sent anywhere: no ads, analytics, servers, accounts. Exception disclosed honestly:
+     Google ML Kit (document scanner + text recognition) may send anonymous usage statistics via
+     com.google.android.datatransport; never images, text or file names.
+  3. Temporary files live in app-private cache (cache/jobs/<uuid>/) and are wiped when leaving a
+     tool / ViewModel cleared, on failure/cancel, and by a start-up sweep of dirs older than 6 h.
+  4. Metadata (EXIF location, camera, etc.) is stripped on export.
+  5. No storage permissions: Photo Picker / SAF (OpenDocument, CreateDocument) only; sharing via
+     FileProvider with a single read-grant URI.
+
+Languages: English and Hindi (values/ and values-hi/ strings in every UI module; lint makes
+MissingTranslation and HardcodedText errors). Per-app language via locales_config.xml (en, hi).
+App name "Mr File Fixit" is not translated; home shows "Mr File" + accent-coloured "Fixit".
+
+Theme: Material 3, System / Light / Dark, optional dynamic colour ("Use wallpaper colours").
+Adaptive layout: NavigationSuiteScaffold = bottom bar on phones, navigation rail on tablets and
+foldables; list-detail panes for exam picker and PDF tool picker.
+
+
+=====================================================================
+2. NAVIGATION AND SCREENS (what the user sees)
+=====================================================================
+
+Top-level destinations (app/.../navigation/MffApp.kt, enum TopLevelDestination), in order:
+  HOME   "Home"
+  EXAM   "Exam forms"   (bar label "Exams")
+  PDF    "PDF tools"    (bar label "PDF")
+  IMAGE  "Image tools"  (bar label "Images")
+  SCAN   "Scan"         (screen title "Scan & OCR")
+  RESUME "Resume builder" (bar label "Resume")
+Six items fit at 320 dp (single-line 11sp-ish labels, ellipsis). Settings is a separate route
+opened from Home's top bar. OCR is a separate route (OcrRoute(uris)) opened from PDF tools,
+Image tools and Scan.
+
+Typed routes (kotlinx.serialization):
+  HomeRoute, SettingsRoute, ExamRoute, PdfRoute(tool, minKb, maxKb), ImageRoute(examId, document),
+  ScanRoute, ResumeRoute, OcrRoute(uris: List<String>).
+Cross-links: Exam "Prepare Files for This Exam" -> ImageRoute(examId, kind) (Resize tab with the
+exam's presets); exam certificate "Compress PDF to fit" -> PdfRoute(tool=COMPRESS, minKb, maxKb)
+which shows "Exam limit: X-Y KB" and whether the result is within it.
+
+Home: brand header, "What do you want to fix?", cards for each tool (incl. Resume card),
+offline note "Everything runs on your phone. Your files are never uploaded."
+
+Settings: Theme (System default / Light / Dark), Use wallpaper colours, Privacy section with four
+items (100% on-device processing; Nothing is sent anywhere [+ML Kit stats note]; Temporary files
+are wiped; Metadata is removed), Version.
+NOTE: UserPreferences has keepMetadata (default false) stored in DataStore, but there is NO UI
+toggle for it today; EXIF is always stripped.
+
+Shared UI kit (core-ui): tool scaffold with top app bar + back button, centred dashed upload card
+(empty state) with "Max file size 50 MB" hints, sticky bottom action bar, choice grids/chips,
+drag-to-reorder lists (also move up/down buttons for accessibility), CropBox (bounded, pinch/drag),
+SpecChecklist (pass/fail rows with content descriptions), error message mapping for every AppError,
+ThumbnailCache (LruCache, 1/8 heap), share helpers, preview annotations (phone, tablet, dark,
+large font), Dimens/spacing tokens (8 dp grid).
+
+
+=====================================================================
+3. FEATURES IN DETAIL
+=====================================================================
+
+3.1 Exam forms (:feature-exam)
+------------------------------
+* Data: feature-exam/src/main/assets/exam_rules.json, schemaVersion 2, validated in CI against
+  docs/exam-rules.schema.json. Parsed lazily by AssetExamRulesRepository / ExamRulesParser into
+  domain ExamProfile. Golden test: feature-exam/src/test/resources/golden/exam_rules.golden.txt
+  (update it when the JSON changes; run ./gradlew :feature-exam:testDebugUnitTest).
+* Picker: search bar ("Search exams (e.g. SSC, UPSC, GATE)"), category pills (All + categories that
+  have profiles, in enum order), exam count, cards with conducting body, verification badge and
+  quick chips "Photo (20-50 KB)", "Sign (10-20 KB)", "Docs (...)", "+N more uploads". Search is pure
+  (ExamCatalog) and matches short name, full name, body, id and category aliases (e.g. "bank").
+  Collapsible disclaimer card "Check the official notice" (2 lines + Read more / Show less).
+* Detail: tabs Photo / Signature / Other uploads (thumb, declaration, postcard photo) /
+  Certificates. Each slot shows requirements (dimensions, KB, format, background, ink, notes),
+  lets the user pick a file, crop in a frame matching the required aspect, rotate 90 deg,
+  "Fix to fit", then shows "Ready to upload" or "Some checks still fail" with the live checklist
+  (Format, File size, Width, Height), Save (SAF) and Share. If an image is below the minimum KB even
+  at quality 100, padding bytes are added to the file (picture unchanged) and a note says so.
+  Composite "Photo and signature in one image" is supported by schema + domain + UI
+  (MergePhotoSignatureUseCase) but NO bundled profile currently defines a composite.
+  "Prepare Files for This Exam" opens Image tools > Resize with the exam's presets.
+  Certificates tab lists PDF/JPG uploads with KB windows and a "Compress PDF to fit" button.
+* Pipeline (PrepareExamDocumentUseCase): input limits -> read info -> rotate -> crop (user or
+  centred to target aspect) -> resize FILL to targetPx -> encode JPEG with KB targeting
+  (QualitySearch, max 8 encodes, up to 3 downscale steps, padding allowed for JPEG) -> SpecChecker.
+* KB safety: DocumentSpec.targetBytes aims at [minKb*1024 + 256 B, maxKb*1000 - 256 B] so the file
+  passes whether a portal counts a KB as 1000 or 1024 bytes (falls back to the declared range when
+  that window is empty).
+* Disclaimer text (core-ui strings): "These sizes are collected from public guides and official
+  pages, but they are not official rules and they change every year. Always verify ... against the
+  official notification of your exam before you submit." Shown on every exam screen. Badge:
+  "Community sourced" or "Checked on official page, <date>".
+
+The 20 bundled exam profiles (id | category | photo KB, px target | signature KB, px target |
+other uploads | certificates). All JPEG unless noted. All "community" except GATE.
+  1  ssc-cgl     SSC      photo 20-50, 350x450 | sign 10-20, 400x200
+  2  ssc-chsl    SSC      same as CGL
+  3  ssc-gd      SSC      same as CGL
+  4  ssc-mts     SSC      same as CGL
+       (SSC note: recent SSC forms capture a live photo; upload only if portal asks.)
+  5  upsc-cse    UPSC     photo 20-200, 350-1000 px, target 450x550 | sign 20-100, target 500x700
+                          (three signatures stacked) | cert: Photo ID PDF 20-300 KB
+  6  upsc-cds    DEFENCE  photo 20-300, target 450x550 | sign 20-300, target 700x350 | Photo ID PDF 20-300
+  7  upsc-nda    DEFENCE  same as CDS
+  8  ibps-po     BANKING  photo 20-50, exactly 200x230 | sign 10-20, exactly 140x60 |
+                          left thumb 20-50, 240x240 | handwritten declaration 50-100, 800x400
+  9  ibps-clerk  BANKING  same as IBPS PO
+  10 sbi-po      BANKING  same as IBPS PO
+  11 sbi-clerk   BANKING  same as IBPS PO
+  12 rrb-ntpc    RAILWAYS photo 50-100, target 240x320 | sign 30-49, target 350x200 |
+                          cert: SC/ST certificate PDF max 400 KB
+  13 rrb-group-d RAILWAYS same as NTPC
+  14 rrb-alp     RAILWAYS same as NTPC
+  15 gate        ENTRANCE VERIFIED 2026-10-24, source https://gate2027.iitm.ac.in/photograph_and_signature
+                          photo 5-600 KB, w 200-530, h 260-690, target 420x540 |
+                          sign 3-300 KB, w 250-580, h 80-180, target 480x150
+  16 neet-ug     ENTRANCE photo 10-200, target 350x450 | postcard photo 10-200, target 600x900 |
+                          sign 4-30, 400x200 | left thumb 10-200, 300x300 |
+                          certs: category, PwBD, citizenship (PDF 50-300)
+  17 jee-main    ENTRANCE photo 10-200, 350x450 | sign 4-30, 350x150 |
+                          certs: Class 10/birth, category, PwD/UDID (PDF 50-300)
+  18 ctet        TEACHING photo 10-100, 350x450 | sign 3-30, 350x150
+  19 afcat       DEFENCE  photo 10-50, 350x350 | sign 10-50, 350x150 | left thumb 10-50, 350x350
+  20 lic-aao     BANKING  same as IBPS PO
+Categories in code: SSC, UPSC, BANKING, RAILWAYS, DEFENCE, ENTRANCE ("NTA / Entrance"), TEACHING,
+STATE_PSC, OTHER. There are currently NO State PSC profiles (the original spec mentioned state PSC).
+The user once supplied their own numbers (e.g. RRB photo 20-50 KB); they were deliberately NOT used
+because they were not checked against official sources. Do not "correct" data to unverified
+numbers; mark anything new as community unless checked on an official page with a date.
+
+To add/update an exam: edit exam_rules.json (keep schema v2), set verification/lastVerified
+honestly, update the golden file, run the parser tests; CI validates the schema.
+
+3.2 PDF tools (:feature-pdf), 19 tools in 4 groups (PdfTool enum)
+-----------------------------------------------------------------
+ORGANIZE: Merge PDFs (reorderable list, >= 2 files), Split PDF (Custom range / Every N pages /
+          Single pages, with a preview of resulting files), Extract pages, Reorder pages,
+          Rotate pages, Delete pages.
+CONVERT:  Images to PDF (page size A4/Letter/Legal/Same as image in a 2x2 grid, orientation
+          Auto/Portrait/Landscape, margins None/Small 5 mm/Big 10 mm, reorderable thumbnails),
+          PDF to JPG (dpi slider), Word to PDF, PDF to Word, PowerPoint to PDF, PDF to PowerPoint,
+          Excel to PDF, PDF to Excel (XLSX or CSV), plus a tile "Text recognition (OCR)" that opens
+          the OCR screen.
+OPTIMIZE: Compress PDF (Light 150 dpi/q75, Medium 120 dpi/q60, Strong 96 dpi/q45, optional
+          grayscale), Add watermark (text, opacity, diagonal), Add page numbers (position bottom
+          centre/bottom right/top right, styles "n", "n / total", "Page n of total").
+SECURITY: Add password, Remove password (known password only).
+Engine: pdfbox-android (com.tom-roush:pdfbox-android 2.0.27.0) for structure/encryption/stamping;
+platform PdfRenderer for rendering, one page at a time.
+PDF compressor (core-processing/.../pdf/PdfCompressor.kt) after the PR #19 fix (it used to
+rasterize everything and could make files BIGGER, e.g. 558 KB -> 1000 KB):
+  1. Structural pass: downsample/re-encode embedded images above the level's dpi as JPEG, only if
+     the new stream is smaller; Flate-compress raw content streams; drop metadata, thumbnails,
+     piece info. Images with a fully opaque soft mask are re-encoded (flattened on white); real
+     transparency is kept.
+  2. Strong level only, only if step 1 did not shrink: rasterize pages to JPEG one at a time.
+  3. Guardrail: smallest candidate strictly smaller than the source wins; otherwise fail with
+     AppError.AlreadyOptimized ("already as small as it can get"), nothing written.
+  Rules live in pure PdfCompressionPolicy (unit tested); PdfCompressorTest runs on the emulator.
+Passwords: CharArray only, zero-filled after the job (PdfOperation.wipeSecrets), never stored,
+never in SavedStateHandle, toString redacted.
+Watermark / page-number stamps: Latin letters and numbers only (UI says so); other scripts are not
+supported in stamps yet.
+Encrypted PDFs: other tools refuse with "This PDF is password-protected. Unlock it first."
+
+3.3 Office conversions (:core-office + core-processing/convert), see docs/CONVERSIONS.md
+-----------------------------------------------------------------------------------------
+Pure Kotlin, NO third-party office library (no Apache POI). Reads DOCX/PPTX/XLSX (strict XML pull
+parser rejecting DTDs), legacy DOC/PPT/XLS via a bounded Compound File reader, CSV. Writes DOCX,
+PPTX, XLSX. Layout to PDF uses Android StaticLayout on android.graphics.pdf.PdfDocument (fonts map
+to Android system families incl. Hindi/Indic, Arabic, Cyrillic, CJK). PDF -> office reads glyph
+positions with PDFBox (pdftext/: lines -> paragraphs, headings, lists, two-column, tables, slides).
+  * Word -> PDF keeps text styles, headings, lists, tables (merged cells keep text but grid lines
+    still show), inline pictures, page breaks, page size/margins.
+  * PPT -> PDF: one page per slide at slide size; .ppt gives titles + body text on plain slides.
+  * Excel -> PDF: values as Excel shows them, bold, column widths; bold first row repeats; >= 7
+    columns landscape; > 10 columns split into bands of ten (A-J, K-T ...).
+  * PDF -> Word: paragraphs, headings, real list items, de-hyphenation, two-column reading,
+    pictures kept.
+  * PDF -> PowerPoint: page picture WITHOUT its text as background + every text line as an editable
+    text box at the same position.
+  * PDF -> Excel: cells by wide gaps, columns aligned per page (columns come from multi-cell rows so
+    headings do not merge columns), numbers with separators/currency (Rs symbol $ EUR GBP JPY)/
+    percent/accounting negatives become numbers. XLSX one sheet per page, or CSV all pages.
+Known limits: no charts, SmartArt, WordArt, equations, comments, tracked changes, headers/footers,
+footnotes, floating shapes/text boxes, animations; EMF/WMF/TIFF pictures dropped; fonts replaced
+by nearest Android family; password-protected Office files rejected (DocumentProtected); scanned
+PDFs have no text (NoTextFound for Excel; Word gets page pictures; PPT slides not editable);
+text inside form XObjects appears twice in PDF->PPT; PDF->Excel does not detect ruled lines,
+merged or multi-line cells.
+Safety caps (OfficeLimits): ZIP <= 4000 entries, 64 MiB per entry, 256 MiB total; 500 slides,
+100 000 rows, 1 000 columns, 200 000 paragraphs, 2 000 output pages -> DocumentTooComplex.
+Macros, OLE objects and external links never run/followed.
+
+3.4 Image tools (:feature-image), tabs (ImageTool enum) - see docs/IMAGE_TOOLS.md
+----------------------------------------------------------------------------------
+RESIZE (width/height with "Keep aspect ratio" link that recalculates the other side; presets:
+        linked exam's uploads first, then Passport 413x531, then SSC CGL photo, UPSC CSE signature,
+        IBPS PO photo; optional target KB), CROP (single image only; Original/1:1/4:3/3:4/16:9,
+        bounded canvas), ROTATE, COMPRESS (quality or target KB), CONVERT (JPG/PNG/WebP/HEIC out;
+        HEIC/WebP/PNG/JPG in; HEIC output needs a hardware HEVC encoder and API 28+; "PDF" puts all
+        picked images in one PDF, a page per image at its own size), EDIT, ENHANCE, STRIP_EXIF
+        ("Remove metadata": lossless for JPEG/PNG, keeps JFIF + ICC only), plus a last tab
+        "Text (OCR)" that opens the OCR screen.
+EDIT: Look (Original / Black and white / Document = the Scan clean-paper filter), brightness,
+      contrast, saturation (-100..100, one 4x5 colour matrix), one line of text (top/middle/bottom,
+      6% of height, outline for light text, "Dark text" option), and the exam "Name and date bar"
+      (white or black band across the bottom fifth, up to two centred lines name + date, today's
+      date pre-filled; option "Keep the file between 20 and 50 KB" -> JPEG targeted to 20 KiB ..
+      50 kB with padding/downscale allowed).
+ENHANCE: 2x or 4x upscale in 2x bilinear steps + unsharp mask (sharpness slider, default 0.6),
+      done in 256-row bands; long side capped at 3072 px. Classic upscaling, NOT AI. No
+      super-resolution model is bundled and the app cannot download one.
+Effects order: geometry (rotate, crop, resize) -> upscale -> document filter -> colour matrix ->
+name/date bar -> text. ImageEffects is serializable so background batches carry it.
+Batches: everything free and unlimited. Up to BatchPolicy.INLINE_LIMIT = 10 files run in the
+ViewModel; more run in WorkManager (BatchImageWorker, expedited, foreground service type
+dataSync|mediaProcessing only while running, progress notification, POST_NOTIFICATIONS asked on
+Android 13+). Input limit 100 files per job.
+
+3.5 Scan & OCR tab (:feature-scan)
+----------------------------------
+Two hero cards: "Scan with Camera" (Google ML Kit Document Scanner via Play services,
+SCANNER_MODE_FULL, up to 20 pages, JPEG + PDF results) and "Extract Text from Storage" (pick
+JPG/PNG/PDF). Privacy footer card. After scanning: copied into cache/jobs/<id>/, "Enhance scan"
+filters: Document clean (default), Magic colour, Grayscale, Original. Filters use an illumination
+map (max filter + box blur on a small copy, then per-pixel division) = local adaptive equivalent of
+Otsu/Sauvola with smooth edges; full resolution, applied row by row; PDF rebuilt from enhanced
+pages. Quick inline OCR (Latin/Devanagari/Auto etc.), Copy/Share text, and "Searchable PDF, Word
+and more languages" hands pages to the OCR screen.
+Perspective correction/edge detection is done by the ML Kit scanner UI itself.
+
+3.6 Text recognition / OCR screen (:feature-ocr) - see docs/OCR.md
+------------------------------------------------------------------
+Inputs JPG, PNG, WebP, PDF. Engines: Google ML Kit BUNDLED models (no download, offline):
+text-recognition (Latin), -devanagari (Hindi, Marathi, Nepali, Sanskrit), -chinese, -japanese,
+-korean. Each non-Latin model also reads English. Auto-detect (ScriptDetector, pure JVM): runs all
+on page 1; a non-Latin script wins with >= 6 own-script letters and >= 1/4 of the Latin count;
+Japanese beats Chinese only with kana; blank first page defers to the next.
+NOT supported: Bengali, Tamil, Telugu, Gujarati, Kannada, Malayalam, Arabic, Cyrillic and other
+scripts ML Kit lacks (would need e.g. Tesseract + traineddata; no in-app downloader because the
+app has no network code). The user's request asked for "all major world languages" - this is the
+documented gap.
+Outputs: Copy (marked sensitive for Android 13+ clipboard preview), Share text, Searchable PDF
+(original pages kept, pages with /Rotate redrawn as JPEG, images become A4-wide pages; invisible
+text layer drawn with platform PdfDocument at lowest non-zero alpha and stamped as a form XObject
+via PDFBox), Text file (UTF-8), Word, Text-only PDF. Exports in a job folder deleted on next export,
+clear/close, or next app start.
+
+3.7 Resume builder (:feature-resume) - see docs/RESUME.md
+---------------------------------------------------------
+15 templates (ResumeTemplates/TemplateCatalog): Software and IT, Core engineering, Arts (photo),
+Marketing, Finance and accounting, Data science and AI, Healthcare (photo), Teaching, Graphic
+design (photo), Fresh graduate, Business and management, Legal, Human resources, Operations and
+supply chain, Academic CV (photo). Each has default section order, sample text, font and accent;
+changing template keeps text and order.
+ATS rules: single column, real selectable text, real headings and bullet lists in PDF and DOCX,
+name/contact in body (not header/text box), real links, optional photo in a borderless two-cell row
+beside the name.
+Editing: sections Summary, Experience, Education, Skills, Projects, Certifications, Custom (any
+number); rename, hide from export, move up/down, delete; entries movable. Look: font Sans / Serif /
+Narrow / Mono, body size 9-13 pt in half points, accent colour, A4 or US Letter. Photo: system
+photo picker, 35x45 frame with pinch/drag, cropped and resized to 413x531 px JPEG (fits both
+350x450 and 413x531 Indian sizes). Autosave ~0.5 s after last change and on close.
+Export: PDF (DocumentPdfWriter, same engine as Word->PDF, previewed in-app) and DOCX (DocxWriter).
+The DOCX embeds the draft JSON in a custom XML part so "Open an exported Word file" restores an
+editable draft (as a new draft, without the photo). Other DOCX files -> NotAResume error.
+Storage: files/resumes/<id>.json and <id>.jpg (app-private, atomic temp+rename, ids validated
+[A-Za-z0-9-], photo only from own cache). Backup disabled app-wide.
+
+
+=====================================================================
+4. ARCHITECTURE
+=====================================================================
+
+Clean Architecture + MVVM + unidirectional data flow. Hilt DI (KSP, no kapt). Kotlin 2.4.21,
+JVM 17 target, allWarningsAsErrors, -Xjsr305=strict. Compose BOM 2025.12.00, Material 3,
+material3-adaptive 1.1.0. minSdk 26, compileSdk 36, targetSdk 36 (benchmark module minSdk 28).
+
+Modules (settings.gradle.kts; 13 total):
+  :app              Android application. Navigation shell (NavigationSuiteScaffold), Home,
+                    Settings, Hilt wiring (AppModule: DispatcherProvider, TimberLogger, InputLimits,
+                    @ApplicationScope scope), MffApplication (Hilt WorkManager factory, Timber,
+                    stale temp sweep). Only module that sees implementations.
+  :feature-exam     Exam picker + flow UI, bundled exam_rules.json, DTO + parser + repository.
+  :feature-pdf      PDF tool picker + all PDF/convert tool screens.
+  :feature-image    Image tools UI, ResizePresets, BatchImageWorker + scheduler + serialization.
+  :feature-scan     Scan & OCR tab.
+  :feature-ocr      Text recognition screen.
+  :feature-resume   Resume list, template gallery, editor, preview.
+  :core-ui          Theme, components, previews, error messages, thumbnails, sharing.
+  :core-domain      PURE KOTLIN JVM module (no Android). Result/AppError, dispatchers, logging
+                    contract, JobRunner/JobState/ProgressReporter, file models + FileRepository +
+                    TempFileStore interfaces, FilenameSanitizer, InputLimits, image (ImageProcessor
+                    interface, QualitySearch, ImagePlan, ImageEffects/ImageEffectMath, JpegSegments,
+                    PngChunks, BatchImageUseCase), exam (models, SpecChecker, ExamCatalog, use cases),
+                    pdf (PdfProcessor, PdfOperation, PageSelection, PdfCompressionPolicy, use cases),
+                    convert (DocumentConverter, ConversionKind, ConvertDocumentUseCase), document
+                    (RichDocument, Presentation, Workbook), resume (model, JSON, edits, templates,
+                    renderer, use cases), ocr (OcrProcessor, ScriptDetector, export), scan (filters,
+                    enhancement, use cases), prefs (UserPreferences repository interface),
+                    batch (BatchPolicy).
+  :core-office      PURE KOTLIN JVM. docx/ pptx/ xlsx/ readers+writers, legacy/ (CompoundFile,
+                    DOC/PPT/XLS readers), pdftext/ (TextLayout, TableExtraction, PdfSlides),
+                    layout/ (SheetDocument), xml/ (XmlReader no-DTD, XmlWriter), zip/ (OpcPackage
+                    with caps, OpcWriter).
+  :core-processing  Android data layer engines: AndroidImageProcessor (ImageDecoding with
+                    BitmapRegionDecoder + inSampleSize + heap-safe sample size, ImageEncoding incl.
+                    HEIC via heifwriter on API 28+, WebP lossy on API 30+, ImageRendering,
+                    ImageEffectsRendering), PdfBoxPdfProcessor, PdfCompressor, PdfLayout, PdfStamping,
+                    MlKitOcrProcessor, OcrPageImages, AndroidOcrExporter, AndroidDocumentConverter,
+                    AndroidDocumentExporter, DocumentPdfWriter, SlidesPdfWriter, ParagraphPainter,
+                    PdfPageReader, PdfTextRemoval, Pictures, AndroidScanEnhancer, ScanFiltering,
+                    io/ (LimitedInputStream-style source streams, output files). Bound via Hilt @Binds
+                    in ProcessingModule.
+  :core-storage     SafFileRepository (SAF in/out, canonical path check that outputs live in
+                    cache/jobs), CacheTempFileStore (cache/jobs/<uuid>/), DataStoreUserPreferences,
+                    FileResumeRepository, FileProvider (authority ${applicationId}.files, exposes only
+                    cache/jobs/). Bound via StorageModule.
+  :benchmark        com.android.test: BaselineProfileGenerator, StartupBenchmark (cold start with/
+                    without profile, tab-switch frame timing). Journeys click test tags nav_exam,
+                    nav_pdf, nav_image, nav_scan, nav_resume, nav_home.
+Removed: :core-ads (existed in the original build with AdManager, UMP consent, interstitial pacing
+150 s / 6 per session, rewarded batch quota) - deleted in PR #19.
+
+Dependency rule: features depend only on :core-ui and :core-domain; implementations reach the app
+only through :app. :core-processing depends on :core-domain and :core-office. :core-office depends
+on :core-domain. :core-domain depends on nothing Android.
+
+Key patterns:
+  * Result<T, AppError> sealed interface everywhere (AppResult<T>). runCatchingApp {} at data-layer
+    boundaries; CancellationException always rethrown. AppError carries numbers/enums only, never
+    file names; Unexpected(type) keeps only the exception class name.
+    AppError cases: FileTooLarge, DimensionsTooLarge, TooManyPages, TooManyFiles, UnsupportedFormat,
+    CorruptFile, EmptyFile, PasswordRequired, WrongPassword, InvalidPageSelection,
+    TargetSizeUnreachable, FileNotFound, PermissionDenied, StorageFull, OutOfMemory,
+    FeatureUnavailable(HEIC_DECODE|HEIC_ENCODE|WEBP_ENCODE|DOCUMENT_SCANNER|OCR|BATCH_WORKER),
+    AlreadyOptimized, DocumentProtected, DocumentTooComplex, NoTextFound, NotAResume, Unexpected.
+  * JobRunner<T>(viewModelScope): one job at a time, StateFlow<JobState<T>> with Idle,
+    Running(progress 0..1 or null), Success, Failed(AppError), Cancelled; cleanup always runs under
+    NonCancellable. ProgressReporter.slice/step for multi-step progress. Engines call ensureActive()
+    between pages/images.
+  * InputLimits (checked before decoding): 50 MiB per file, 64 MP, 16 384 px max side, 1 000 PDF
+    pages, 100 files per job. Size checked from SAF metadata and again while streaming.
+  * FilenameSanitizer: strips path separators, control and bidi/format chars, "..", reserved
+    Windows names, 100-char cap, keeps Unicode (Hindi) letters.
+  * Logging: AppLogger contract; TimberLogger logs only in debug; release plants ReleaseTree (no-op);
+    R8 strips android.util.Log calls. No crash-reporting SDK.
+  * DispatcherProvider injected; decode/encode on default, I/O on io.
+
+
+=====================================================================
+5. SECURITY, PRIVACY, PERMISSIONS (docs/SECURITY.md is authoritative)
+=====================================================================
+* Network isolation: build-logic NetworkIsolation.kt registers verifyNetworkIsolation on EVERY
+  module including :app (releaseRuntimeClasspath / runtimeClasspath). Fails on okhttp, retrofit,
+  ktor, volley, cronet, com.google.firebase (except firebase-annotations, -components, -encoders,
+  -encoders-json, -encoders-proto which ML Kit telemetry pulls in), play-services-ads, UMP, or a
+  module manifest declaring INTERNET. com.google.android.datatransport is deliberately allowed
+  (ML Kit anonymous telemetry; pending product decision whether to exclude it - needs device test).
+  Detekt ForbiddenImport bans java.net.URL/HttpURLConnection/Socket, javax.net.*, okhttp3.* etc.
+* Merged manifest DOES contain INTERNET (from ML Kit) - documented in PLAY_STORE.md as only for ML
+  Kit model delivery/diagnostics. CI fails if READ/WRITE/MANAGE_EXTERNAL_STORAGE, READ_MEDIA_*,
+  AD_ID or com.google.android.gms.ads appear, and requires allowBackup="false".
+* App manifest: removes storage permissions with tools:node="remove"; declares FOREGROUND_SERVICE,
+  FOREGROUND_SERVICE_DATA_SYNC, FOREGROUND_SERVICE_MEDIA_PROCESSING, POST_NOTIFICATIONS;
+  allowBackup=false + backup_rules/data_extraction_rules exclude everything; network_security_config
+  cleartext off, system CAs only; heifwriter overrideLibrary (API 28 gated); WorkManager default
+  initializer removed (on-demand init with Hilt factory); enableOnBackInvokedCallback.
+* Temp files: cache/jobs/<uuid>/ only; deleted on failure/cancel/reset/ViewModel cleared; stale
+  (> 6 h) at app start. importToJob accepts only content:// or file:// inside app storage.
+* EXIF: every re-encode drops metadata; lossless strip keeps JFIF + ICC; PNG keeps critical +
+  colour chunks. PDF compression drops document metadata.
+* Lint: TrustAllX509TrustManager ignored only for Bouncy Castle jars (pdfbox encryption dependency).
+
+
+=====================================================================
+6. BUILD, QUALITY GATES, CI, RELEASES
+=====================================================================
+Build system: Gradle 9.1.0 wrapper, AGP 9.0.0 (built-in Kotlin, no kotlin-android plugin), version
+catalog gradle/libs.versions.toml, convention plugins in build-logic/convention:
+  mrfilefixit.android.application | .android.library | .android.library.compose | .android.feature
+  | .android.hilt | .android.test | .jvm.library
+gradle.properties: configuration cache, build cache, parallel, android.enableR8.fullMode=true,
+nonTransitiveRClass. Release: minify + shrinkResources + proguard-android-optimize + app rules
+(kotlinx.serialization keep, pdfbox keep, strip Log). localeFilters en, hi.
+Key library versions: kotlin 2.4.21, ksp 2.3.12, hilt 2.60.1, coroutines 1.11.0, serialization
+1.9.0, compose-bom 2025.12.00, navigation 2.9.5, lifecycle 2.9.4, datastore 1.1.7, work 2.10.3,
+mlkit document scanner 16.0.0, text-recognition 16.0.1 (+devanagari, chinese, japanese, korean),
+pdfbox-android 2.0.27.0, timber 5.0.1, junit5 5.13.4, mockk 1.14.5, turbine 1.2.1, detekt 1.23.8.
+(The catalog header still says AGP/AndroidX versions are "unverified" - they have since resolved
+fine in CI.)
+
+Commands:
+  ./gradlew assembleDebug                 debug APK
+  ./gradlew check                         unit tests, detekt, lint, network isolation
+  ./gradlew detekt                        static analysis (ktlint formatting rules incl.), zero findings
+  ./gradlew verifyNetworkIsolation
+  ./gradlew testDebugUnitTest :core-domain:test :core-office:test
+  ./gradlew lintDebug                     warnings are errors
+  ./gradlew :app:bundleRelease            signed only if MFF_KEYSTORE_* provided
+  ./gradlew :<module>:connectedDebugAndroidTest   instrumented (emulator)
+Quality gates: Kotlin warnings as errors; detekt zero findings (config/detekt/detekt.yml, per-module
+detekt-baseline.xml path configured); Android Lint warningsAsErrors with HardcodedText,
+MissingTranslation, SetTextI18n, RtlHardcoded, RtlEnabled as errors (environment/version lint ids
+disabled; UnusedResources checked only in :app). JUnit 5 + MockK + Turbine for unit tests.
+Tests (approx. counts at 8a74272): 174 JVM tests (core-domain 122, core-office 19, core-processing 5,
+feature-exam 7, feature-image 11, feature-ocr 4, feature-resume 6) and 23 instrumented tests
+(core-processing 18: DocumentConverterTest, ResumeExportTest, SearchablePdfTest, PdfCompressorTest;
+feature-exam ExamScreensTest 3; feature-resume ResumeScreensTest 2) + benchmarks.
+
+CI workflow .github/workflows/ci.yml (on pull_request, push to main, tags v*, workflow_dispatch
+with input "version"):
+  rules        - validate exam_rules.json with jsonschema 4.23.0 (Python 3.12)
+  check        - JDK 21; detekt; verifyNetworkIsolation; unit tests; lintDebug; :app:assembleDebug;
+                 merged-manifest grep (no broad storage, allowBackup=false, no ads/AD_ID)
+  instrumented - API 34 x86_64 google_apis emulator (reactivecircus/android-emulator-runner),
+                 frees runner disk first, 4 GB data partition, runs connectedDebugAndroidTest ONLY for
+                 modules that have src/androidTest (not benchmark)
+  release      - on v* tags: if secret MFF_KEYSTORE_B64 exists, decode and build signed
+                 :app:bundleRelease and upload .aab artifact; otherwise skip with a notice
+  tester-apk   - on v* tags or workflow_dispatch: assembleDebug, rename to
+                 MrFileFixit-<tag>-tester.apk, `gh release create <tag> --prerelease` (creates the tag
+                 at GITHUB_SHA when started from the Actions tab)
+Dependabot (.github/dependabot.yml): gradle weekly (groups androidx, kotlin, google), actions monthly.
+vercel.json: {"ignoreCommand":"exit 0"} so leftover Vercel projects linked to the repo skip builds.
+
+Signing (docs/PLAY_STORE.md): secrets MFF_KEYSTORE_B64, MFF_KEYSTORE_PASSWORD, MFF_KEY_ALIAS,
+MFF_KEY_PASSWORD (or Gradle props/env MFF_KEYSTORE_PATH etc.). keytool command documented. Play App
+Signing recommended. NONE of this is configured; per user decision. Play requires a signed upload,
+so publishing to Play will need it later.
+
+How to cut a tester release (what previous sessions did):
+  GitHub > Actions > CI > Run workflow > version e.g. v1.0.0-beta.5 (must start with v + digit).
+  Wait for rules + check, then tester-apk publishes a pre-release with the APK (~75-79 MB).
+  Install: open link on phone, allow "install unknown apps" for browser/files, Install; Play Protect
+  may warn ("Install anyway"). Installs as com.mrfilefixit.app.debug alongside any Play copy.
+
+Releases (all pre-releases, debug-signed tester APKs):
+  v1.0.0-beta.1  2026-10-23  after PR #2/#16/#17. Still contained AdMob TEST ads (ads not removed yet).
+  v1.0.0-beta.2  2026-10-24  after PR #18 (UI/UX redesign, 20 exams). Still test ads.
+  v1.0.0-beta.3  2026-10-24  after PR #19 (no ads, compressor fix, scan filters, all free). ~75 MB.
+  v1.0.0-beta.4  2026-10-25  after PRs #20-#23 (office conversions, resume, OCR, image Edit/Enhance).
+                             ~78 MB. CURRENT.
+  URL pattern: https://github.com/letsdeepchat/MrFileFixit/releases/download/<tag>/MrFileFixit-<tag>-tester.apk
+No real-device test results have been reported back by the user in the threads; validation so far
+is CI + emulator tests.
+
+Play Store readiness notes (docs/PLAY_STORE.md): data safety = no data collected/shared; ads = No;
+app access = no login; target audience 18+; content rating Everyone; foreground service
+declarations (data sync, media processing) with a suggested demo video; privacy policy text lives in
+PLAY_STORE.md (URL https://github.com/letsdeepchat/MrFileFixit/blob/main/docs/PLAY_STORE.md#privacy-policy-text,
+last updated 24 October 2026); short description "Fix photos, signatures and PDFs for exam forms.
+Free, offline, no ads."; category Productivity; store assets not yet produced.
+
+
+=====================================================================
+7. HISTORY (chronological)
+=====================================================================
+2026-10-22  Project created. User's initial spec (see section 9) + "take decision by own as per real
+            time necessity and demands". Thread "Mr File Fixit Android app" built all 9 delivery
+            steps locally (14 commits, 11 modules incl. core-ads), 106 JVM tests, ktlint/detekt
+            clean; Android modules not compiled (Google Maven blocked). Saved
+            mr-file-fixit.bundle and mr-file-fixit-source.zip to project files (these are now
+            STALE snapshots of that first build; do not use them as current source).
+            GitHub: creating a new repo was refused; user installed the Claude GitHub App and
+            asked to push into the existing letsdeepchat/MrFileFixit and "remove old". Old React/
+            Vercel web app backed up on branch `legacy-web` (a stale `master` branch with the old web
+            app also exists). PR #1 "Replace web prototype with the offline Android app" merged
+            2026-10-22 before its CI fix landed, so main was briefly broken.
+2026-10-23  PR #2 "Fix build-logic compile error" + all first-CI fixes (baselineprofile plugin removed
+            because 1.4.x rejects AGP 9; Firebase utility allow-list; heifwriter API 28 gate; 46 lint
+            fixes; emulator job limited to modules with instrumented tests) merged at user's request.
+            CI green on main. PR #16 (tester APK on tags), PR #17 (workflow_dispatch release because
+            the sandbox cannot push tags). v1.0.0-beta.1 published.
+2026-10-24  Thread "UI and UX redesign": user's long redesign prompt (top app bar with back, centred
+            upload cards, sticky buttons, 8 dp grid, 20-exam catalog with search/pills/detail tabs/
+            Prepare files, PDF grouped grid, Merge/Split/Images-to-PDF layouts, Image tabs + Resize
+            aspect sync + presets, Scan hero cards). PR #18 merged after CI fixes; exam schema v2;
+            Vercel skip config. v1.0.0-beta.2.
+2026-10-24  Thread "Fix verified UI bugs and prepare Play Store release": user asked to VERIFY a list
+            of issues and fix only real ones, make it Play-ready, then mid-way said no signing, no
+            auth, no ads, everything free. PR #19: short nav labels, Home brand header, one-line
+            exam search, collapsible notice, crop container fix, chip spacing, resize link icon,
+            PDF compressor rewrite with never-bigger guardrail + tests, scan filters, fuller privacy
+            section, removed core-ads/AdMob/UMP/batch quota, network isolation extended to :app,
+            docs/PLAY_STORE.md. Items in the list that already worked were left alone; the user's
+            exam numbers were not adopted (unverified). v1.0.0-beta.3.
+2026-10-25  Thread "Add resume builder, office conversions and OCR": user asked for Resume tab +
+            15 templates, Word/PPT/Excel <-> PDF, universal multilingual OCR, image Convert/Edit
+            (exam name/date stamp, B&W, filters) and an AI "Remini-style" Enhance. Delivered as four
+            sequential PRs (sandbox could push only one branch): #20 office conversions, #21 resume
+            builder, #22 multilingual OCR, #23 image Edit/Enhance/image-to-PDF. Decision card on
+            Enhance: user picked "Classic upscale now, AI later" (model hosts were blocked from the
+            sandbox and the app has no network to fetch one). NOTE: one interim status line in that
+            thread claimed a Real-ESRGAN model had been converted to 2.5 MB; nothing of the sort was
+            shipped and no model file exists in the repo. Decision card on merging: user chose
+            "Yes, merge each one once it's green". All merged; v1.0.0-beta.4 published. A usage
+            limit paused that thread for ~3 h mid-way.
+2026-10-27  This thread: write PROJECT_CONTEXT.txt (this file).
+
+All PRs:
+  #1  Replace web prototype with the offline Android app            merged 2026-10-22
+  #2  Fix build-logic compile error (+ first CI fixes)              merged 2026-10-23
+  #3-#7, #9, #11-#14, #24  Dependabot bumps - OPEN, unreviewed:
+      #3 gradle/actions 4->6, #4 setup-java 4->6, #5 upload-artifact 4->7, #6 checkout 4->7,
+      #7 setup-python 5->6, #9 kotlinx-serialization-json 1.9.0->1.12.0, #11 AGP 9.0.0->9.4.1,
+      #12 mockk 1.14.5->1.14.11, #13 junit-bom 5.13.4->6.1.3 (major), #14 gradle wrapper
+      9.1.0->9.8.2, #24 androidx group (9 updates)
+  #8, #10, #15  Dependabot - closed (superseded)
+  #16 CI: publish a sideloadable tester APK on version tags         merged 2026-10-23
+  #17 CI: let the tester release be started from the Actions tab   merged 2026-10-23
+  #18 Redesign tool screens (shared top bar, 20-exam catalog, ...)  merged 2026-10-24
+  #19 UX overhaul, honest PDF compression, scan filters, all free   merged 2026-10-24
+  #20 Add Word, PowerPoint and Excel to and from PDF conversions    merged 2026-10-25
+  #21 Add a resume builder with 15 ATS-friendly templates          merged 2026-10-25
+  #22 Add multilingual OCR with auto-detect, searchable PDF ...     merged 2026-10-25
+  #23 Add image Edit and Enhance tools and image-to-PDF conversion  merged 2026-10-25
+PRs were squash-merged. Branches left on GitHub: claude/* work branches (merged), dependabot/*,
+legacy-web (old web app), master (old web app), main.
+
+
+=====================================================================
+8. ORIGINAL SPEC vs CURRENT APP (differences you must know)
+=====================================================================
+Original spec (2026-10-22) -> current state:
+  * Ads via core-ads (AdMob, UMP consent, banners on home/exam picker/file list, interstitial after
+    success capped 150 s / 6 per session, rewarded ads for extra batch jobs, test IDs in debug)
+      -> REMOVED entirely (PR #19, user decision). AdMob is no longer "the only network consumer";
+         there is no network consumer of our own. Do not reintroduce ads.
+  * Modules: app, feature-exam, feature-pdf, feature-image, feature-scan, core-ui, core-domain,
+    core-processing, core-ads, core-storage
+      -> core-ads removed; added core-office, feature-ocr, feature-resume, benchmark.
+  * Exam profiles: SSC, UPSC, IBPS, RRB, NEET, state PSC; JSON with 3 samples
+      -> schema v2 with 20 exams (no State PSC entries yet); certificates, background, ink,
+         verification fields.
+  * Merge photo + signature when needed -> supported (composite) but no bundled exam uses it.
+  * Scanner: ML Kit + on-device OCR -> yes, plus filters and a full OCR screen with 5 scripts.
+  * Image tools list -> all present + Edit, Enhance, convert-to-PDF, OCR shortcut.
+  * PDF tools list -> all 13 present + 6 office conversions + OCR shortcut.
+  * Rewarded/batch limits -> none; batches unlimited (WorkManager above 10 files).
+  * Baseline Profiles + Macrobenchmark -> generator and benchmarks exist, but the androidx
+    baselineprofile Gradle plugin is NOT applied (AGP 9 incompatibility) and no
+    app/src/main/baseline-prof.txt is checked in. Cold start < 1 s / 60 fps targets NOT measured.
+  * Release signing / Play upload -> intentionally not configured (user decision).
+  * "Lint rule or dependency check" for network -> verifyNetworkIsolation + detekt ForbiddenImport.
+  * In-app disclaimer that exam specs are not official -> present on every exam screen.
+User-requested items that were deliberately implemented differently:
+  * AI super-resolution Enhance (Real-ESRGAN/GFPGAN) -> classic upscale + sharpen.
+  * OCR for "all major world languages" with model downloader -> 5 bundled ML Kit scripts only,
+    no downloader (app is offline-only).
+  * User's own exam numbers (RRB 20-50 KB etc.) -> not used; existing researched data kept.
+  * Flutter/React Native code samples in prompts -> implemented natively in Kotlin/Compose.
+
+
+=====================================================================
+9. KNOWN LIMITATIONS, STALE BITS AND OPEN TODOs
+=====================================================================
+Functional limitations:
+  * 19 of 20 exam profiles are community sourced; need verification against official notices
+    (with dates) before they can be marked verified. No State PSC profiles.
+  * OCR scripts limited to Latin, Devanagari, Chinese, Japanese, Korean.
+  * Enhance is not AI; an on-device super-resolution model (e.g. TFLite Real-ESRGAN, ~5 MB + ~3 MB
+    runtime) could be added later only if bundled in the APK (no network) and the user provides or
+    approves a trusted model file.
+  * Watermark/page-number stamps support Latin text only.
+  * Office conversion fidelity limits listed in 3.3.
+  * HEIC encode depends on device HEVC encoder (API 28+); HEIC decode API 28+.
+  * keepMetadata preference has no UI.
+  * Composite photo+signature path unused by bundled data.
+Unverified / not done:
+  * No real-device QA reported; performance budgets in docs/PERFORMANCE.md (cold start < 600 ms
+    on Pixel 6a class, 12 MP exam photo -> 20-50 KB JPEG < 1.5 s, peak < 120 MB for 12 MP) are
+    targets, not measurements.
+  * Baseline profile not generated/committed.
+  * ML Kit datatransport telemetry: keep (current, disclosed) or exclude (needs device test).
+  * Release bundle job has never produced a signed .aab (no keystore secrets).
+  * 11 open Dependabot PRs; some are majors (JUnit 6, AGP 9.4, actions v6/v7) and need CI checks.
+Stale text to fix when convenient:
+  * README.md "Verification status" section still says Android modules were never compiled and
+    lists 112 tests; CI has compiled and tested everything since PR #2.
+  * gradle/libs.versions.toml header says AGP/AndroidX versions are unverified.
+  * ci.yml comment in the instrumented job still mentions "no AdMob app ID in :core-ads".
+  * Project-files mr-file-fixit.bundle / mr-file-fixit-source.zip are the 2026-10-22 pre-GitHub
+    snapshot.
+  * versionCode/versionName not bumped across betas (still 2 / 1.0.0).
+
+
+=====================================================================
+10. WORKING AGREEMENTS FOR FUTURE SESSIONS
+=====================================================================
+About the user (DeepChat, letsdeepchat):
+  * Wants Claude to decide autonomously ("take decision by own as per real time necessity and
+    demands", "don't ask anything just take decision by own as per requirement"). Still ask before
+    irreversible steps; the user has approved Claude merging green PRs when asked ("merge each one
+    once it's green" for the #20-#23 series, and explicit merge requests for #2 and #18).
+  * Frequently asks for "tester apk" / "install link" after changes: publish a new beta via the
+    Actions tab and give the direct APK link + 3 install steps.
+  * Writes very long spec prompts (sometimes framed for Flutter/React Native); verify each claim
+    against the code, fix only real problems, keep existing features working ("make sure existing
+    feature won't interrupt").
+  * Short follow-ups like "continue", "Fix CI", "Try again" mean resume the current work.
+  * Personal preference note: 20 years experienced AI/ML and data scientist - technical detail is
+    welcome, but replies in the project should stay short and lead with the result.
+  * Priorities stated: free, easy UX, no ads, no login, privacy, Play Store compliance.
+Engineering workflow that has worked:
+  * Work on the session's designated branch, open a PR to main, keep CI fully green (rules, check,
+    instrumented emulator job), then merge (squash) when approved, then optionally cut a beta.
+  * Pure-Kotlin modules can be built/tested locally with Kotlin + JUnit if Gradle cannot reach Google
+    Maven; Android modules rely on CI. Expect a round or two of lint fixes (UseKtx, Recycle, plurals,
+    modifier order) on the first CI run of new Android code.
+  * Every user-visible string goes in values/strings.xml AND values-hi/strings.xml.
+  * Keep the offline guarantee: no network libraries, no INTERNET in our manifests; anything new
+    must pass verifyNetworkIsolation.
+  * Keep docs in sync: README, docs/ARCHITECTURE.md, SECURITY.md, PERFORMANCE.md, PLAY_STORE.md,
+    CONVERSIONS.md, IMAGE_TOOLS.md, OCR.md, RESUME.md, and this file.
+  * Project memory (Claude) is OFF for this project; this file is the memory.
+
+
+=====================================================================
+11. THE USER'S ORIGINAL BUILD SPEC (2026-10-22), condensed
+=====================================================================
+"Build Mr File Fixit, a free, fully offline Android app in Kotlin. All file processing on-device.
+No backend, no uploads, no logging of file content."
+Product: 1) Government exam forms with exam profiles (SSC, UPSC, IBPS, RRB, NEET, state PSC) from a
+bundled JSON rules file; resize/compress photos and signatures into target KB ranges, merge photo +
+signature when needed, live pass/fail checker; each profile has a source link and last-verified
+date. 2) PDF tools: merge, split, extract, reorder, rotate, delete pages, compress, image to PDF,
+PDF to JPG, watermark, page numbers, password protect and unlock. 3) Image tools: resize, crop,
+rotate, compress, convert JPG/PNG/WebP/HEIC, batch, strip EXIF. 4) Scanner: ML Kit document scanner
+to PDF + on-device OCR. 5) Share via FileProvider and share sheet.
+Architecture: Clean Architecture, MVVM, UDF; layers ui/domain/data/core; multi-module Gradle with
+convention plugins + version catalog; Hilt; processors behind interfaces; sealed Result<T, AppError>
+from every layer; jobs with Idle/Running(progress)/Success/Failed/Cancelled as StateFlow.
+Responsive UI: Compose M3, WindowSizeClass (single pane phones, list-detail tablets/foldables),
+portrait/landscape/split-screen, 200% font, dark mode, dynamic colour, 48 dp targets, content
+descriptions, TalkBack, RTL-safe, English + Hindi, previews (phone, tablet, dark, large font).
+Performance: heavy work off main thread, cancellable with progress; decode at target size; PdfRenderer
+page by page; KB targeting binary search <= 8 iterations; LruCache thumbnails; delete temp files;
+WorkManager for large batches; foreground service only while running; Baseline Profiles +
+Macrobenchmark; cold start < 1 s; 60 fps; R8 full mode + resource shrinking.
+Security: processing never touches network (AdMob only consumer - now moot); scoped storage + SAF
+only; validate input (50 MB, max pixels, page count); reject encrypted/corrupt files clearly;
+sanitize filenames; temp in app-private cache; FileProvider narrow grants; no logging of names/
+paths/content in release (no-op Timber tree); crash reports exclude user data; strip EXIF by
+default; DataStore prefs; keys out of source; disable backup; block cleartext; never store PDF
+passwords.
+Ads (core-ads): one AdManager, UMP first, preload interstitial/rewarded, banners only on home/exam
+picker/file list, interstitial after success capped 150 s and 6/session, open result if ad fails,
+rewarded opt-in for extra batch jobs, test IDs in debug only.   [REMOVED LATER - see section 8]
+Quality: JUnit 5, MockK, Turbine; golden tests for exam specs; Compose UI tests; Macrobenchmark;
+Detekt, ktlint, Android Lint zero warnings; GitHub Actions build/test/lint/release; idiomatic Kotlin,
+no !!, no GlobalScope, no god classes.
+Delivery order: 1 architecture diagram + module graph, 2 convention plugins + catalog, 3 core
+(Result, dispatchers, job pipeline), 4 exam JSON schema + 3 samples, 5 image pipeline + KB targeting
++ spec checker + tests, 6 Compose exam flow responsive, 7 PDF + scanner, 8 ads + UMP, 9 security/
+performance checklist + full test suite. Add an in-app disclaimer that users must verify exam specs
+against the official notification; do not present rules as official.
+
+
+=====================================================================
+12. QUICK FILE MAP
+=====================================================================
+README.md                                     overview, modules, build, exam rules, (stale) verification
+PROJECT_CONTEXT.txt                           this file
+docs/ARCHITECTURE.md                          layers, module graph, packages, threading, assumptions
+docs/SECURITY.md                              every privacy rule, where enforced, ML Kit telemetry note
+docs/PERFORMANCE.md                           performance checklist and unmeasured budgets
+docs/PLAY_STORE.md                            Play Console answers, signing steps, privacy policy text
+docs/CONVERSIONS.md docs/IMAGE_TOOLS.md docs/OCR.md docs/RESUME.md   feature docs
+docs/exam-rules.schema.json                   JSON schema v2 for exam rules
+feature-exam/src/main/assets/exam_rules.json  the 20 exam profiles
+app/src/main/kotlin/com/mrfilefixit/app/navigation/MffApp.kt   navigation shell
+app/src/main/kotlin/com/mrfilefixit/app/MffApplication.kt      startup (Timber, temp sweep, WorkManager)
+build-logic/convention/src/main/kotlin/...    convention plugins, NetworkIsolation.kt, lint/detekt setup
+config/detekt/detekt.yml, config/lint/lint.xml
+.github/workflows/ci.yml, .github/dependabot.yml, vercel.json
+core-domain/.../result/{Result,AppError}.kt   error model
+core-domain/.../job/JobRunner.kt              job pipeline
+core-domain/.../security/InputLimits.kt       input limits
+core-domain/.../image/QualitySearch.kt        KB targeting
+core-domain/.../exam/                          exam models, checker, catalog, use cases
+core-processing/.../pdf/PdfCompressor.kt      compressor with never-bigger guardrail
+core-storage/.../files/SafFileRepository.kt   SAF + job-cache path checks
