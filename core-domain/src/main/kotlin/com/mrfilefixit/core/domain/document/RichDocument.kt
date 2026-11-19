@@ -17,6 +17,8 @@ data class RichDocument(
     val author: String = "",
     /** Opaque app data stored inside the exported file (for example a resume's JSON so it can be re-opened). */
     val appData: String? = null,
+    /** A border drawn around every PDF page (biodata templates). Word exports leave it out. */
+    val decoration: PageDecoration? = null,
 ) {
     companion object {
         const val DEFAULT_SIZE_PT = 11f
@@ -43,6 +45,33 @@ data class PageSetup(
 
         /** 2 cm. */
         const val DEFAULT_MARGIN = 56.7f
+    }
+}
+
+/** How a [PageDecoration] frames the page. */
+enum class BorderStyle {
+    /** One thin line. */
+    SINGLE,
+
+    /** A thick outer and a thin inner line. */
+    DOUBLE,
+
+    /** Double line with small diamond motifs at the corners and the middle of each side. */
+    ORNATE,
+
+    /** Corner brackets only, for a light, modern frame. */
+    CORNERS,
+}
+
+/** A frame around each page, [insetPt] from the paper edge. Colours are packed ARGB. */
+data class PageDecoration(
+    val style: BorderStyle,
+    val colorArgb: Int,
+    val accentArgb: Int = colorArgb,
+    val insetPt: Float = DEFAULT_INSET,
+) {
+    companion object {
+        const val DEFAULT_INSET = 18f
     }
 }
 

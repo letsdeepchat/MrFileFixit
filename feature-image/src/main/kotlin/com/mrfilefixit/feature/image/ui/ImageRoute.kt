@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,12 +24,23 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ImageRoute(val examId: String? = null, val document: String? = null)
 
-fun NavGraphBuilder.imageScreen(onOpenOcr: () -> Unit = {}) {
-    composable<ImageRoute> { ImageToolRoute(onOpenOcr) }
+/** Image tools opened on their own screen (from an exam); [onExit] closes it. */
+fun NavGraphBuilder.imageScreen(onOpenOcr: () -> Unit = {}, onExit: () -> Unit = {}) {
+    composable<ImageRoute> { ImageTab(onOpenOcr, onExit = onExit) }
 }
 
+/**
+ * The Images tab. With files loaded the workspace is an inner screen: its back button (and the system back)
+ * clears it, asking first when a result has not been saved. [onExit] is set when the tools have a screen of
+ * their own, and is then also the back button of the empty workspace.
+ */
 @Composable
-private fun ImageToolRoute(onOpenOcr: () -> Unit, viewModel: ImageToolViewModel = hiltViewModel()) {
+fun ImageTab(
+    onOpenOcr: () -> Unit,
+    modifier: Modifier = Modifier,
+    onExit: (() -> Unit)? = null,
+    viewModel: ImageToolViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
@@ -58,5 +70,12 @@ private fun ImageToolRoute(onOpenOcr: () -> Unit, viewModel: ImageToolViewModel 
             canEncode = viewModel::canEncode,
         )
     }
-    ImageToolScreen(state, actions, snackbarHost = { SnackbarHost(snackbar) }, onOpenOcr = onOpenOcr)
+    ImageToolScreen(
+        state,
+        actions,
+        modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbar) },
+        onOpenOcr = onOpenOcr,
+        onExit = onExit,
+    )
 }

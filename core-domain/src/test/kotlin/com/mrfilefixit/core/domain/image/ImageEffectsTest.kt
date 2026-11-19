@@ -28,6 +28,33 @@ class ImageEffectsTest {
     }
 
     @Test
+    fun `black and white stretches a dull photo to real black and white`() {
+        // A dull, washed-out photo: every tone between 70 and 190.
+        val dull = IntArray(1210) { i -> (70 + i % 121).let { v -> argb(v, (v * 0.9).toInt(), (v * 0.8).toInt()) } }
+        val levels = ImageEffectMath.grayLevels(dull)
+        val matrix = ImageEffectMath.colorMatrix(ColorAdjust(), grayscale = true, levels = levels)
+        val out = dull.map { ImageEffectMath.applyMatrix(matrix, it) }
+        out.forEach {
+            val (r, g, b) = channels(it)
+            assertTrue(r == g && g == b, "not grey: $r $g $b")
+        }
+        val tones = out.map { channels(it).first }
+        assertTrue(tones.min() <= 10, "darkest ${tones.min()}")
+        assertTrue(tones.max() >= 245, "brightest ${tones.max()}")
+        // Far more contrast than the plain luminance copy.
+        val plain = ImageEffectMath.colorMatrix(ColorAdjust(), grayscale = true)
+        val plainTones = dull.map { channels(ImageEffectMath.applyMatrix(plain, it)).first }
+        assertTrue(tones.max() - tones.min() > 2 * (plainTones.max() - plainTones.min()))
+    }
+
+    @Test
+    fun `black and white of a flat grey picture does not explode into noise`() {
+        val flat = IntArray(100) { argb(120, 120, 120) }
+        val levels = ImageEffectMath.grayLevels(flat)
+        assertTrue(levels.gain <= 3f)
+    }
+
+    @Test
     fun `brightness lifts, contrast spreads around mid grey, saturation zero is grey`() {
         val bright = ImageEffectMath.colorMatrix(ColorAdjust(brightness = 50), grayscale = false)
         assertEquals(150, channels(ImageEffectMath.applyMatrix(bright, argb(100, 100, 100))).first)
@@ -40,22 +67,17 @@ class ImageEffectsTest {
     }
 
     @Test
-    fun `upscale multiplies the size but keeps the long side under the cap`() {
-        assertEquals(1200 to 800, ImageEffectMath.upscaledSize(600, 400, Upscale(2)))
-        assertEquals(Upscale.MAX_SIDE to Upscale.MAX_SIDE / 2, ImageEffectMath.upscaledSize(1000, 500, Upscale(4)))
-        assertThrows<IllegalArgumentException> { Upscale(3) }
-    }
-
-    @Test
-    fun `sharpening raises edge contrast and leaves flat areas alone`() {
-        val w = 6
-        val h = 3
-        val pixels = IntArray(w * h) { i -> if (i % w < 3) argb(100, 100, 100) else argb(160, 160, 160) }
-        ImageEffectMath.sharpen(pixels, w, h, amount = 1f)
-        assertTrue(channels(pixels[w + 2]).first < 100) // dark side of the edge gets darker
-        assertTrue(channels(pixels[w + 3]).first > 160) // light side gets lighter
-        assertEquals(100, channels(pixels[w]).first)
-        assertEquals(160, channels(pixels[w + 5]).first)
+    fun `enhance upscale multiplies the size but keeps the long side under the cap`() {
+        assertEquals(1200 to 800, ImageEffectMath.enhancedSize(600, 400, NaturalEnhance(scale = 2)))
+        assertEquals(
+            NaturalEnhance.MAX_SIDE to NaturalEnhance.MAX_SIDE / 2,
+            ImageEffectMath.enhancedSize(1000, 500, NaturalEnhance(scale = 4)),
+        )
+        assertEquals(600 to 400, ImageEffectMath.enhancedSize(600, 400, NaturalEnhance(scale = 1)))
+        // Already above the cap: never shrinks.
+        assertEquals(4000 to 3000, ImageEffectMath.enhancedSize(4000, 3000, NaturalEnhance(scale = 2)))
+        assertThrows<IllegalArgumentException> { NaturalEnhance(scale = 3) }
+        assertThrows<IllegalArgumentException> { NaturalEnhance(strength = 1.5f) }
     }
 
     @Test
@@ -77,7 +99,7 @@ class ImageEffectsTest {
             filter = ImageFilter.DOCUMENT,
             stamp = PhotoStamp(listOf("Name"), dark = false),
             texts = listOf(TextOverlay("Hello", y = OverlayPosition.TOP.y)),
-            upscale = Upscale(2, 0.5f),
+            enhance = NaturalEnhance(0.5f, 2),
         )
         val json = Json.encodeToString(ImageEffects.serializer(), effects)
         assertEquals(effects, Json.decodeFromString(ImageEffects.serializer(), json))

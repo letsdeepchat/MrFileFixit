@@ -3,6 +3,7 @@ package com.mrfilefixit.feature.resume.ui
 import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +25,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -41,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,9 +53,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.mrfilefixit.core.domain.biodata.BiodataSummary
+import com.mrfilefixit.core.domain.biodata.BiodataTemplates
 import com.mrfilefixit.core.domain.convert.DocumentFormat
 import com.mrfilefixit.core.domain.resume.HeaderLayout
 import com.mrfilefixit.core.domain.resume.HeadingStyle
@@ -60,31 +68,49 @@ import com.mrfilefixit.core.domain.resume.ResumeTemplate
 import com.mrfilefixit.core.domain.resume.ResumeTemplates
 import com.mrfilefixit.core.ui.components.ErrorCard
 import com.mrfilefixit.core.ui.components.IconBadge
-import com.mrfilefixit.core.ui.components.PrimaryActionButton
-import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.components.SectionHeader
+import com.mrfilefixit.core.ui.components.SegmentedChoice
 import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
 import com.mrfilefixit.feature.resume.R
 
-/** First page of the tab: create, re-open an exported Word file, or continue a saved draft. */
+/** Hub actions: start a resume or a biodata, re-open a Word resume, continue or delete drafts. */
+internal class ResumeHubActions(
+    val onCreateResume: () -> Unit,
+    val onCreateBiodata: () -> Unit,
+    val onOpenResume: (String) -> Unit,
+    val onOpenBiodata: (String) -> Unit,
+    val onDeleteResume: (String) -> Unit,
+    val onDeleteBiodata: (String) -> Unit,
+    val onImport: (String) -> Unit,
+    val onDismissError: () -> Unit,
+)
+
+/** Which saved drafts the hub lists. */
+internal enum class DraftKind(@StringRes val label: Int, @StringRes val empty: Int) {
+    RESUMES(R.string.resume_tab_resumes, R.string.resume_saved_empty),
+    BIODATA(R.string.resume_tab_biodata, R.string.biodata_saved_empty),
+}
+
+/**
+ * First page of the Resume & Biodata tab: two large actions (a professional resume or a biodata), re-opening
+ * an exported Word resume, and the saved drafts of either kind.
+ */
 @Composable
 internal fun ResumeListScreen(
     state: ResumeUiState,
-    onCreate: () -> Unit,
-    onOpen: (String) -> Unit,
-    onDelete: (String) -> Unit,
-    onImport: (String) -> Unit,
-    onDismissError: () -> Unit,
+    biodataDrafts: List<BiodataSummary>,
+    actions: ResumeHubActions,
     modifier: Modifier = Modifier,
     snackbarHost: @Composable () -> Unit = {},
 ) {
     val importer = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) onImport(uri.toString())
+        if (uri != null) actions.onImport(uri.toString())
     }
-    var confirmDelete by remember { mutableStateOf<ResumeSummary?>(null) }
+    var shown by rememberSaveable { mutableStateOf(DraftKind.RESUMES) }
+    var confirmDelete by remember { mutableStateOf<Pair<DraftKind, String>?>(null) }
     ToolScaffold(
         title = stringResource(R.string.resume_title),
         modifier = modifier.testTag("resume_list"),
@@ -98,20 +124,30 @@ internal fun ResumeListScreen(
             verticalArrangement = Arrangement.spacedBy(Dimens.SpaceM),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            item(key = "intro") {
-                SectionCard(Modifier.contentWidth()) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceM),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IconBadge(Icons.Filled.Description)
-                        Text(stringResource(R.string.resume_intro), style = MaterialTheme.typography.bodyMedium)
-                    }
-                    PrimaryActionButton(
-                        stringResource(R.string.resume_create),
-                        onCreate,
-                        Modifier.testTag("resume_create"),
-                    )
+            item(key = "create-resume") {
+                HubCard(
+                    icon = Icons.Filled.Description,
+                    title = stringResource(R.string.resume_hub_resume_title),
+                    body = stringResource(R.string.resume_hub_resume_body),
+                    onClick = actions.onCreateResume,
+                    modifier = Modifier
+                        .contentWidth()
+                        .testTag("resume_create"),
+                )
+            }
+            item(key = "create-biodata") {
+                HubCard(
+                    icon = Icons.Filled.Favorite,
+                    title = stringResource(R.string.resume_hub_biodata_title),
+                    body = stringResource(R.string.resume_hub_biodata_body),
+                    onClick = actions.onCreateBiodata,
+                    modifier = Modifier
+                        .contentWidth()
+                        .testTag("biodata_create"),
+                )
+            }
+            item(key = "import") {
+                Column(Modifier.contentWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXs)) {
                     OutlinedButton(
                         onClick = { importer.launch(arrayOf(DocumentFormat.DOCX.mimeType, OCTET_STREAM)) },
                         modifier = Modifier
@@ -132,36 +168,60 @@ internal fun ResumeListScreen(
                 item(key = "error") {
                     Column(Modifier.contentWidth()) {
                         ErrorCard(error, onRetry = null)
-                        TextButton(onClick = onDismissError) { Text(stringResource(R.string.resume_cancel)) }
+                        TextButton(onClick = actions.onDismissError) { Text(stringResource(R.string.resume_cancel)) }
                     }
                 }
             }
             item(key = "saved-header") {
-                SectionHeader(stringResource(R.string.resume_saved_title), Modifier.contentWidth())
+                Column(Modifier.contentWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
+                    SectionHeader(stringResource(R.string.resume_saved_title))
+                    SegmentedChoice(
+                        options = DraftKind.entries,
+                        selected = shown,
+                        label = { stringResource(it.label) },
+                        onSelect = { shown = it },
+                        modifier = Modifier.testTag("drafts_kind"),
+                    )
+                }
             }
-            if (state.drafts.isEmpty()) {
+            val empty = if (shown == DraftKind.RESUMES) state.drafts.isEmpty() else biodataDrafts.isEmpty()
+            if (empty) {
                 item(key = "saved-empty") {
                     Text(
-                        stringResource(R.string.resume_saved_empty),
+                        stringResource(shown.empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.contentWidth(),
                     )
                 }
             }
-            items(state.drafts, key = { it.id }) { draft ->
-                DraftRow(draft, onOpen = { onOpen(draft.id) }, onDelete = { confirmDelete = draft })
+            if (shown == DraftKind.RESUMES) {
+                items(state.drafts, key = { "r-${it.id}" }) { draft ->
+                    DraftRow(
+                        draft,
+                        onOpen = { actions.onOpenResume(draft.id) },
+                        onDelete = { confirmDelete = DraftKind.RESUMES to draft.id },
+                    )
+                }
+            } else {
+                items(biodataDrafts, key = { "b-${it.id}" }) { draft ->
+                    BiodataDraftRow(
+                        draft,
+                        onOpen = { actions.onOpenBiodata(draft.id) },
+                        onDelete = { confirmDelete = DraftKind.BIODATA to draft.id },
+                    )
+                }
             }
         }
     }
-    confirmDelete?.let { draft ->
+    confirmDelete?.let { (kind, id) ->
         AlertDialog(
             onDismissRequest = { confirmDelete = null },
             title = { Text(stringResource(R.string.resume_delete_title)) },
             text = { Text(stringResource(R.string.resume_delete_body)) },
             confirmButton = {
                 TextButton(onClick = {
-                    onDelete(draft.id)
+                    if (kind == DraftKind.RESUMES) actions.onDeleteResume(id) else actions.onDeleteBiodata(id)
                     confirmDelete = null
                 }) { Text(stringResource(R.string.resume_delete)) }
             },
@@ -169,6 +229,32 @@ internal fun ResumeListScreen(
                 TextButton(onClick = { confirmDelete = null }) { Text(stringResource(R.string.resume_cancel)) }
             },
         )
+    }
+}
+
+/** A large tappable action: icon, title and one line on what it makes. */
+@Composable
+private fun HubCard(icon: ImageVector, title: String, body: String, onClick: () -> Unit, modifier: Modifier) {
+    val colors = MaterialTheme.colorScheme
+    OutlinedCard(
+        onClick = onClick,
+        shape = RoundedCornerShape(Dimens.CardCorner),
+        border = BorderStroke(1.dp, colors.primary.copy(alpha = HUB_BORDER_ALPHA)),
+        colors = CardDefaults.outlinedCardColors(containerColor = colors.surfaceContainer),
+        modifier = modifier.heightIn(min = Dimens.MinTouchTarget),
+    ) {
+        Row(
+            Modifier.padding(Dimens.SectionPadding),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceM),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconBadge(icon)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXs)) {
+                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(body, style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
+            }
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+        }
     }
 }
 
@@ -188,6 +274,43 @@ private fun DraftRow(draft: ResumeSummary, onOpen: () -> Unit, onDelete: () -> U
             headlineContent = { Text(draft.name) },
             supportingContent = {
                 Text("${templateName(template)} · ${stringResource(R.string.resume_edited, edited)}")
+            },
+            trailingContent = {
+                TextButton(onClick = onDelete, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
+                    Text(stringResource(R.string.resume_delete))
+                }
+            },
+            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        )
+    }
+}
+
+@Composable
+private fun BiodataDraftRow(draft: BiodataSummary, onOpen: () -> Unit, onDelete: () -> Unit) {
+    val template = BiodataTemplates.byId(draft.templateId)
+    val edited = DateUtils.getRelativeTimeSpanString(draft.updatedAtMillis).toString()
+    OutlinedCard(
+        onClick = onOpen,
+        shape = RoundedCornerShape(Dimens.CardCorner),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        modifier = Modifier
+            .contentWidth()
+            .testTag("biodata_draft_${draft.id}"),
+    ) {
+        ListItem(
+            leadingContent = { BiodataSketch(template, Modifier.width(SKETCH_SMALL.dp)) },
+            headlineContent = { Text(draft.displayName) },
+            supportingContent = {
+                Text(
+                    pluralStringResource(
+                        R.plurals.biodata_draft_photos,
+                        draft.photoCount,
+                        stringResource(BiodataText.templateName(template)),
+                        draft.photoCount,
+                        stringResource(R.string.resume_edited, edited),
+                    ),
+                )
             },
             trailingContent = {
                 TextButton(onClick = onDelete, modifier = Modifier.heightIn(min = Dimens.MinTouchTarget)) {
@@ -339,6 +462,7 @@ internal fun Modifier.contentWidth(): Modifier = widthIn(max = Dimens.CardMaxWid
 private const val OCTET_STREAM = "application/octet-stream"
 private const val TEMPLATE_MIN_WIDTH = 160
 private const val SKETCH_SMALL = 44
+private const val HUB_BORDER_ALPHA = 0.5f
 private const val PAGE_ASPECT = 210f / 297f
 private const val SKETCH_INK = 0xFF2B2B2B
 private const val PAD = 0.09f
@@ -370,6 +494,6 @@ private fun TemplateGalleryPreview() {
 @Composable
 private fun ResumeListPreview() {
     MffTheme(dynamicColor = false) {
-        ResumeListScreen(ResumeUiState(), onCreate = {}, onOpen = {}, onDelete = {}, onImport = {}, onDismissError = {})
+        ResumeListScreen(ResumeUiState(), emptyList(), ResumeHubActions({}, {}, {}, {}, {}, {}, {}, {}))
     }
 }

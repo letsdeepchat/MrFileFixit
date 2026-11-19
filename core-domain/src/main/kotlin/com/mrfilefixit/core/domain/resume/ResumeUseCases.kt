@@ -4,6 +4,7 @@ import com.mrfilefixit.core.domain.convert.DocumentFormat
 import com.mrfilefixit.core.domain.document.RichDocument
 import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.file.OutputFile
+import com.mrfilefixit.core.domain.file.requireContent
 import com.mrfilefixit.core.domain.job.ProgressReporter
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.AppResult
@@ -72,6 +73,7 @@ class ExportResumeUseCase @Inject constructor(
         }
         val document = ResumeRenderer.render(resume, ResumeTemplates.byId(resume.templateId), photo)
         return exporter.export(document, format, outputDir, resume.displayName + RESUME_SUFFIX, progress)
+            .requireContent()
     }
 
     private companion object {

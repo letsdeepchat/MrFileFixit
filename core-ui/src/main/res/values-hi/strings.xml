@@ -86,4 +86,36 @@
 
     <string name="upload_limit_hint">अधिकतम फ़ाइल साइज़ %1$s</string>
     <string name="cd_drag_handle">क्रम बदलने के लिए खींचें</string>
+    <!-- Added: errors -->
+    <string name="error_empty_output">नतीजा खाली निकला, इसलिए कुछ भी सेव नहीं हुआ। फिर से कोशिश करें या दूसरी फ़ाइल चुनें।</string>
+    <string name="error_photo_required">बायोडाटा बनाने के लिए कम से कम एक फ़ोटो जोड़ें।</string>
+    <string name="error_no_person_found">इस फ़ोटो में कोई व्यक्ति नहीं मिला। बैकग्राउंड हटाना लोगों की फ़ोटो पर काम करता है, जैसे पोर्ट्रेट, सेल्फ़ी और परीक्षा फ़ोटो।</string>
+    <!-- Before / after preview -->
+    <string name="preview_title">प्रीव्यू</string>
+    <string name="preview_before">पहले</string>
+    <string name="preview_after">बाद में</string>
+    <string name="preview_mode_slider">स्लाइडर</string>
+    <string name="preview_original">मूल</string>
+    <string name="preview_processed">नतीजा</string>
+    <string name="preview_dimensions">आकार (पिक्सेल)</string>
+    <string name="preview_format">फ़ॉर्मेट</string>
+    <string name="preview_file_size">फ़ाइल साइज़</string>
+    <string name="preview_open_full">फ़ुल स्क्रीन में देखें</string>
+    <string name="preview_zoom_hint">ज़ूम के लिए दो उंगलियों से फैलाएँ, खिसकाने के लिए खींचें। रीसेट के लिए दो बार टैप करें।</string>
+    <string name="cd_compare_divider">तुलना की रेखा। पहले और बाद की तुलना के लिए बाएँ या दाएँ खींचें।</string>
+    <string name="cd_before_after">पहले और बाद की तुलना</string>
+    <string name="preview_loading">प्रीव्यू बन रहा है…</string>
+    <string name="preview_page">पेज %1$d</string>
+    <string name="preview_pages_title">पेज</string>
+    <plurals name="preview_page_count">
+        <item quantity="one">%1$d पेज</item>
+        <item quantity="other">%1$d पेज</item>
+    </plurals>
+    <string name="preview_unavailable">इस फ़ाइल का प्रीव्यू उपलब्ध नहीं है।</string>
+    <!-- Unsaved results -->
+    <string name="discard_title">बिना सेव किए बाहर जाएँ?</string>
+    <string name="discard_body">आपका नतीजा अभी तक सेव या शेयर नहीं हुआ है। अभी बाहर जाने पर यह मिट जाएगा।</string>
+    <string name="discard_leave">बाहर जाएँ</string>
+    <string name="discard_stay">रुकें</string>
+    <string name="action_close">बंद करें</string>
 </resources>

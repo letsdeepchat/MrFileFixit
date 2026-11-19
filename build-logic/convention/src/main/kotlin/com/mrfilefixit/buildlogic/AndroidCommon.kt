@@ -52,6 +52,9 @@ internal fun ApplicationExtension.configureAndroidApplication(lintConfig: File) 
     }
     packaging {
         resources.excludes += setOf("/META-INF/{AL2.0,LGPL2.1}", "/META-INF/LICENSE*", "/META-INF/NOTICE*")
+        // Data tables of Bouncy Castle's post-quantum ciphers (about 4.5 MB). PDFBox uses Bouncy Castle only
+        // for standard PDF encryption and never loads these.
+        resources.excludes += "/org/bouncycastle/pqc/**"
     }
 }
 

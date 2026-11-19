@@ -48,7 +48,9 @@
     <string name="exam_doc_POSTCARD_PHOTO">पोस्टकार्ड साइज़ फ़ोटो</string>
     <string name="exam_tab_photo">फ़ोटो</string>
     <string name="exam_tab_signature">हस्ताक्षर</string>
-    <string name="exam_tab_other">अन्य अपलोड</string>
+    <string name="exam_tab_other">अन्य दस्तावेज़</string>
+    <string name="exam_tab_left_thumb">बाएँ अंगूठे का निशान</string>
+    <string name="exam_tab_declaration">हस्तलिखित घोषणा</string>
     <string name="exam_tab_certificates">प्रमाणपत्र</string>
     <string name="exam_prepare_files">इस परीक्षा के लिए फ़ाइलें तैयार करें</string>
     <string name="exam_prepare_files_hint">इमेज टूल इस परीक्षा की पिक्सेल और KB सीमा के साथ खुलेंगे।</string>

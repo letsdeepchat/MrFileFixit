@@ -194,6 +194,35 @@ class DocumentConverterTest {
         assertEquals(AppError.NoTextFound, (result as Result.Failure).error)
     }
 
+    @Test
+    fun corruptedFilesFailCleanlyAndLeaveNoEmptyOutput() {
+        val cases = listOf(
+            ConversionKind.WORD_TO_PDF to DocumentFormat.DOCX,
+            ConversionKind.PPT_TO_PDF to DocumentFormat.PPTX,
+            ConversionKind.EXCEL_TO_PDF to DocumentFormat.XLSX,
+            ConversionKind.PDF_TO_WORD to DocumentFormat.PDF,
+            ConversionKind.PDF_TO_PPT to DocumentFormat.PDF,
+            ConversionKind.PDF_TO_EXCEL to DocumentFormat.PDF,
+        )
+        val contents = listOf(
+            ByteArray(0),
+            "not a real document".toByteArray(),
+            // Valid magic number, truncated body.
+            byteArrayOf(0x50, 0x4B, 0x03, 0x04, 0x14, 0x00),
+            "%PDF-1.7\n1 0 obj <<".toByteArray(),
+        )
+        cases.forEach { (kind, format) ->
+            contents.forEachIndexed { i, bytes ->
+                val file = File(dir, "broken-$i.${format.extension}").apply { writeBytes(bytes) }
+                val request = request(file, kind, format)
+                val result = runBlocking { converter.convert(request, ProgressReporter.NONE) }
+                assertTrue("$kind #$i: $result", result is Result.Failure)
+                val written = File(request.outputDir).walkTopDown().filter { it.isFile }.toList()
+                assertTrue("$kind #$i left $written", written.none { it.length() == 0L })
+            }
+        }
+    }
+
     private fun cell(text: String) = DocTableCell(listOf(DocParagraph.of(text)))
 
     /** A one-page PDF: a 24 pt heading, a paragraph and a three-column table. */

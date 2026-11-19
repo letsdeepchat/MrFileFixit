@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 /**
  * Pixel edits applied after the geometry of an [ImageRequest] (rotate, crop, resize), in this order:
- * [upscale], then [filter] and [adjust], then the exam [stamp] bar, then the [texts]. Serializable so a batch
- * handed to WorkManager carries them.
+ * [background] replacement, [enhance], then [filter] and [adjust], then the exam [stamp] bar, then the [texts].
+ * Serializable so a batch handed to WorkManager carries them.
  */
 @Serializable
 data class ImageEffects(
@@ -13,7 +13,8 @@ data class ImageEffects(
     val filter: ImageFilter = ImageFilter.NONE,
     val stamp: PhotoStamp? = null,
     val texts: List<TextOverlay> = emptyList(),
-    val upscale: Upscale? = null,
+    val enhance: NaturalEnhance? = null,
+    val background: BackgroundReplace? = null,
 ) {
     val isNone: Boolean get() = this == NONE
 
@@ -82,34 +83,83 @@ data class TextOverlay(
     val y: Float = OverlayPosition.BOTTOM.y,
     val sizeFraction: Float = DEFAULT_SIZE,
     val colorArgb: Int = WHITE,
-    /** A soft dark outline that keeps light text readable on any background. */
+    /** A soft outline in the opposite tone (dark round light text, light round dark text), readable anywhere. */
     val outline: Boolean = true,
+    val font: OverlayFont = OverlayFont.SANS,
 ) {
     init {
         require(x in 0f..1f && y in 0f..1f) { "Overlay position must be inside the picture" }
         require(sizeFraction in MIN_SIZE..MAX_SIZE) { "Overlay size must be $MIN_SIZE..$MAX_SIZE" }
     }
 
+    /** Whether the text colour is light, so its outline is dark (and the other way round). */
+    val isLight: Boolean get() = isLightColor(colorArgb)
+
     companion object {
         const val DEFAULT_SIZE = 0.06f
         const val MIN_SIZE = 0.02f
         const val MAX_SIZE = 0.3f
         const val WHITE = -0x1
+        private const val LIGHT_LUMA = 140f
+        private const val RED_WEIGHT = 0.299f
+        private const val GREEN_WEIGHT = 0.587f
+        private const val BLUE_WEIGHT = 0.114f
+        private const val CHANNEL = 0xFF
+        private const val RED_SHIFT = 16
+        private const val GREEN_SHIFT = 8
+
+        fun isLightColor(argb: Int): Boolean {
+            val r = (argb shr RED_SHIFT) and CHANNEL
+            val g = (argb shr GREEN_SHIFT) and CHANNEL
+            val b = argb and CHANNEL
+            return RED_WEIGHT * r + GREEN_WEIGHT * g + BLUE_WEIGHT * b > LIGHT_LUMA
+        }
     }
 }
 
-/** Upscaling by [factor] (2 or 4) with smooth interpolation, then sharpening of [sharpen] (0..1). */
+/**
+ * Fonts for text on a picture. Each is bundled with the app ([asset] is its path in the app's assets), so it
+ * looks the same on every phone, and each covers both English and Hindi (Devanagari). The system font families
+ * were not used because many phones map several of them to the same font, and none of them changes Hindi text.
+ * All are SIL Open Font License fonts from Google Fonts; the licence ships next to them (fonts/OFL.txt).
+ */
 @Serializable
-data class Upscale(val factor: Int, val sharpen: Float = DEFAULT_SHARPEN) {
+enum class OverlayFont(val asset: String) {
+    /** Poppins SemiBold: clean and modern. */
+    SANS("fonts/poppins_semibold.ttf"),
+
+    /** Martel ExtraBold: a classic serif. */
+    SERIF("fonts/martel_extrabold.ttf"),
+
+    /** Glegoo Bold: a slab face with a typewriter feel. */
+    MONO("fonts/glegoo_bold.ttf"),
+
+    /** Khand SemiBold: tall and narrow, fits long names. */
+    CONDENSED("fonts/khand_semibold.ttf"),
+
+    /** Kalam Bold: handwriting. */
+    HANDWRITING("fonts/kalam_bold.ttf"),
+
+    /** Yatra One: rounded and playful. */
+    CASUAL("fonts/yatraone_regular.ttf"),
+}
+
+/**
+ * Natural Enhance: an optional [scale]x Lanczos upscale, then luminance-only denoise, gentle spot healing and
+ * clarity at [strength] (0..1). Colours and skin tone are never changed (see NaturalEnhancer).
+ */
+@Serializable
+data class NaturalEnhance(val strength: Float = DEFAULT_STRENGTH, val scale: Int = 1) {
     init {
-        require(factor == 2 || factor == 4) { "Upscale factor must be 2 or 4" }
-        require(sharpen in 0f..1f) { "Sharpen must be 0..1" }
+        require(strength in 0f..1f) { "Strength must be 0..1" }
+        require(scale in SCALES) { "Scale must be one of $SCALES" }
     }
 
     companion object {
-        const val DEFAULT_SHARPEN = 0.6f
+        const val DEFAULT_STRENGTH = 0.6f
+        val SCALES = listOf(1, 2, 4)
 
-        /** Long side cap of the result, so a 4x upscale stays within a phone's memory. */
+        /** Long side cap of an upscaled result, so a 4x upscale stays within a phone's memory. */
         const val MAX_SIDE = 3072
     }
 }

@@ -23,26 +23,72 @@ object ImageEffectMath {
     /**
      * A 4x5 colour matrix (row-major, the layout Android's ColorMatrix uses) that applies [adjust] and, with
      * [grayscale], drops the colour first. Saturation is applied around each pixel's luminance.
+     *
+     * Black & white is a real monochrome print: with [levels] (from [grayLevels]) the picture's own darkest and
+     * brightest tones are stretched to black and white, with a little extra punch ([BW_PUNCH]), so the result is
+     * clearly different from the colour photo even when the photo was dull.
      */
-    fun colorMatrix(adjust: ColorAdjust, grayscale: Boolean): FloatArray {
+    fun colorMatrix(adjust: ColorAdjust, grayscale: Boolean, levels: GrayLevels? = null): FloatArray {
         val saturation = if (grayscale) 0f else 1f + adjust.saturation / PERCENT
         val contrast = if (adjust.contrast >= 0) {
             1f + CONTRAST_UP * adjust.contrast / PERCENT
         } else {
             1f + CONTRAST_DOWN * adjust.contrast / PERCENT
         }
-        val offset = adjust.brightness / PERCENT * BRIGHTNESS_SPAN + MID_GREY * (1f - contrast)
+        // The black & white stretch: luma' = gain * (luma - pivot) + mid grey, folded into the same matrix.
+        val gain = if (grayscale && levels != null) levels.gain else 1f
+        val pivot = if (grayscale && levels != null) levels.pivot else MID_GREY
+        val offset = adjust.brightness / PERCENT * BRIGHTNESS_SPAN + MID_GREY - contrast * gain * pivot
+        val k = contrast * gain
         val inv = 1f - saturation
         val r = inv * RED_WEIGHT
         val g = inv * GREEN_WEIGHT
         val b = inv * BLUE_WEIGHT
         return floatArrayOf(
-            contrast * (r + saturation), contrast * g, contrast * b, 0f, offset,
-            contrast * r, contrast * (g + saturation), contrast * b, 0f, offset,
-            contrast * r, contrast * g, contrast * (b + saturation), 0f, offset,
+            k * (r + saturation), k * g, k * b, 0f, offset,
+            k * r, k * (g + saturation), k * b, 0f, offset,
+            k * r, k * g, k * (b + saturation), 0f, offset,
             0f, 0f, 0f, 1f, 0f,
         )
     }
+
+    /** How black & white stretches a picture's tones: luma' = [gain] * (luma - [pivot]) + 128. */
+    data class GrayLevels(val gain: Float, val pivot: Float)
+
+    /**
+     * The black & white stretch for a picture whose pixels (or an even sample of them) are [sample]: the 1st and
+     * 99th luminance percentiles go to black and white, times [BW_PUNCH], with the gain capped at [MAX_BW_GAIN]
+     * so a nearly flat picture does not turn into noise.
+     */
+    fun grayLevels(sample: IntArray): GrayLevels {
+        if (sample.isEmpty()) return GrayLevels(BW_PUNCH, MID_GREY)
+        val histogram = IntArray(CHANNEL_MAX + 1)
+        sample.forEach { p ->
+            val y = RED_WEIGHT * ((p shr RED_SHIFT) and CHANNEL_MAX) +
+                GREEN_WEIGHT * ((p shr GREEN_SHIFT) and CHANNEL_MAX) + BLUE_WEIGHT * (p and CHANNEL_MAX)
+            histogram[y.roundToInt().coerceIn(0, CHANNEL_MAX)]++
+        }
+        val low = percentile(histogram, sample.size, BW_LOW)
+        val high = percentile(histogram, sample.size, BW_HIGH)
+        val gain = (BW_PUNCH * CHANNEL_MAX / max(1, high - low)).coerceIn(BW_PUNCH, MAX_BW_GAIN)
+        return GrayLevels(gain, (low + high) / 2f)
+    }
+
+    private fun percentile(histogram: IntArray, total: Int, share: Float): Int {
+        val wanted = (total * share).toInt()
+        var seen = 0
+        histogram.forEachIndexed { level, count ->
+            seen += count
+            if (seen > wanted) return level
+        }
+        return CHANNEL_MAX
+    }
+
+    /** Black & white is a little harder than a plain luminance copy, like a monochrome print. */
+    const val BW_PUNCH = 1.15f
+    private const val MAX_BW_GAIN = 3f
+    private const val BW_LOW = 0.01f
+    private const val BW_HIGH = 0.99f
 
     /** Applies a [colorMatrix] to one ARGB pixel, as the platform's ColorMatrixColorFilter does. */
     fun applyMatrix(matrix: FloatArray, argb: Int): Int {
@@ -57,59 +103,15 @@ object ImageEffectMath {
         return (a shl ALPHA_SHIFT) or (row(0) shl RED_SHIFT) or (row(ROW) shl GREEN_SHIFT) or row(2 * ROW)
     }
 
-    /** Output size of an [Upscale]: [factor] times bigger, scaled back so the long side fits [Upscale.MAX_SIDE]. */
-    fun upscaledSize(width: Int, height: Int, upscale: Upscale): Pair<Int, Int> {
-        val wanted = max(width, height) * upscale.factor
-        val scale = upscale.factor * min(1f, Upscale.MAX_SIDE.toFloat() / wanted)
-        return max(1, (width * scale).roundToInt()) to max(1, (height * scale).roundToInt())
-    }
-
     /**
-     * Unsharp mask in place: each channel moves away from its local (box-blurred, [radius]) average by
-     * [amount]. Edges get crisper; flat areas are unchanged, so noise is not amplified much at small radii.
+     * Output size of a [NaturalEnhance]: [NaturalEnhance.scale] times bigger, scaled back so the long side fits
+     * [NaturalEnhance.MAX_SIDE]. An image already at or above the cap keeps its size (never shrinks).
      */
-    fun sharpen(pixels: IntArray, width: Int, height: Int, amount: Float, radius: Int = 1) {
-        require(pixels.size == width * height) { "pixels must be width * height" }
-        if (amount <= 0f || width < MIN_SHARPEN_SIDE || height < MIN_SHARPEN_SIDE) return
-        val blurred = boxBlur(pixels, width, height, radius)
-        for (i in pixels.indices) {
-            val p = pixels[i]
-            val q = blurred[i]
-            fun channel(shift: Int): Int {
-                val v = (p shr shift) and CHANNEL_MAX
-                val avg = (q shr shift) and CHANNEL_MAX
-                return (v + amount * (v - avg)).roundToInt().coerceIn(0, CHANNEL_MAX)
-            }
-            pixels[i] = (p and ALPHA_MASK) or (channel(RED_SHIFT) shl RED_SHIFT) or
-                (channel(GREEN_SHIFT) shl GREEN_SHIFT) or channel(0)
-        }
-    }
-
-    /** Separable box blur of each colour channel, clamping at the borders. Alpha is kept. */
-    fun boxBlur(pixels: IntArray, width: Int, height: Int, radius: Int): IntArray {
-        val horizontal = IntArray(pixels.size)
-        for (y in 0 until height) blurLine(pixels, horizontal, y * width, 1, width, radius)
-        val out = IntArray(pixels.size)
-        for (x in 0 until width) blurLine(horizontal, out, x, width, height, radius)
-        return out
-    }
-
-    private fun blurLine(src: IntArray, dst: IntArray, start: Int, step: Int, length: Int, radius: Int) {
-        for (i in 0 until length) {
-            var r = 0
-            var g = 0
-            var b = 0
-            var n = 0
-            for (k in max(0, i - radius)..min(length - 1, i + radius)) {
-                val p = src[start + k * step]
-                r += (p shr RED_SHIFT) and CHANNEL_MAX
-                g += (p shr GREEN_SHIFT) and CHANNEL_MAX
-                b += p and CHANNEL_MAX
-                n++
-            }
-            val alpha = src[start + i * step] and ALPHA_MASK
-            dst[start + i * step] = alpha or ((r / n) shl RED_SHIFT) or ((g / n) shl GREEN_SHIFT) or (b / n)
-        }
+    fun enhancedSize(width: Int, height: Int, enhance: NaturalEnhance): Pair<Int, Int> {
+        if (enhance.scale == 1) return width to height
+        val wanted = max(width, height) * enhance.scale
+        val scale = max(1f, enhance.scale * min(1f, NaturalEnhance.MAX_SIDE.toFloat() / wanted))
+        return max(1, (width * scale).roundToInt()) to max(1, (height * scale).roundToInt())
     }
 
     /** Where the [PhotoStamp] band and its lines go on a [width] x [height] photo. */
@@ -142,6 +144,4 @@ object ImageEffectMath {
     private const val B = 2
     private const val A = 3
     private const val OFFSET = 4
-    private const val MIN_SHARPEN_SIDE = 3
-    private const val ALPHA_MASK = -0x1000000
 }

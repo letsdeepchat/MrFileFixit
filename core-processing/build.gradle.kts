@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.mlkit.text.recognition.chinese)
     implementation(libs.mlkit.text.recognition.japanese)
     implementation(libs.mlkit.text.recognition.korean)
+    implementation(libs.mlkit.segmentation.selfie)
 
     // Instrumented tests for the engines that need real Android graphics (PDF compression).
     androidTestImplementation(libs.androidx.test.ext.junit)

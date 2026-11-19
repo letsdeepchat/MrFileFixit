@@ -1,10 +1,11 @@
 # Mr File Fixit
 
 A free, fully offline Android app for fixing files for government exam forms and everyday paperwork:
-resize and compress photos and signatures to exam specs, PDF tools, image tools, a document scanner, and an
-ATS-friendly resume builder.
+resize and compress photos and signatures to exam specs, PDF tools, image tools with Natural Enhance, a document
+scanner, an ATS-friendly resume builder and a marriage or portfolio biodata maker.
 All processing happens on the device. No uploads, no backend, no logging of file content.
-Every feature is free: no ads, no accounts, no sign-in, no premium tier and no usage limits.
+Every feature is free: no ads, no accounts, no sign-in, no premium tier and no usage limits. Users who find it
+helpful can donate by UPI or PayPal from Settings → Support. That is optional and unlocks nothing.
 
 > **Disclaimer.** Exam profiles bundled with the app are community-maintained samples. They are **not official**.
 > Always verify the photo and signature requirements against the official notification of your exam before submitting.
@@ -18,7 +19,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture diagram, m
 | `app` | Android application | Navigation shell, DI wiring, adaptive layout |
 | `feature-exam` | Android library | Exam profile picker, photo/signature flow, live spec checker |
 | `feature-pdf` | Android library | Merge, split, extract, reorder, rotate, delete, compress, image↔PDF, Word/PowerPoint/Excel↔PDF, watermark, page numbers, password |
-| `feature-image` | Android library | Resize, crop, rotate, compress, convert (including to PDF), edit, enhance, batch, strip EXIF ([docs/IMAGE_TOOLS.md](docs/IMAGE_TOOLS.md)) |
+| `feature-image` | Android library | Resize, crop, rotate, compress, convert (including to PDF), edit, enhance, remove background, batch, strip EXIF ([docs/IMAGE_TOOLS.md](docs/IMAGE_TOOLS.md)) |
 | `feature-scan` | Android library | ML Kit document scanner and on-device OCR |
 | `feature-ocr` | Android library | Text recognition for images and PDFs: auto-detect, five scripts, searchable PDF, TXT and Word export ([docs/OCR.md](docs/OCR.md)) |
 | `feature-resume` | Android library | Resume builder: 15 templates, section editor, photo frame, PDF and Word export ([docs/RESUME.md](docs/RESUME.md)) |

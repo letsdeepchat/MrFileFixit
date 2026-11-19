@@ -1,6 +1,7 @@
 package com.mrfilefixit.app.settings
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,8 +16,10 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AutoDelete
 import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PersonOff
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material3.Icon
@@ -29,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -43,7 +47,11 @@ import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.theme.Dimens
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit, viewModel: MainViewModel = hiltViewModel()) {
+fun SettingsScreen(
+    onBack: () -> Unit,
+    onOpenSupport: (() -> Unit)?,
+    viewModel: MainViewModel = hiltViewModel(),
+) {
     val prefs by viewModel.preferences.collectAsStateWithLifecycle()
     ToolScaffold(title = stringResource(R.string.nav_settings), onBack = onBack) { padding ->
         Column(
@@ -88,6 +96,31 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: MainViewModel = hiltViewModel(
             ) {
                 Text(stringResource(R.string.settings_dynamic_color), Modifier.weight(1f))
                 Switch(checked = prefs.dynamicColor, onCheckedChange = null)
+            }
+
+            if (onOpenSupport != null) {
+                SectionTitle(stringResource(R.string.settings_support_title))
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = Dimens.MinTouchTarget)
+                        .clickable(role = Role.Button, onClick = onOpenSupport)
+                        .padding(vertical = Dimens.SpaceS)
+                        .testTag("settings_support"),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceM),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(Icons.Filled.Favorite, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXs)) {
+                        Text(stringResource(R.string.support_title), style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            stringResource(R.string.settings_support_body),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+                }
             }
 
             SectionTitle(stringResource(R.string.settings_privacy_title))

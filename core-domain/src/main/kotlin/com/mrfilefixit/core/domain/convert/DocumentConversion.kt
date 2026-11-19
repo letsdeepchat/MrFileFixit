@@ -2,6 +2,7 @@ package com.mrfilefixit.core.domain.convert
 
 import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.file.OutputFile
+import com.mrfilefixit.core.domain.file.requireContents
 import com.mrfilefixit.core.domain.job.ProgressReporter
 import com.mrfilefixit.core.domain.pdf.PageSize
 import com.mrfilefixit.core.domain.result.AppError
@@ -92,6 +93,7 @@ class ConvertDocumentUseCase @Inject constructor(
         limits.checkFileSize(request.source.sizeBytes)
             .flatMap { checkFormat(request) }
             .flatMap { converter.convert(request, progress) }
+            .requireContents()
 
     private fun checkFormat(request: ConversionRequest): AppResult<Unit> {
         val format = DocumentFormat.detect(request.source.mimeType, request.source.displayName)

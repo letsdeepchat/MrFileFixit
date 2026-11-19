@@ -31,6 +31,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.mrfilefixit.core.ui.R as CoreR
+import com.mrfilefixit.core.ui.navigation.ReportInnerScreen
 import com.mrfilefixit.core.ui.share.shareFiles
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.feature.pdf.R
@@ -44,19 +45,30 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PdfRoute(val tool: String? = null, val minKb: Int? = null, val maxKb: Int? = null)
 
-fun NavGraphBuilder.pdfScreen(onOpenOcr: () -> Unit = {}) {
-    composable<PdfRoute> { entry -> PdfListDetail(entry.toRoute<PdfRoute>(), onOpenOcr) }
+/** PDF tools opened on their own screen (from an exam), with [onExit] as the tool list's back button. */
+fun NavGraphBuilder.pdfScreen(onOpenOcr: () -> Unit = {}, onExit: () -> Unit = {}) {
+    composable<PdfRoute> { entry -> PdfListDetail(entry.toRoute<PdfRoute>(), onOpenOcr, onExit = onExit) }
 }
 
+/**
+ * PDF tools as list-detail. In the PDF tab [onExit] is null: the tool list is the tab's root. A tool open on
+ * its own (phones) is an inner screen with a back button.
+ */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun PdfListDetail(route: PdfRoute, onOpenOcr: () -> Unit, modifier: Modifier = Modifier) {
+fun PdfListDetail(
+    route: PdfRoute,
+    onOpenOcr: () -> Unit,
+    modifier: Modifier = Modifier,
+    onExit: (() -> Unit)? = null,
+) {
     val navigator = rememberListDetailPaneScaffoldNavigator<String>()
     val scope = rememberCoroutineScope()
     val selected = navigator.currentDestination?.contentKey?.let { key ->
         PdfTool.entries.firstOrNull { it.name == key }
     }
     val singlePane = navigator.scaffoldValue[ListDetailPaneScaffoldRole.List] == PaneAdaptedValue.Hidden
+    ReportInnerScreen(inner = singlePane && selected != null)
     val sizeTarget = route.maxKb?.let { KbTarget(route.minKb ?: 0, it) }
     // Open the requested tool once; after that the user's own navigation wins (also across rotation).
     var openedRequested by rememberSaveable(route) { mutableStateOf(false) }
@@ -75,6 +87,7 @@ fun PdfListDetail(route: PdfRoute, onOpenOcr: () -> Unit, modifier: Modifier = M
                 PdfToolPicker(
                     selected = selected,
                     onOpenOcr = onOpenOcr,
+                    onBack = onExit,
                     onSelect = { tool ->
                         scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, tool.name) }
                     },

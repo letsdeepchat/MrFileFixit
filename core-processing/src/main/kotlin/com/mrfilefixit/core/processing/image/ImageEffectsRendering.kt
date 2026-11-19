@@ -12,9 +12,14 @@ import androidx.core.graphics.scale
 import com.mrfilefixit.core.domain.image.ImageEffectMath
 import com.mrfilefixit.core.domain.image.ImageEffects
 import com.mrfilefixit.core.domain.image.ImageFilter
+import com.mrfilefixit.core.domain.image.NaturalEnhance
+import com.mrfilefixit.core.domain.image.OverlayFont
 import com.mrfilefixit.core.domain.image.PhotoStamp
 import com.mrfilefixit.core.domain.image.TextOverlay
-import com.mrfilefixit.core.domain.image.Upscale
+import com.mrfilefixit.core.domain.image.enhance.LanczosResampler
+import com.mrfilefixit.core.domain.image.enhance.LocalContrast
+import com.mrfilefixit.core.domain.image.enhance.NaturalEnhancer
+import com.mrfilefixit.core.domain.image.enhance.ToneVibrance
 import com.mrfilefixit.core.domain.scan.ScanFilter
 import com.mrfilefixit.core.processing.scan.ScanFiltering
 import kotlin.coroutines.coroutineContext
@@ -27,32 +32,37 @@ import kotlinx.coroutines.ensureActive
  * recycles the one before it, so at most two full-size bitmaps are alive at a time.
  */
 internal object ImageEffectsRendering {
-    /** Rows sharpened per pass; the blur needs only this band (plus its radius) in memory. */
-    private const val SHARPEN_BAND = 256
-    private const val SHARPEN_RADIUS = 1
+    /** Rows resampled or enhanced per pass; only this band (plus the enhancer's halo) is held as pixels. */
+    private const val BAND = 256
 
     /** Stamp lines and overlays are shrunk to fit this share of the width. */
     private const val FIT_WIDTH = 0.92f
     private const val OUTLINE_SHARE = 0.12f
+    private const val SAMPLE_SIDE = 256
 
-    /** Returns [source] itself when there is nothing to do, otherwise a new bitmap ([source] is recycled). */
-    suspend fun apply(source: Bitmap, effects: ImageEffects): Bitmap {
+    /**
+     * Returns [source] itself when there is nothing to do, otherwise a new bitmap ([source] is recycled).
+     * [fonts] gives the typeface of each overlay font.
+     */
+    suspend fun apply(source: Bitmap, effects: ImageEffects, fonts: (OverlayFont) -> Typeface): Bitmap {
         if (effects.isNone) return source
         var bitmap = source
-        effects.upscale?.let { bitmap = replace(bitmap, upscale(bitmap, it)) }
+        effects.enhance?.let { bitmap = replace(bitmap, enhance(bitmap, it)) }
         coroutineContext.ensureActive()
         if (effects.filter == ImageFilter.DOCUMENT) {
             bitmap = replace(bitmap, ScanFiltering.apply(bitmap, ScanFilter.DOCUMENT_CLEAN))
         }
         val grayscale = effects.filter == ImageFilter.GRAYSCALE
         if (grayscale || !effects.adjust.isNone) {
-            bitmap = replace(bitmap, colorMatrix(bitmap, ImageEffectMath.colorMatrix(effects.adjust, grayscale)))
+            val levels = if (grayscale) ImageEffectMath.grayLevels(sample(bitmap)) else null
+            val matrix = ImageEffectMath.colorMatrix(effects.adjust, grayscale, levels)
+            bitmap = replace(bitmap, colorMatrix(bitmap, matrix))
         }
         if (effects.stamp != null || effects.texts.isNotEmpty()) {
             if (!bitmap.isMutable) bitmap = replace(bitmap, mutableCopy(bitmap))
             val canvas = Canvas(bitmap)
             effects.stamp?.let { drawStamp(canvas, bitmap.width, bitmap.height, it) }
-            effects.texts.forEach { drawOverlay(canvas, bitmap.width, bitmap.height, it) }
+            effects.texts.forEach { drawOverlay(canvas, bitmap.width, bitmap.height, it, fonts(it.font)) }
         }
         return bitmap
     }
@@ -62,42 +72,88 @@ internal object ImageEffectsRendering {
         return new
     }
 
-    /** Smooth upscaling in 2x steps (each bilinear step stays sharp), then an unsharp mask. */
-    private suspend fun upscale(source: Bitmap, upscale: Upscale): Bitmap {
-        val (targetW, targetH) = ImageEffectMath.upscaledSize(source.width, source.height, upscale)
-        var bitmap = source
-        while (bitmap.width * 2 < targetW) {
-            coroutineContext.ensureActive()
-            val next = bitmap.scale(bitmap.width * 2, bitmap.height * 2, filter = true)
-            if (bitmap !== source) bitmap.recycle()
-            bitmap = next
+    /**
+     * Enhance: a Lanczos upscale when asked for, the luminance pipeline (denoise, sharpen, spot healing, detail
+     * recovery), then large-scale clarity ([LocalContrast]) and auto contrast and vibrance ([ToneVibrance]), all
+     * band by band on the (mutable) result so a large photo is never copied as a whole pixel array twice.
+     */
+    private suspend fun enhance(source: Bitmap, enhance: NaturalEnhance): Bitmap {
+        val (targetW, targetH) = ImageEffectMath.enhancedSize(source.width, source.height, enhance)
+        val out = when {
+            targetW != source.width || targetH != source.height -> lanczos(source, targetW, targetH)
+            source.isMutable -> source
+            else -> mutableCopy(source)
         }
-        val sized = bitmap.scale(targetW, targetH, filter = true)
-        if (bitmap !== source && bitmap !== sized) bitmap.recycle()
-        val out = if (sized === source || !sized.isMutable) mutableCopy(sized) else sized
-        if (out !== sized && sized !== source) sized.recycle()
-        sharpen(out, upscale.sharpen)
+        if (enhance.strength > 0f) {
+            val width = out.width
+            NaturalEnhancer.enhanceInBands(
+                width = width,
+                height = out.height,
+                strength = enhance.strength,
+                bandRows = BAND,
+                read = { top, count, into, offset -> out.getPixels(into, offset, width, 0, top, width, count) },
+                write = { top, count, from, offset -> out.setPixels(from, offset, width, 0, top, width, count) },
+            )
+            val tone = ToneVibrance.from(sample(out), enhance.strength)
+            val clarity = clarity(out, enhance.strength)
+            val band = IntArray(width * min(BAND, out.height))
+            var top = 0
+            while (top < out.height) {
+                coroutineContext.ensureActive()
+                val count = min(BAND, out.height - top)
+                out.getPixels(band, 0, width, 0, top, width, count)
+                clarity.apply(band, 0, top, count)
+                tone.apply(band, 0, width * count)
+                out.setPixels(band, 0, width, 0, top, width, count)
+                top += count
+            }
+        }
         return out
     }
 
-    /** Sharpens [bitmap] in place, band by band, reading [SHARPEN_RADIUS] extra rows around each band. */
-    private suspend fun sharpen(bitmap: Bitmap, amount: Float) {
-        if (amount <= 0f) return
-        val width = bitmap.width
-        val height = bitmap.height
+    /** Clarity for [bitmap], built from a copy scaled to about [LocalContrast.GRID_SIDE] on its long side. */
+    private fun clarity(bitmap: Bitmap, strength: Float): LocalContrast {
+        val factor = min(1f, LocalContrast.GRID_SIDE.toFloat() / max(bitmap.width, bitmap.height))
+        val w = max(1, (bitmap.width * factor).toInt())
+        val h = max(1, (bitmap.height * factor).toInt())
+        val small = if (w == bitmap.width && h == bitmap.height) bitmap else bitmap.scale(w, h)
+        val pixels = IntArray(w * h)
+        small.getPixels(pixels, 0, w, 0, 0, w, h)
+        if (small !== bitmap) small.recycle()
+        return LocalContrast.from(pixels, w, h, bitmap.width, bitmap.height, strength)
+    }
+
+    /** An even grid of at most about [SAMPLE_SIDE] x [SAMPLE_SIDE] pixels, enough for a tone histogram. */
+    private fun sample(bitmap: Bitmap): IntArray {
+        val stepX = max(1, bitmap.width / SAMPLE_SIDE)
+        val stepY = max(1, bitmap.height / SAMPLE_SIDE)
+        val columns = (bitmap.width + stepX - 1) / stepX
+        val rows = (bitmap.height + stepY - 1) / stepY
+        val row = IntArray(bitmap.width)
+        val out = IntArray(columns * rows)
+        var next = 0
+        for (y in 0 until bitmap.height step stepY) {
+            bitmap.getPixels(row, 0, bitmap.width, 0, y, bitmap.width, 1)
+            for (x in 0 until bitmap.width step stepX) out[next++] = row[x]
+        }
+        return out
+    }
+
+    /** Lanczos-3 resize: one horizontal pass over the source, then the output written band by band. */
+    private suspend fun lanczos(source: Bitmap, width: Int, height: Int): Bitmap {
+        val pixels = IntArray(source.width * source.height)
+        source.getPixels(pixels, 0, source.width, 0, 0, source.width, source.height)
+        val resampler = LanczosResampler(source.width, source.height, width, height)
+        val horizontal = resampler.horizontal(pixels)
+        val out = createBitmap(width, height)
         var top = 0
         while (top < height) {
             coroutineContext.ensureActive()
-            val bottom = min(height, top + SHARPEN_BAND)
-            val readTop = max(0, top - SHARPEN_RADIUS)
-            val readBottom = min(height, bottom + SHARPEN_RADIUS)
-            val rows = readBottom - readTop
-            val pixels = IntArray(width * rows)
-            bitmap.getPixels(pixels, 0, width, 0, readTop, width, rows)
-            ImageEffectMath.sharpen(pixels, width, rows, amount, SHARPEN_RADIUS)
-            bitmap.setPixels(pixels, (top - readTop) * width, width, 0, top, width, bottom - top)
+            val bottom = min(height, top + BAND)
+            out.setPixels(resampler.vertical(horizontal, top, bottom), 0, width, 0, top, width, bottom - top)
             top = bottom
         }
+        return out
     }
 
     /** A drawable copy; drawing it ourselves avoids [Bitmap.copy], which can return null when memory is short. */
@@ -123,10 +179,10 @@ internal object ImageEffectsRendering {
         }
     }
 
-    private fun drawOverlay(canvas: Canvas, width: Int, height: Int, overlay: TextOverlay) {
+    private fun drawOverlay(canvas: Canvas, width: Int, height: Int, overlay: TextOverlay, typeface: Typeface) {
         if (overlay.text.isBlank()) return
         val size = height * overlay.sizeFraction
-        val fill = textPaint(overlay.colorArgb, size)
+        val fill = textPaint(overlay.colorArgb, size, typeface)
         fitWidth(fill, overlay.text, width, size)
         val x = width * overlay.x
         // Centre the text vertically on y: the baseline sits half the cap height below it.
@@ -138,7 +194,7 @@ internal object ImageEffectsRendering {
                 style = Paint.Style.STROKE
                 strokeWidth = fill.textSize * OUTLINE_SHARE
                 strokeJoin = Paint.Join.ROUND
-                color = Color.BLACK
+                color = if (overlay.isLight) Color.BLACK else Color.WHITE
                 alpha = OUTLINE_ALPHA
             }
             canvas.drawText(overlay.text, x, baseline, stroke)
@@ -148,12 +204,14 @@ internal object ImageEffectsRendering {
 
     private const val OUTLINE_ALPHA = 200
 
-    private fun textPaint(color: Int, size: Float) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        this.color = color
-        textSize = size
-        textAlign = Paint.Align.CENTER
-        typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-    }
+    /** The exam stamp keeps the plain system bold sans, the look exam portals expect. */
+    private fun textPaint(color: Int, size: Float, typeface: Typeface = Typeface.DEFAULT_BOLD) =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            textSize = size
+            textAlign = Paint.Align.CENTER
+            this.typeface = typeface
+        }
 
     private fun fitWidth(paint: Paint, text: String, width: Int, size: Float) {
         paint.textSize = size

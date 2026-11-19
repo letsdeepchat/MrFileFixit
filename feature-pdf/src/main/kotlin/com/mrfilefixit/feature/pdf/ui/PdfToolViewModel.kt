@@ -133,6 +133,8 @@ data class PdfOptions(
 
 data class PdfToolUiState(
     val tool: PdfTool,
+    /** A result was saved or shared since the last run, so leaving does not lose anything. */
+    val delivered: Boolean = false,
     val files: List<FileRef> = emptyList(),
     val info: PdfInfo? = null,
     /** Page count per picked PDF (by URI), for the merge list. Missing while loading. */
@@ -270,6 +272,7 @@ class PdfToolViewModel @AssistedInject constructor(
     fun onRun(password: CharArray? = null) {
         val s = state.value
         if (!s.canRun) return
+        mutableState.update { it.copy(delivered = false) }
         val id = jobIds.next()
         discardOutputs()
         runner.start(cleanup = {
@@ -362,7 +365,7 @@ class PdfToolViewModel @AssistedInject constructor(
     fun onSave(output: OutputFile, destination: String) {
         viewModelScope.launch {
             saveOutput(output, DestinationUri(destination)).fold(
-                onSuccess = {},
+                onSuccess = { mutableState.update { it.copy(delivered = true) } },
                 onFailure = { effectChannel.send(PdfEffect.ShowError(it)) },
             )
         }
@@ -373,7 +376,10 @@ class PdfToolViewModel @AssistedInject constructor(
         if (outputs.isEmpty()) return
         viewModelScope.launch {
             outputs.map { shareOutput(it) }.collectAll().fold(
-                onSuccess = { effectChannel.send(PdfEffect.Share(it, outputs.first().mimeType)) },
+                onSuccess = {
+                    mutableState.update { s -> s.copy(delivered = true) }
+                    effectChannel.send(PdfEffect.Share(it, outputs.first().mimeType))
+                },
                 onFailure = { effectChannel.send(PdfEffect.ShowError(it)) },
             )
         }

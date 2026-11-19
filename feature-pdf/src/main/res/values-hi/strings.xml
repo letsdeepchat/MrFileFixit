@@ -159,4 +159,6 @@
     <string name="pdf_sheet_output_CSV">CSV (.csv)</string>
     <string name="pdf_convert_note_to_pdf">टेक्स्ट, हेडिंग, सूचियाँ, टेबल और तस्वीरें बनी रहती हैं। चार्ट, SmartArt और तैरते टेक्स्ट बॉक्स नहीं। सब कुछ आपके फ़ोन पर ही रहता है।</string>
     <string name="pdf_convert_note_from_pdf">दस्तावेज़ों से सेव की गई PDF के साथ सबसे अच्छा काम करता है। स्कैन किए गए पेज में बदलने लायक टेक्स्ट नहीं होता, इसलिए पहले स्कैन और OCR का उपयोग करें। सब कुछ आपके फ़ोन पर ही रहता है।</string>
+    <string name="pdf_preview_pick">किसी फ़ाइल पर टैप करके उसके पेज देखें।</string>
+    <string name="pdf_preview_source_note">Word, PowerPoint और Excel फ़ाइलें फ़ोन पर दिखाई नहीं जा सकतीं, इसलिए ये वे मूल पेज हैं जिन्हें बदला गया।</string>
 </resources>

@@ -11,6 +11,7 @@ import com.mrfilefixit.core.domain.document.DocPageBreak
 import com.mrfilefixit.core.domain.document.DocParagraph
 import com.mrfilefixit.core.domain.document.DocTable
 import com.mrfilefixit.core.domain.document.DocTableRow
+import com.mrfilefixit.core.domain.document.PageDecoration
 import com.mrfilefixit.core.domain.document.PageSetup
 import com.mrfilefixit.core.domain.document.ParagraphStyle
 import com.mrfilefixit.core.domain.document.RichDocument
@@ -32,7 +33,7 @@ internal class DocumentPdfWriter(private val maxPages: Int) {
     suspend fun write(document: RichDocument, out: File, progress: (Float) -> Unit = {}): Int {
         val pdf = PdfDocument()
         try {
-            val cursor = Cursor(pdf, document.page, maxPages)
+            val cursor = Cursor(pdf, document.page, maxPages, document.decoration)
             val painter = ParagraphPainter(document.defaultFont, document.textColor)
             val flow = Flow(cursor, painter, document.baseSizePt)
             document.blocks.forEachIndexed { index, block ->
@@ -51,7 +52,12 @@ internal class DocumentPdfWriter(private val maxPages: Int) {
     }
 
     /** The current page and the vertical position on it, in points from the page's top edge. */
-    private class Cursor(private val pdf: PdfDocument, val setup: PageSetup, private val maxPages: Int) {
+    private class Cursor(
+        private val pdf: PdfDocument,
+        val setup: PageSetup,
+        private val maxPages: Int,
+        private val decoration: PageDecoration?,
+    ) {
         private var page: PdfDocument.Page? = null
         var pageCount = 0
             private set
@@ -76,6 +82,7 @@ internal class DocumentPdfWriter(private val maxPages: Int) {
             return pdf.startPage(info).also {
                 page = it
                 y = top
+                decoration?.let { frame -> PageBorderPainter.draw(it.canvas, frame, setup.widthPt, setup.heightPt) }
             }
         }
 

@@ -6,9 +6,9 @@ import com.mrfilefixit.core.domain.image.ImageBatchSpec
 import com.mrfilefixit.core.domain.image.ImageEffects
 import com.mrfilefixit.core.domain.image.ImageFilter
 import com.mrfilefixit.core.domain.image.ImageFormat
+import com.mrfilefixit.core.domain.image.NaturalEnhance
 import com.mrfilefixit.core.domain.image.OutputSpec
 import com.mrfilefixit.core.domain.image.PhotoStamp
-import com.mrfilefixit.core.domain.image.Upscale
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
@@ -25,7 +25,7 @@ class BatchSpecSerializationTest {
             effects = ImageEffects(
                 filter = ImageFilter.DOCUMENT,
                 stamp = PhotoStamp(listOf("Name", "25-10-2026")),
-                upscale = Upscale(2),
+                enhance = NaturalEnhance(0.6f, 2),
             ),
         )
         val (decodedSources, decoded) = BatchSpecSerialization.decode(BatchSpecSerialization.encode(sources, spec))

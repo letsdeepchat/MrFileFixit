@@ -74,6 +74,17 @@ data under Play's definition, and the in-app privacy section says so.
   and the app shows a disclaimer that it is not affiliated with any exam body; always check the official
   notification.
 
+## Donations
+
+The app has optional donation links (UPI and PayPal) that open outside the app and unlock nothing. Google Play's
+Payments policy allows donations through external links for apps where the donation buys no digital content or
+feature. Even so, review the current policy before release. Individual developers may also need to state who
+receives the money in the store listing. If in doubt, build with `-Pmff.donations=false`: the Support screen, the
+Home card and the Settings row all disappear, and the `<queries>` entries for UPI apps are the only trace left.
+
+* **Data safety:** unchanged. Donations happen in other apps, and this app collects nothing about them.
+* **Financial features:** No. The app does not process payments.
+
 ## Privacy policy
 
 Use this URL in the console:

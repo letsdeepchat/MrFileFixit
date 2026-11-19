@@ -7,6 +7,7 @@ import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.AppResult
 import com.mrfilefixit.core.domain.result.Result
 import com.mrfilefixit.core.domain.result.failure
+import com.mrfilefixit.core.domain.result.flatMap
 import com.mrfilefixit.core.domain.result.success
 import com.mrfilefixit.core.domain.security.FilenameSanitizer
 import com.mrfilefixit.core.domain.security.InputLimits
@@ -70,10 +71,9 @@ class BatchImageUseCase @Inject constructor(
             val result = if (sizeCheck is Result.Failure) {
                 sizeCheck
             } else {
-                processor.process(
-                    request,
-                    ProgressReporter.NONE,
-                )
+                processor.process(request, ProgressReporter.NONE).flatMap { image ->
+                    if (image.file.sizeBytes > 0) success(image) else failure(AppError.EmptyOutput)
+                }
             }
             when (result) {
                 is Result.Success -> images += result.value
