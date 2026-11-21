@@ -41,4 +41,6 @@
     <string name="scan_filter_GRAYSCALE">Grayscale</string>
     <string name="scan_filter_ORIGINAL">Original</string>
     <string name="scan_enhancing">Enhancing pages…</string>
+    <string name="scan_camera_settings_hint">If the camera did not open, allow the camera for Google Play services: it runs the scanner. Then try again.</string>
+    <string name="scan_camera_settings">Open Play services settings</string>
 </resources>

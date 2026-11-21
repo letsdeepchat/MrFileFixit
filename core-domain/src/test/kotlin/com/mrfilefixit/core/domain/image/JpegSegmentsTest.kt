@@ -55,4 +55,46 @@ class JpegSegmentsTest {
         val notJpeg = byteArrayOf(1, 2, 3)
         assertArrayEquals(notJpeg, JpegSegments.padToSize(notJpeg, 100))
     }
+
+    @Test
+    fun `drops trailers after the end of the image, such as Samsung SEF data with the phone model`() {
+        val trailer = "SEFHImage_UTC_Data SM-S918B MotionPhoto_Data".toByteArray()
+        assertArrayEquals(soi + app0 + icc + dqt + scan, JpegSegments.stripMetadata(jpeg + trailer))
+    }
+
+    @Test
+    fun `keeps every scan of a progressive jpeg and the tables between them`() {
+        val dht = segment(0xC4, ByteArray(20) { 3 })
+        val firstScan = byteArrayOf(0xFF.toByte(), 0xDA.toByte(), 0x00, 0x02, 0x11, 0xFF.toByte(), 0x00, 0x22)
+        val secondScan =
+            byteArrayOf(0xFF.toByte(), 0xDA.toByte(), 0x00, 0x02, 0x33, 0xFF.toByte(), 0xD0.toByte(), 0x44)
+        val eoi = byteArrayOf(0xFF.toByte(), 0xD9.toByte())
+        val progressive = soi + app0 + dqt + firstScan + comment + dht + secondScan + eoi
+        val expected = soi + app0 + dqt + firstScan + dht + secondScan + eoi
+        assertArrayEquals(expected, JpegSegments.stripMetadata(progressive))
+    }
+
+    @Test
+    fun `blanks the phone maker and model in the ICC profile but keeps the colour data`() {
+        val profile = ByteArray(200)
+        "acsp".toByteArray().copyInto(profile, 36)
+        "samsSM-S".toByteArray().copyInto(profile, 48) // device manufacturer + model
+        "GOOG".toByteArray().copyInto(profile, 80) // creator
+        // One tag: dmdd at offset 144, size 40.
+        byteArrayOf(0, 0, 0, 1).copyInto(profile, 128)
+        "dmdd".toByteArray().copyInto(profile, 132)
+        byteArrayOf(0, 0, 0, 144.toByte()).copyInto(profile, 136)
+        byteArrayOf(0, 0, 0, 40).copyInto(profile, 140)
+        "desc\u0000\u0000\u0000\u0000Galaxy S23 Ultra".toByteArray().copyInto(profile, 144)
+        profile[20] = 0x52 // colour data stays
+        val iccSegment = segment(0xE2, "ICC_PROFILE\u0000".toByteArray() + byteArrayOf(1, 1) + profile)
+        val stripped = checkNotNull(JpegSegments.stripMetadata(soi + app0 + iccSegment + dqt + scan))
+            .toString(Charsets.ISO_8859_1)
+        assertFalse(stripped.contains("SM-S"))
+        assertFalse(stripped.contains("samsung", ignoreCase = true))
+        assertFalse(stripped.contains("Galaxy"))
+        assertFalse(stripped.contains("GOOG"))
+        assertTrue(stripped.contains("acsp"))
+        assertTrue(stripped.contains("desc"))
+    }
 }

@@ -13,6 +13,12 @@
     <uses-sdk tools:overrideLibrary="androidx.heifwriter" />
 
     <!--
+      No Google Play Billing: support is voluntary UPI or PayPal, so the Play listing shows no "In-app purchases"
+      label. Removed in case a library brings it back; CI fails if it appears in the merged manifest.
+    -->
+    <uses-permission android:name="com.android.vending.BILLING" tools:node="remove" />
+
+    <!--
       No foreground services and no notifications: every job runs while the app is open, or as plain WorkManager
       background work. Removed in case a library brings them back; CI fails if one appears in the merged manifest.
     -->
@@ -90,6 +96,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          Android's Photo Picker (no storage permission needed) is built into Android 13+ and many 11-12 devices.
+          This asks Google Play services to install its back-ported picker on older phones too; without it, those
+          phones fall back to the system file picker. Nothing here grants the app any access by itself.
+        -->
+        <service
+            android:name="com.google.android.gms.metadata.ModuleDependencies"
+            android:enabled="false"
+            android:exported="false"
+            tools:ignore="MissingClass">
+            <intent-filter>
+                <action android:name="com.google.android.gms.metadata.MODULE_DEPENDENCIES" />
+            </intent-filter>
+            <meta-data
+                android:name="photopicker_activity:0:required"
+                android:value="" />
+        </service>
 
         <!-- WorkManager is initialised on demand with the Hilt worker factory. -->
         <provider

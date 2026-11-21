@@ -6,6 +6,7 @@ import com.mrfilefixit.core.domain.image.ImageBatchSpec
 import com.mrfilefixit.core.domain.image.ImageEffects
 import com.mrfilefixit.core.domain.image.ImageFilter
 import com.mrfilefixit.core.domain.image.ImageFormat
+import com.mrfilefixit.core.domain.image.MetadataGroup
 import com.mrfilefixit.core.domain.image.NaturalEnhance
 import com.mrfilefixit.core.domain.image.OutputSpec
 import com.mrfilefixit.core.domain.image.PhotoStamp
@@ -41,5 +42,21 @@ class BatchSpecSerializationTest {
         val old = """{"sources":[{"uri":"content://a","name":"a.jpg","mime":"image/jpeg","size":10}],""" +
             """"ops":[],"format":"JPEG","quality":80,"suffix":""}"""
         assertEquals(ImageEffects.NONE, BatchSpecSerialization.decode(old).second.effects)
+    }
+
+    @Test
+    fun `the metadata choice survives the trip and old jobs remove everything`() {
+        val spec = ImageBatchSpec(
+            emptyList(),
+            OutputSpec(ImageFormat.JPEG, EncodeTarget.Original),
+            "-clean",
+            removeMetadata = setOf(MetadataGroup.DEVICE, MetadataGroup.LOCATION),
+        )
+        val decoded = BatchSpecSerialization.decode(BatchSpecSerialization.encode(sources, spec)).second
+        assertEquals(spec.removeMetadata, decoded.removeMetadata)
+        val all = spec.copy(removeMetadata = MetadataGroup.ALL)
+        val text = BatchSpecSerialization.encode(sources, all)
+        assertFalse(text.contains("removeMetadata"))
+        assertEquals(MetadataGroup.ALL, BatchSpecSerialization.decode(text).second.removeMetadata)
     }
 }

@@ -16,6 +16,7 @@ import com.mrfilefixit.core.processing.image.ImageDecoding
 import com.mrfilefixit.core.processing.image.use
 import com.mrfilefixit.core.processing.io.InputRejectedException
 import java.io.FileNotFoundException
+import java.io.InputStream
 import javax.inject.Inject
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.ensureActive
@@ -42,7 +43,30 @@ internal class OcrPageImages @Inject constructor(
 ) {
     /** Calls [block] for each page of [source]; the bitmap is recycled as soon as [block] returns. */
     suspend fun <T> forEachPage(source: FileRef, block: suspend (PageImage) -> T): List<T> =
-        if (source.mimeType == PDF_MIME) pdfPages(source, block) else listOf(imagePage(source, block))
+        if (isPdf(source)) pdfPages(source, block) else listOf(imagePage(source, block))
+
+    /**
+     * File managers and cloud apps often label files loosely ("application/octet-stream", or nothing at all), so
+     * anything not declared as an image is checked for the "%PDF" signature before it is decoded.
+     */
+    fun isPdf(source: FileRef): Boolean {
+        val mime = source.mimeType
+        if (mime == PDF_MIME) return true
+        if (mime != null && mime.startsWith("image/")) return false
+        val head = ByteArray(PDF_SIGNATURE.size)
+        val read = resolver.openInputStream(source.uri.toUri())?.use { it.readNBytesCompat(head) } ?: 0
+        return read == head.size && head.contentEquals(PDF_SIGNATURE)
+    }
+
+    private fun InputStream.readNBytesCompat(into: ByteArray): Int {
+        var total = 0
+        while (total < into.size) {
+            val n = read(into, total, into.size - total)
+            if (n < 0) break
+            total += n
+        }
+        return total
+    }
 
     private suspend fun <T> imagePage(source: FileRef, block: suspend (PageImage) -> T): T {
         val raw = decoding.readRawInfo(source.uri)
@@ -92,5 +116,6 @@ internal class OcrPageImages @Inject constructor(
     companion object {
         const val MAX_SIDE = 2048
         const val PDF_MIME = "application/pdf"
+        private val PDF_SIGNATURE = "%PDF-".toByteArray(Charsets.US_ASCII)
     }
 }

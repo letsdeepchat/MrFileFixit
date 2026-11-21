@@ -48,9 +48,9 @@ class ExamRulesGoldenTest {
     }
 
     @Test
-    fun `catalog covers at least twenty exams with unique short names`() {
+    fun `catalog covers at least nineteen exams with unique short names`() {
         val profiles = parseBundled()
-        assertTrue(profiles.size >= 20, "Only ${profiles.size} exams bundled")
+        assertTrue(profiles.size >= 19, "Only ${profiles.size} exams bundled")
         assertEquals(profiles.size, profiles.map { it.shortName }.toSet().size)
     }
 

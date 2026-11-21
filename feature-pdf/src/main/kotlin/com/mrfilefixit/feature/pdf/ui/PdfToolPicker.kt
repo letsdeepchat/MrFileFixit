@@ -21,7 +21,6 @@ import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.CoPresent
 import androidx.compose.material.icons.filled.Compress
-import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DocumentScanner
@@ -150,8 +149,7 @@ private fun ToolTile(
 internal fun toolIcon(tool: PdfTool): ImageVector = when (tool) {
     PdfTool.MERGE -> Icons.AutoMirrored.Filled.MergeType
     PdfTool.SPLIT -> Icons.AutoMirrored.Filled.CallSplit
-    PdfTool.EXTRACT -> Icons.Filled.ContentCut
-    PdfTool.REORDER -> Icons.Filled.SwapVert
+    PdfTool.ORGANIZE -> Icons.Filled.SwapVert
     PdfTool.ROTATE -> Icons.AutoMirrored.Filled.RotateRight
     PdfTool.DELETE -> Icons.Filled.DeleteSweep
     PdfTool.IMAGES_TO_PDF -> Icons.Filled.AddPhotoAlternate
@@ -184,8 +182,7 @@ private fun toolDescription(tool: PdfTool): String = stringResource(
     when (tool) {
         PdfTool.MERGE -> R.string.pdf_desc_MERGE
         PdfTool.SPLIT -> R.string.pdf_desc_SPLIT
-        PdfTool.EXTRACT -> R.string.pdf_desc_EXTRACT
-        PdfTool.REORDER -> R.string.pdf_desc_REORDER
+        PdfTool.ORGANIZE -> R.string.pdf_desc_ORGANIZE
         PdfTool.ROTATE -> R.string.pdf_desc_ROTATE
         PdfTool.DELETE -> R.string.pdf_desc_DELETE
         PdfTool.IMAGES_TO_PDF -> R.string.pdf_desc_IMAGES_TO_PDF

@@ -109,6 +109,7 @@ internal fun ResumeEditorScreen(
     snackbarHost: @Composable () -> Unit = {},
 ) {
     val resume = state.resume ?: return
+    val template = remember(resume.templateId) { ResumeTemplates.byId(resume.templateId) }
     ToolScaffold(
         title = stringResource(R.string.resume_editor_title),
         modifier = modifier.testTag("resume_editor"),
@@ -128,7 +129,9 @@ internal fun ResumeEditorScreen(
             item(key = "template") { TemplateCard(state, actions, Modifier.contentWidth()) }
             item(key = "style") { StyleCard(resume.style, actions, Modifier.contentWidth()) }
             item(key = "photo") { PhotoCard(state, actions, Modifier.contentWidth()) }
-            item(key = "contact") { ContactCard(resume.contact, actions, Modifier.contentWidth()) }
+            item(key = "contact") {
+                ContactCard(resume.contact, template.sampleContact, actions, Modifier.contentWidth())
+            }
             item(key = "sections-header") {
                 Column(Modifier.contentWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXs)) {
                     SectionHeader(stringResource(R.string.resume_sections))
@@ -142,6 +145,7 @@ internal fun ResumeEditorScreen(
             items(resume.sections, key = { it.id }) { section ->
                 SectionEditor(
                     section = section,
+                    sample = template.sampleFor(section.kind),
                     isFirst = section.id == resume.sections.first().id,
                     isLast = section.id == resume.sections.last().id,
                     actions = actions,
@@ -361,7 +365,12 @@ private fun PhotoFrame(photo: PhotoBytes?) {
 }
 
 @Composable
-private fun ContactCard(contact: ContactInfo, actions: ResumeEditorActions, modifier: Modifier = Modifier) {
+private fun ContactCard(
+    contact: ContactInfo,
+    sample: ContactInfo,
+    actions: ResumeEditorActions,
+    modifier: Modifier = Modifier,
+) {
     fun update(transform: (ContactInfo) -> ContactInfo) = actions.onEdit { it.copy(contact = transform(it.contact)) }
     SectionCard(modifier) {
         SectionHeader(stringResource(R.string.resume_contact))
@@ -369,27 +378,41 @@ private fun ContactCard(contact: ContactInfo, actions: ResumeEditorActions, modi
             contact.fullName,
             { v -> update { it.copy(fullName = v) } },
             stringResource(R.string.resume_full_name),
+            example = sample.fullName,
         )
-        EditField(contact.headline, { v -> update { it.copy(headline = v) } }, stringResource(R.string.resume_headline))
+        EditField(
+            contact.headline,
+            { v -> update { it.copy(headline = v) } },
+            stringResource(R.string.resume_headline),
+            example = sample.headline,
+        )
         EditField(
             contact.email,
             { v -> update { it.copy(email = v) } },
             stringResource(R.string.resume_email),
             keyboardType = KeyboardType.Email,
+            example = sample.email,
         )
         EditField(
             contact.phone,
             { v -> update { it.copy(phone = v) } },
             stringResource(R.string.resume_phone),
             keyboardType = KeyboardType.Phone,
+            example = sample.phone,
         )
-        EditField(contact.location, { v -> update { it.copy(location = v) } }, stringResource(R.string.resume_location))
+        EditField(
+            contact.location,
+            { v -> update { it.copy(location = v) } },
+            stringResource(R.string.resume_location),
+            example = sample.location,
+        )
         EditField(
             contact.links.joinToString("\n"),
             { v -> update { it.copy(links = v.split('\n')) } },
             stringResource(R.string.resume_links),
             singleLine = false,
             keyboardType = KeyboardType.Uri,
+            example = sample.links.firstOrNull(),
         )
     }
 }
@@ -493,11 +516,20 @@ internal fun EditField(
     singleLine: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text,
     supporting: String? = null,
+    example: String? = null,
 ) {
+    // The label floats above the field once it has focus; an empty field then shows a greyed-out example from the
+    // chosen template, so nobody has to delete filler text before typing.
+    val hint = if (!example.isNullOrBlank() && value.isEmpty()) {
+        stringResource(R.string.resume_example, example)
+    } else {
+        null
+    }
     OutlinedTextField(
         value = value,
         onValueChange = onValue,
         label = { Text(label) },
+        placeholder = hint?.let { text -> { Text(text, maxLines = if (singleLine) 1 else 3) } },
         singleLine = singleLine,
         minLines = if (singleLine) 1 else 2,
         supportingText = if (supporting != null) {

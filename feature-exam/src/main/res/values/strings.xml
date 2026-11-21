@@ -56,6 +56,7 @@
     <string name="exam_prepare_files_hint">Opens Image tools with this exam\'s pixel and KB limits already set.</string>
     <string name="exam_req_dimensions">Dimensions</string>
     <string name="exam_dimensions_value">%1$s × %2$s px</string>
+    <string name="exam_dimensions_bounds">%1$s × %2$s</string>
     <string name="exam_req_size">File size</string>
     <string name="exam_req_format">Format</string>
     <string name="exam_req_background">Background</string>

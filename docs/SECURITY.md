@@ -68,15 +68,13 @@ There are none. The ads SDK, consent SDK and advertising ID were removed; every 
 
 ### Donations
 
-Settings → Support and the card on Home offer optional donations **in the sideloaded tester build only**. The Play
-build is made with `-Pmff.donations=false` (CI's release job), which removes the Support screen, the Home card and
-the Settings row, because Play's Payments policy exempts only tax-exempt charitable donations from Google Play
-billing. Where the feature is on, the app itself sends nothing:
+Settings → Support and the card on Home offer optional donations by UPI or PayPal, in every build including Play
+(`-Pmff.donations=false` leaves them out). There is no Google Play Billing. The app itself sends nothing:
 
 * **UPI.** The QR code is a bundled image of a fixed `upi://pay` link (payee and UPI ID only, see
   `Donation.QR_PAYLOAD`). "Pay with a UPI app" opens the user's own UPI app with an `ACTION_VIEW` intent. The
   manifest's `<queries>` entries (the `upi` scheme, plus GPay, Paytm, PhonePe and BHIM by package name) only let
-  the app see which UPI apps are installed. A preset amount adds `am=` (for example `am=51.00`); "Any amount"
+  the app see which UPI apps are installed. A preset amount adds `am=` (for example `am=49.00`); "Any amount"
   leaves it out so the UPI app asks.
 * **PayPal.** Opens `https://paypal.me/MrFileFixit` in the user's browser.
 

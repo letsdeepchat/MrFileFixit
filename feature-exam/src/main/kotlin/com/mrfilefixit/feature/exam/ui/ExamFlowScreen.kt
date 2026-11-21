@@ -62,6 +62,7 @@ import com.mrfilefixit.core.ui.components.TabItem
 import com.mrfilefixit.core.ui.components.boundsText
 import com.mrfilefixit.core.ui.components.displayName
 import com.mrfilefixit.core.ui.format.formatIsoDate
+import com.mrfilefixit.core.ui.format.formatNumber
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
@@ -234,11 +235,28 @@ private fun RequirementRow(label: String, value: String) {
     }
 }
 
+/**
+ * Width × height in the usual "350 × 450 px" form. Each side's bounds text already carries its unit, so exact sizes
+ * use the plain numbers and ranges read "200–530 px × 260–690 px" (never a doubled "px px").
+ */
+@Composable
+private fun dimensionsText(spec: DocumentSpec): String {
+    val width = spec.width
+    val height = spec.height
+    val widthExact = width.min?.takeIf { it == width.max }
+    val heightExact = height.min?.takeIf { it == height.max }
+    return if (widthExact != null && heightExact != null) {
+        stringResource(R.string.exam_dimensions_value, formatNumber(widthExact), formatNumber(heightExact))
+    } else {
+        stringResource(R.string.exam_dimensions_bounds, boundsText(width), boundsText(height))
+    }
+}
+
 @Composable
 private fun RequirementTable(spec: DocumentSpec) {
     RequirementRow(
         stringResource(R.string.exam_req_dimensions),
-        stringResource(R.string.exam_dimensions_value, boundsText(spec.width), boundsText(spec.height)),
+        dimensionsText(spec),
     )
     RequirementRow(stringResource(R.string.exam_req_size), kbRange(spec))
     RequirementRow(
@@ -292,8 +310,14 @@ private fun ProfileHeader(profile: ExamProfile, onPrepare: () -> Unit, modifier:
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         // Opens the official site in the user's browser. The app itself never fetches anything.
+        // The address is also shown as text so it is readable even when no browser is installed.
+        Text(
+            stringResource(R.string.exam_source, profile.sourceUrl.removePrefix("https://").trimEnd('/')),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         TextButton(
-            onClick = { uriHandler.openUri(profile.sourceUrl) },
+            onClick = { runCatching { uriHandler.openUri(profile.sourceUrl) } },
             modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
         ) {
             Icon(Icons.Filled.Public, contentDescription = null)

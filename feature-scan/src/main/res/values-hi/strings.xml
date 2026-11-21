@@ -41,4 +41,6 @@
     <string name="scan_filter_GRAYSCALE">ग्रेस्केल</string>
     <string name="scan_filter_ORIGINAL">मूल</string>
     <string name="scan_enhancing">पेज बेहतर किए जा रहे हैं…</string>
+    <string name="scan_camera_settings_hint">अगर कैमरा नहीं खुला, तो Google Play services को कैमरे की अनुमति दें: स्कैनर वही चलाता है। फिर दोबारा कोशिश करें।</string>
+    <string name="scan_camera_settings">Play services सेटिंग खोलें</string>
 </resources>

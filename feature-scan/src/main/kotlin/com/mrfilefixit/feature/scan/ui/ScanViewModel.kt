@@ -48,7 +48,7 @@ data class ScanUiState(
     val enhanced: JobState<ScanDocument> = JobState.Idle,
     /** Files picked for OCR. When empty, OCR reads the scanned pages instead. */
     val ocrFiles: List<FileRef> = emptyList(),
-    val script: OcrScript = OcrScript.LATIN,
+    val script: OcrScript = OcrScript.AUTO,
     val ocr: JobState<OcrResult> = JobState.Idle,
     val inputError: AppError? = null,
     /** A result was saved or shared since the last run, so leaving does not lose anything. */

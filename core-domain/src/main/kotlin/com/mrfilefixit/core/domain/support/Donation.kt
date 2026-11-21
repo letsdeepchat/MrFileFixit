@@ -10,7 +10,7 @@ object Donation {
     const val PAYPAL_URL = "https://paypal.me/MrFileFixit"
 
     /** Suggested amounts in rupees. The user can always pay any amount, including none of these. */
-    val suggestedRupees = listOf(51, 101, 251, 501)
+    val suggestedRupees = listOf(49, 99, 199, 499)
 
     /**
      * What the bundled QR code (`upi_qr.png`) encodes: [upiUri] with no amount and no note, so any UPI app can
@@ -35,6 +35,34 @@ object Donation {
         if (cleanNote.isNotEmpty()) append("&tn=").append(encode(cleanNote))
     }
 
+    /**
+     * The rupees typed in the custom amount field, or null when it is empty, not a whole number or outside
+     * 1..[MAX_RUPEES]. Spaces, commas and a leading ₹ are ignored ("₹1,000" is 1000).
+     */
+    fun parseRupees(text: String): Int? {
+        val digits = text.trim().removePrefix("₹").filterNot { it == ',' || it.isWhitespace() }
+        if (digits.isEmpty() || !digits.all { it in '0'..'9' } || digits.length > MAX_DIGITS) return null
+        return digits.toInt().takeIf { it in 1..MAX_RUPEES }
+    }
+
+    /**
+     * What the UPI app reported back. Apps return the NPCI response string (for example
+     * `txnId=...&responseCode=00&Status=SUCCESS&txnRef=...`) in the `response` extra; many return nothing at all,
+     * so [UpiOutcome.UNKNOWN] is common and must not be read as a failure.
+     */
+    fun parseUpiResponse(response: String?): UpiOutcome {
+        val status = response.orEmpty().split('&')
+            .map { it.substringBefore('=').trim() to it.substringAfter('=', "").trim() }
+            .firstOrNull { (key, _) -> key.equals("status", ignoreCase = true) }
+            ?.second?.uppercase()
+        return when (status) {
+            "SUCCESS" -> UpiOutcome.SUCCESS
+            "SUBMITTED", "PENDING" -> UpiOutcome.PENDING
+            "FAILURE", "FAILED" -> UpiOutcome.FAILED
+            else -> UpiOutcome.UNKNOWN
+        }
+    }
+
     /** The PayPal.Me page; PayPal asks for the amount and currency. */
     fun payPalUri(): String = PAYPAL_URL
 
@@ -52,6 +80,7 @@ object Donation {
     }
 
     private const val MAX_NOTE = 50
+    private const val MAX_DIGITS = 6
     private const val BYTE = 0xFF
     private const val ASCII = 0x80
     private const val NIBBLE = 4
@@ -59,3 +88,6 @@ object Donation {
     private const val UNRESERVED = "-._~@"
     private const val HEX = "0123456789ABCDEF"
 }
+
+/** The result a UPI app hands back after a payment attempt. */
+enum class UpiOutcome { SUCCESS, PENDING, FAILED, UNKNOWN }
