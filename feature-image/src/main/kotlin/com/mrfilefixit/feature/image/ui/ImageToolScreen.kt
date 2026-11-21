@@ -340,9 +340,7 @@ private fun ToolOptions(state: ImageToolUiState, actions: ImageToolActions, modi
         ImageTool.EDIT -> EditOptionsCards(state, actions, modifier)
         ImageTool.ENHANCE -> EnhanceOptionsCards(state, actions, modifier)
         ImageTool.BACKGROUND -> BackgroundOptionsCards(state, actions, modifier)
-        ImageTool.STRIP_EXIF -> SectionCard(modifier) {
-            Text(stringResource(R.string.image_strip_note), style = MaterialTheme.typography.bodyMedium)
-        }
+        ImageTool.STRIP_EXIF -> MetadataOptionsCard(state, actions, modifier)
     }
 }
 

@@ -20,7 +20,6 @@
     <string name="image_quality">क्वालिटी: %1$d</string>
     <string name="image_target_kb">लक्ष्य साइज़ (KB), वैकल्पिक</string>
     <string name="image_format">आउटपुट फ़ॉर्मैट</string>
-    <string name="image_strip_note">लोकेशन, कैमरा और तारीख की जानकारी हटाता है। JPEG और PNG बिना दोबारा कम्प्रेस किए साफ़ होते हैं।</string>
     <string name="image_crop_single_only">क्रॉप एक बार में एक ही इमेज पर काम करता है।</string>
     <plurals name="image_done">
         <item quantity="one">%1$d इमेज तैयार</item>
@@ -120,4 +119,15 @@
     <string name="image_enhance_scale_original">मूल साइज़</string>
     <string name="image_enhance_note">2× और 4× एन्हांस करने से पहले Lanczos रीसैंपलिंग से बड़ा करते हैं। लंबी साइड अधिकतम %1$d px। सब कुछ इसी फ़ोन पर होता है।</string>
     <string name="image_enhance_preview_note">प्रीव्यू छोटे साइज़ पर है। सेव होने वाली फ़ोटो पूरे रेज़ोल्यूशन पर प्रोसेस होती है।</string>
+    <string name="image_strip_note">थंबनेल, छिपा हुआ कंपनी डेटा और एडिट हिस्ट्री हमेशा हटती है। JPEG और PNG बिना दोबारा कम्प्रेस किए साफ़ होते हैं; बाकी फ़ॉर्मैट दोबारा सेव होते हैं।</string>
+    <string name="image_strip_choose">चुनें कि क्या हटाना है</string>
+    <string name="image_strip_location">लोकेशन (GPS)</string>
+    <string name="image_strip_device">फ़ोन मॉडल और कैमरा</string>
+    <string name="image_strip_date">फ़ोटो लेने की तारीख और समय</string>
+    <string name="image_strip_other">बाकी सब (कैमरा सेटिंग, टिप्पणी, लेखक)</string>
+    <string name="image_strip_found">इस फ़ोटो में: %1$s</string>
+    <string name="image_strip_found_location">इस फ़ोटो में: GPS लोकेशन</string>
+    <string name="image_strip_found_other">इस फ़ोटो में: कैमरा सेटिंग या टिप्पणी</string>
+    <string name="image_strip_not_found">इस फ़ोटो में नहीं है</string>
+    <string name="image_strip_pick_one">हटाने के लिए कम से कम एक तरह की जानकारी चालू करें।</string>
 </resources>

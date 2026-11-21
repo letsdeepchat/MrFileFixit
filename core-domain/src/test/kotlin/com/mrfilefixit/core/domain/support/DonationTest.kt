@@ -31,7 +31,7 @@ class DonationTest {
 
     @Test
     fun `a suggested amount is prefilled with paise`() {
-        assertTrue(Donation.upiUri(101).contains("&am=101.00&cu=INR"))
+        assertTrue(Donation.upiUri(99).contains("&am=99.00&cu=INR"))
     }
 
     @Test
@@ -58,5 +58,35 @@ class DonationTest {
     @Test
     fun `paypal goes to the PayPal Me page`() {
         assertEquals("https://paypal.me/MrFileFixit", Donation.payPalUri())
+    }
+
+    @Test
+    fun `the suggested tiers are 49, 99, 199 and 499 rupees`() {
+        assertEquals(listOf(49, 99, 199, 499), Donation.suggestedRupees)
+    }
+
+    @Test
+    fun `a typed custom amount is read as whole rupees`() {
+        assertEquals(150, Donation.parseRupees("150"))
+        assertEquals(1000, Donation.parseRupees(" ₹1,000 "))
+        assertEquals(null, Donation.parseRupees(""))
+        assertEquals(null, Donation.parseRupees("0"))
+        assertEquals(null, Donation.parseRupees("12.50"))
+        assertEquals(null, Donation.parseRupees("-5"))
+        assertEquals(null, Donation.parseRupees("99999999999"))
+        assertEquals(null, Donation.parseRupees((Donation.MAX_RUPEES + 1).toString()))
+    }
+
+    @Test
+    fun `the UPI app response is read from its Status field`() {
+        assertEquals(
+            UpiOutcome.SUCCESS,
+            Donation.parseUpiResponse("txnId=AX1&responseCode=00&Status=SUCCESS&txnRef=1"),
+        )
+        assertEquals(UpiOutcome.SUCCESS, Donation.parseUpiResponse("status=success"))
+        assertEquals(UpiOutcome.FAILED, Donation.parseUpiResponse("Status=FAILURE&responseCode=ZD"))
+        assertEquals(UpiOutcome.PENDING, Donation.parseUpiResponse("Status=SUBMITTED"))
+        assertEquals(UpiOutcome.UNKNOWN, Donation.parseUpiResponse(null))
+        assertEquals(UpiOutcome.UNKNOWN, Donation.parseUpiResponse("nonsense"))
     }
 }

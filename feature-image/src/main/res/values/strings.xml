@@ -20,7 +20,6 @@
     <string name="image_quality">Quality: %1$d</string>
     <string name="image_target_kb">Target size (KB), optional</string>
     <string name="image_format">Output format</string>
-    <string name="image_strip_note">Removes location, camera and date details. JPEG and PNG are cleaned without re-compressing.</string>
     <string name="image_crop_single_only">Crop works on one image at a time.</string>
     <plurals name="image_done">
         <item quantity="one">%1$d image ready</item>
@@ -120,4 +119,15 @@
     <string name="image_enhance_scale_original">Original size</string>
     <string name="image_enhance_note">2× and 4× enlarge with Lanczos resampling before enhancing. The long side is capped at %1$d px. Everything runs on this phone.</string>
     <string name="image_enhance_preview_note">Preview at reduced size. The saved photo is processed at full resolution.</string>
+    <string name="image_strip_note">Thumbnails, hidden vendor data and edit history are always removed. JPEG and PNG are cleaned without re-compressing; other formats are saved again.</string>
+    <string name="image_strip_choose">Choose what to remove</string>
+    <string name="image_strip_location">Location (GPS)</string>
+    <string name="image_strip_device">Phone model and camera</string>
+    <string name="image_strip_date">Date and time taken</string>
+    <string name="image_strip_other">Everything else (camera settings, comments, author)</string>
+    <string name="image_strip_found">In this photo: %1$s</string>
+    <string name="image_strip_found_location">In this photo: GPS location</string>
+    <string name="image_strip_found_other">In this photo: camera settings or comments</string>
+    <string name="image_strip_not_found">Not in this photo</string>
+    <string name="image_strip_pick_one">Turn on at least one kind of detail to remove.</string>
 </resources>

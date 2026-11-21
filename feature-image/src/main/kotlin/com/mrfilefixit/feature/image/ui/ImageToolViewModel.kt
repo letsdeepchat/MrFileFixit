@@ -24,6 +24,7 @@ import com.mrfilefixit.core.domain.image.ImageInfo
 import com.mrfilefixit.core.domain.image.ImageOp
 import com.mrfilefixit.core.domain.image.ImageProcessor
 import com.mrfilefixit.core.domain.image.ImageRequest
+import com.mrfilefixit.core.domain.image.MetadataGroup
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.domain.image.OutputSpec
 import com.mrfilefixit.core.domain.image.ResizeMode
@@ -78,6 +79,8 @@ data class ImageOptions(
     val edit: EditOptions = EditOptions(),
     val enhance: EnhanceOptions = EnhanceOptions(),
     val background: BackgroundOptions = BackgroundOptions(),
+    /** Remove metadata: the kinds of detail to take out. */
+    val removeMetadata: Set<MetadataGroup> = MetadataGroup.ALL,
 )
 
 /** Edits on the Resize form. Width and height stay in the photo's ratio while [ImageOptions.keepAspect] is on. */
@@ -130,7 +133,8 @@ data class ImageToolUiState(
     val isDone: Boolean get() = shownJob is JobState.Success
     val canRun: Boolean
         get() = files.isNotEmpty() && (tool != ImageTool.CROP || files.size == 1) &&
-            (tool != ImageTool.BACKGROUND || options.background.isReady)
+            (tool != ImageTool.BACKGROUND || options.background.isReady) &&
+            (tool != ImageTool.STRIP_EXIF || options.removeMetadata.isNotEmpty())
     val activePreset: ResizePreset? get() = presets.firstOrNull { it.id == options.presetId }
 }
 
@@ -548,6 +552,7 @@ class ImageToolViewModel @Inject constructor(
                 emptyList(),
                 OutputSpec(ImageFormat.JPEG, EncodeTarget.Original),
                 "-clean",
+                removeMetadata = o.removeMetadata,
             )
         }
     }
