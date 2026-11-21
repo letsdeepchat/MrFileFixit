@@ -36,20 +36,28 @@ enum class AppPermission {
     PHOTOS,
     ;
 
-    internal val manifestPermission: String
+    /**
+     * What to ask Android for. Photos on Android 14+ also asks for READ_MEDIA_VISUAL_USER_SELECTED, so "Select
+     * photos" (partial access) is offered and counts as allowed.
+     */
+    internal val manifestPermissions: Array<String>
         get() = when (this) {
-            CAMERA -> Manifest.permission.CAMERA
-            PHOTOS -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                Manifest.permission.READ_MEDIA_IMAGES
-            } else {
-                Manifest.permission.READ_EXTERNAL_STORAGE
+            CAMERA -> arrayOf(Manifest.permission.CAMERA)
+            PHOTOS -> when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> arrayOf(
+                    Manifest.permission.READ_MEDIA_IMAGES,
+                    Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+                )
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
+                else -> arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
             }
         }
 }
 
-/** True when [permission] is already granted. */
-fun Context.hasPermission(permission: AppPermission): Boolean =
-    ContextCompat.checkSelfPermission(this, permission.manifestPermission) == PackageManager.PERMISSION_GRANTED
+/** True when [permission] is granted; for photos, full or partial ("Select photos") access both count. */
+fun Context.hasPermission(permission: AppPermission): Boolean = permission.manifestPermissions.any {
+    ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+}
 
 /**
  * Returns an action that asks for [permission] with the Android dialog and runs [onGranted] once it is granted
@@ -66,8 +74,8 @@ fun rememberPermissionGate(permission: AppPermission, onGranted: () -> Unit): ()
     val proceed by rememberUpdatedState(onGranted)
     var denied by rememberSaveable(permission) { mutableStateOf(false) }
     var continueWithout by rememberSaveable(permission) { mutableStateOf(false) }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) proceed() else denied = true
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+        if (result.values.any { it }) proceed() else denied = true
     }
     if (denied) {
         PermissionDeniedDialog(
@@ -91,7 +99,7 @@ fun rememberPermissionGate(permission: AppPermission, onGranted: () -> Unit): ()
     return {
         when {
             context.hasPermission(permission) || continueWithout -> proceed()
-            else -> launcher.launch(permission.manifestPermission)
+            else -> launcher.launch(permission.manifestPermissions)
         }
     }
 }

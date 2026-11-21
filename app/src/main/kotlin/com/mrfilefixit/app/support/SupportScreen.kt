@@ -63,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import com.mrfilefixit.app.R
 import com.mrfilefixit.core.domain.support.Donation
@@ -325,10 +326,11 @@ private suspend fun writeQr(context: Context, uri: Uri): Boolean = withContext(D
  * Writes the bundled QR code to [uri] as a crisp PNG: scaled up [QR_EXPORT_SCALE]× with nearest-neighbour sampling,
  * so modules stay sharp, keeping the image's white quiet zone.
  */
+@SuppressLint("ResourceType")
 private fun writeQrNow(context: Context, uri: Uri): Boolean {
     val source = context.resources.openRawResource(R.drawable.upi_qr).use { BitmapFactory.decodeStream(it) }
         ?: return false
-    val big = Bitmap.createScaledBitmap(source, source.width * QR_EXPORT_SCALE, source.height * QR_EXPORT_SCALE, false)
+    val big = source.scale(source.width * QR_EXPORT_SCALE, source.height * QR_EXPORT_SCALE, filter = false)
     return try {
         context.contentResolver.openOutputStream(uri)?.use { out ->
             big.compress(Bitmap.CompressFormat.PNG, PNG_QUALITY, out)
