@@ -75,10 +75,4 @@
     <string name="support_thanks_title">धन्यवाद!</string>
     <string name="support_thanks_body">आपका सपोर्ट हर टूल को मुफ़्त रखता है और नए फ़ीचर बनाने में मदद करता है।</string>
     <string name="support_thanks_ok">बंद करें</string>
-    <string name="support_play_title">Google Play से टिप दें</string>
-    <string name="support_play_body">एक टिप चुनें। Google Play आपकी मुद्रा में कीमत दिखाता है और भुगतान संभालता है।</string>
-    <string name="support_play_pending">Google Play अभी आपकी टिप प्रोसेस कर रहा है। यह अपने-आप पूरी हो जाएगी।</string>
-    <string name="support_play_failed">Google Play टिप पूरी नहीं कर पाया। कोई पैसा नहीं कटा।</string>
-    <string name="support_play_unavailable">टिप अभी उपलब्ध नहीं है। देखें कि Google Play इंस्टॉल है और साइन-इन है, फिर यह स्क्रीन दोबारा खोलें।</string>
-    <string name="support_privacy_play">भुगतान Google Play में होता है। Mr File Fixit आपकी भुगतान जानकारी कभी नहीं देखता।</string>
 </resources>

@@ -78,10 +78,4 @@
     <string name="support_thanks_title">Thank you!</string>
     <string name="support_thanks_body">Your support keeps every tool free and helps build new features.</string>
     <string name="support_thanks_ok">Close</string>
-    <string name="support_play_title">Tip through Google Play</string>
-    <string name="support_play_body">Pick a tip. Google Play shows the price in your currency and handles the payment.</string>
-    <string name="support_play_pending">Google Play is still processing your tip. It completes on its own.</string>
-    <string name="support_play_failed">Google Play could not complete the tip. Nothing was charged.</string>
-    <string name="support_play_unavailable">Tips are not available right now. Check that Google Play is installed and signed in, then open this screen again.</string>
-    <string name="support_privacy_play">Payments happen in Google Play. Mr File Fixit never sees your payment details.</string>
 </resources>

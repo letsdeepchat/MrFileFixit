@@ -246,5 +246,5 @@ private const val LARGE_FONT_SCALE = 1.3f
 /** 11 sp medium with slight tracking: readable, and short enough that every caption stays on one line. */
 private val NavLabelStyle = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.2.sp)
 
-/** The Support screen exists when the build takes UPI/PayPal donations or Play Billing tips. */
-private val SUPPORT_ENABLED = BuildConfig.DONATIONS_ENABLED || BuildConfig.BILLING_ENABLED
+/** The Support screen (UPI and PayPal) is on unless the build passes -Pmff.donations=false. */
+private val SUPPORT_ENABLED = BuildConfig.DONATIONS_ENABLED

@@ -72,10 +72,10 @@ jobs:
             unzip -lv "$apk" | awk 'NR>3 && $8 != "" {printf "%8.1f MB  %s\n", $3/1048576, $8}' | sort -rn | head -25
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
-      # The Play build: minified with R8 full mode, donations left out (Play's Payments policy), debug-signed only so
+      # The Play build: minified with R8 full mode, debug-signed only so
       # CI can launch it. Catches keep-rule problems that the debug build never shows.
       - name: Assemble release (R8)
-        run: ./gradlew :app:assembleRelease -Pmff.ciRelease=true -Pmff.donations=false -Pmff.billing=true
+        run: ./gradlew :app:assembleRelease -Pmff.ciRelease=true
       - name: 16 KB page alignment of 64-bit native libraries
         run: |
           pip install --quiet pyelftools==0.31
@@ -101,6 +101,11 @@ jobs:
               exit 1
             fi
             grep -q 'android:allowBackup="false"' "$manifest"
+            # No Play Billing: the listing must not show "In-app purchases".
+            if grep -E 'com.android.vending.BILLING|com.android.billingclient' "$manifest"; then
+              echo "Play Billing found in merged manifest" >&2
+              exit 1
+            fi
             # No ads SDK, no advertising ID: the app is free and ad-free.
             if grep -E 'permission.AD_ID|com.google.android.gms.ads' "$manifest"; then
               echo "Advertising component found in merged manifest" >&2
@@ -212,9 +217,8 @@ jobs:
           MFF_KEYSTORE_PASSWORD: ${{ secrets.MFF_KEYSTORE_PASSWORD }}
           MFF_KEY_ALIAS: ${{ secrets.MFF_KEY_ALIAS }}
           MFF_KEY_PASSWORD: ${{ secrets.MFF_KEY_PASSWORD }}
-        # UPI/PayPal stay out of the Play build (Play's Payments policy only exempts tax-exempt charities); tips go
-        # through Google Play Billing instead.
-        run: ./gradlew :app:bundleRelease -Pmff.donations=false -Pmff.billing=true
+        # The Play build carries the UPI / PayPal support screen and no Play Billing.
+        run: ./gradlew :app:bundleRelease
       - uses: actions/upload-artifact@v4
         if: steps.secrets.outputs.configured == 'true'
         with:
