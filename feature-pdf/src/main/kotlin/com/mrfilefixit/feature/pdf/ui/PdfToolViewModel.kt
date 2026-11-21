@@ -67,8 +67,8 @@ enum class PdfTool(
 ) {
     MERGE(PdfToolGroup.ORGANIZE, multipleInputs = true),
     SPLIT(PdfToolGroup.ORGANIZE),
-    EXTRACT(PdfToolGroup.ORGANIZE),
-    REORDER(PdfToolGroup.ORGANIZE),
+    /** Extract and reorder in one: pick pages on a board, put them in order, save as a new PDF. */
+    ORGANIZE(PdfToolGroup.ORGANIZE),
     ROTATE(PdfToolGroup.ORGANIZE),
     DELETE(PdfToolGroup.ORGANIZE),
     IMAGES_TO_PDF(PdfToolGroup.CONVERT, acceptsImages = true, multipleInputs = true),
@@ -151,7 +151,15 @@ data class PdfToolUiState(
         tool.multipleInputs -> files.size >= if (tool == PdfTool.MERGE) 2 else 1
         info == null -> false
         tool == PdfTool.SPLIT -> !info.encrypted && splitPlan is Result.Success
+        tool == PdfTool.ORGANIZE -> !info.encrypted && organizedPages.isNotEmpty()
         else -> tool == PdfTool.UNLOCK || info.encrypted.not()
+    }
+
+    /** The pages Organize will save, in order. Empty while none are picked or the typed list is invalid. */
+    val organizedPages: List<Int> get() {
+        val count = info?.pageCount ?: return emptyList()
+        if (options.pages.isBlank()) return emptyList()
+        return (PageSelection.parse(options.pages, count) as? Result.Success)?.value.orEmpty()
     }
 
     /** Files a split will produce, for the live preview. Null until the PDF is read. */
@@ -241,7 +249,17 @@ class PdfToolViewModel @AssistedInject constructor(
 
     private suspend fun loadInfo(file: FileRef) {
         getInfo(file).fold(
-            onSuccess = { info -> mutableState.update { it.copy(info = info) } },
+            onSuccess = { info ->
+                mutableState.update { s ->
+                    // Organize starts with every page picked, in order: tap pages to leave them out, move to reorder.
+                    val options = if (s.tool == PdfTool.ORGANIZE) {
+                        s.options.copy(pages = PageSelection.format((1..info.pageCount).toList()))
+                    } else {
+                        s.options
+                    }
+                    s.copy(info = info, options = options)
+                }
+            },
             onFailure = { error -> mutableState.update { it.copy(inputError = error) } },
         )
     }
@@ -264,8 +282,16 @@ class PdfToolViewModel @AssistedInject constructor(
         s.copy(files = s.files.toMutableList().apply { add(to, removeAt(from)) })
     }
 
-    fun onOptionsChanged(transform: (PdfOptions) -> PdfOptions) = mutableState.update {
-        it.copy(options = transform(it.options))
+    fun onOptionsChanged(transform: (PdfOptions) -> PdfOptions) {
+        val before = state.value
+        mutableState.update { it.copy(options = transform(it.options)) }
+        // Organize keeps its page board after saving. Changing the pages then starts the next document from the
+        // same file, so the saved result's preview and buttons give way to "Save N pages" again.
+        val changed = state.value.options.pages != before.options.pages
+        if (before.tool == PdfTool.ORGANIZE && before.job is JobState.Success && changed) {
+            runner.reset()
+            discardOutputs()
+        }
     }
 
     /** [password] and [ownerPassword] are only used for PROTECT/UNLOCK and are wiped after the job. */
@@ -323,7 +349,9 @@ class PdfToolViewModel @AssistedInject constructor(
             PdfTool.SPLIT -> PageSelection.splitPlan(o.splitMode, o.pages, o.everyN.toIntOrNull(), pageCount).map {
                 PdfOperation.Split(first, it, dir, base)
             }
-            PdfTool.EXTRACT, PdfTool.REORDER -> pages().map { PdfOperation.SelectPages(first, it, dir, "$base-pages") }
+            PdfTool.ORGANIZE -> s.organizedPages.takeIf { it.isNotEmpty() }
+                ?.let { success(PdfOperation.SelectPages(first, it, dir, "$base-pages")) }
+                ?: failure(AppError.InvalidPageSelection(pageCount))
             PdfTool.DELETE -> pages().map { remove ->
                 PdfOperation.SelectPages(first, (1..pageCount).filterNot { it in remove.toSet() }, dir, "$base-edited")
             }

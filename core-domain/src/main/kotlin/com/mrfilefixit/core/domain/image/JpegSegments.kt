@@ -7,8 +7,9 @@ import java.io.ByteArrayOutputStream
 /**
  * Byte-level JPEG helpers that work without decoding pixels.
  *
- * - [stripMetadata] removes EXIF/XMP (APP1), ICC-free APP2..APP15 vendor blocks and comments, keeping
- *   APP0 (JFIF) and the ICC profile in APP2 so colours stay correct.
+ * - [stripMetadata] removes EXIF/XMP (APP1), ICC-free APP2..APP15 vendor blocks, comments and trailers after
+ *   the image, keeping APP0 (JFIF) and the ICC profile in APP2 (with its device fields blanked) so colours
+ *   stay correct.
  * - [padToSize] appends COM (comment) segments after SOI so a file reaches a portal's minimum size.
  *   Pixels are untouched; decoders ignore COM segments.
  */
@@ -31,10 +32,19 @@ object JpegSegments {
     private const val SEGMENT_OVERHEAD = 4
     private val ICC_TAG = "ICC_PROFILE".toByteArray(Charsets.US_ASCII)
 
+    /** Marker (2) + length (2) + "ICC_PROFILE\u0000" (12) + chunk number (1) + chunk count (1). */
+    private const val ICC_SEGMENT_HEADER = 18
+
     fun isJpeg(bytes: ByteArray): Boolean =
         bytes.size >= 4 && bytes.u(0) == MARKER && bytes.u(1) == SOI
 
-    /** Returns the JPEG without metadata, or null if the stream is not a well-formed JPEG. */
+    /**
+     * Returns the JPEG without metadata, or null if the stream is not a well-formed JPEG.
+     *
+     * Besides EXIF/XMP, vendor APPn blocks and comments, this drops everything after the end-of-image marker
+     * (Samsung's SEF trailer and Motion Photo videos live there, with the phone model and capture details), and
+     * blanks the device maker, model and creator fields of the ICC profile, which phones fill in too.
+     */
     fun stripMetadata(bytes: ByteArray): ByteArray? {
         if (!isJpeg(bytes)) return null
         val out = ByteArrayOutputStream(bytes.size)
@@ -48,9 +58,9 @@ object JpegSegments {
                     pos++
                     continue
                 } // fill byte
-                marker == SOS || marker == EOI -> {
-                    out.write(bytes, pos, bytes.size - pos) // entropy-coded data to the end
-                    return out.toByteArray()
+                marker == EOI -> {
+                    out.write(bytes, pos, 2)
+                    return out.toByteArray() // anything after EOI is a trailer, not part of the picture
                 }
                 marker == TEM || marker in RST0..RST7 -> {
                     out.write(bytes, pos, 2)
@@ -62,16 +72,44 @@ object JpegSegments {
             val length = (bytes.u(pos + 2) shl 8) or bytes.u(pos + 3)
             val end = pos + 2 + length
             if (length < 2 || end > bytes.size) return null
-            if (keepSegment(marker, bytes, pos + 4)) out.write(bytes, pos, end - pos)
+            when {
+                marker == SOS -> {
+                    // Scan header, then entropy-coded data up to the next real marker (progressive JPEGs have
+                    // several scans with tables in between, so parsing goes on from there).
+                    val dataEnd = entropyDataEnd(bytes, end)
+                    out.write(bytes, pos, dataEnd - pos)
+                    pos = dataEnd
+                    if (pos >= bytes.size) return out.toByteArray() // truncated after the scan: keep what there is
+                    continue
+                }
+                marker == APP2 && startsWith(bytes, pos + 4, ICC_TAG) -> {
+                    val segment = bytes.copyOfRange(pos, end)
+                    IccProfiles.anonymize(segment, ICC_SEGMENT_HEADER)
+                    out.write(segment)
+                }
+                keepSegment(marker) -> out.write(bytes, pos, end - pos)
+            }
             pos = end
         }
         return null
     }
 
-    private fun keepSegment(marker: Int, bytes: ByteArray, payloadStart: Int): Boolean = when (marker) {
+    /** Index of the first marker after entropy-coded data starting at [start] (stuffed 0xFF00 and RSTn skipped). */
+    private fun entropyDataEnd(bytes: ByteArray, start: Int): Int {
+        var i = start
+        while (i + 1 < bytes.size) {
+            if (bytes.u(i) == MARKER) {
+                val next = bytes.u(i + 1)
+                if (next != 0 && next != MARKER && next !in RST0..RST7) return i
+            }
+            i++
+        }
+        return bytes.size
+    }
+
+    private fun keepSegment(marker: Int): Boolean = when (marker) {
         APP0 -> true
-        APP2 -> startsWith(bytes, payloadStart, ICC_TAG)
-        APP1, in (APP2 + 1)..APP15, COM -> false
+        in APP1..APP15, COM -> false
         else -> true
     }
 

@@ -91,6 +91,24 @@
             </intent-filter>
         </activity>
 
+        <!--
+          Android's Photo Picker (no storage permission needed) is built into Android 13+ and many 11-12 devices.
+          This asks Google Play services to install its back-ported picker on older phones too; without it, those
+          phones fall back to the system file picker. Nothing here grants the app any access by itself.
+        -->
+        <service
+            android:name="com.google.android.gms.metadata.ModuleDependencies"
+            android:enabled="false"
+            android:exported="false"
+            tools:ignore="MissingClass">
+            <intent-filter>
+                <action android:name="com.google.android.gms.metadata.MODULE_DEPENDENCIES" />
+            </intent-filter>
+            <meta-data
+                android:name="photopicker_activity:0:required"
+                android:value="" />
+        </service>
+
         <!-- WorkManager is initialised on demand with the Hilt worker factory. -->
         <provider
             android:name="androidx.startup.InitializationProvider"

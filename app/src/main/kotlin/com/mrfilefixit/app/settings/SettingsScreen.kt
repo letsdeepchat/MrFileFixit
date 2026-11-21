@@ -98,6 +98,9 @@ fun SettingsScreen(
                 Switch(checked = prefs.dynamicColor, onCheckedChange = null)
             }
 
+            SectionTitle(stringResource(R.string.settings_language))
+            LanguageSection()
+
             if (onOpenSupport != null) {
                 SectionTitle(stringResource(R.string.settings_support_title))
                 Row(

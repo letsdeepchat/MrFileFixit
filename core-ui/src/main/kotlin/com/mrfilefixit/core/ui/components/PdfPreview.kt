@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -20,7 +21,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -35,11 +40,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -48,6 +55,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.onLongClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -160,7 +172,13 @@ fun rememberPdfPageSource(uri: String): PdfPageSource? {
  * saving. Pages render lazily as they scroll into view; tapping one opens it full screen with zoom.
  */
 @Composable
-fun PdfPageStrip(uri: String, modifier: Modifier = Modifier, pageWidth: Dp = PAGE_WIDTH) {
+fun PdfPageStrip(
+    uri: String,
+    modifier: Modifier = Modifier,
+    pageWidth: Dp = PAGE_WIDTH,
+    mark: ((Int) -> PageMark)? = null,
+    onPageClick: ((Int) -> Unit)? = null,
+) {
     val source = rememberPdfPageSource(uri)
     var zoomPage by remember(uri) { mutableStateOf<Int?>(null) }
     Column(modifier.testTag("pdf_page_strip"), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
@@ -180,7 +198,14 @@ fun PdfPageStrip(uri: String, modifier: Modifier = Modifier, pageWidth: Dp = PAG
             modifier = Modifier.nestedScroll(KeepHorizontalScroll),
         ) {
             items(source.pageCount) { index ->
-                PageThumbnail(source, index, pageWidth, onClick = { zoomPage = index })
+                PageThumbnail(
+                    source,
+                    index,
+                    pageWidth,
+                    mark = mark?.invoke(index),
+                    onTap = onPageClick?.let { click -> { click(index) } } ?: { zoomPage = index },
+                    onZoom = { zoomPage = index }.takeIf { onPageClick != null },
+                )
             }
         }
     }
@@ -221,28 +246,100 @@ fun PdfPagesColumn(uri: String, modifier: Modifier = Modifier, maxPages: Int = D
     }
 }
 
+/**
+ * How a page looks on a [PdfPageStrip]: a short [badge] ("File 2", "3rd"), a thick highlight when [picked], and
+ * faded when [dimmed] (left out of the result).
+ */
+@Immutable
+data class PageMark(val badge: String? = null, val picked: Boolean = false, val dimmed: Boolean = false)
+
 @Composable
-private fun PageThumbnail(source: PdfPageSource, index: Int, width: Dp, onClick: () -> Unit) {
+private fun PageThumbnail(
+    source: PdfPageSource,
+    index: Int,
+    width: Dp,
+    mark: PageMark?,
+    onTap: () -> Unit,
+    onZoom: (() -> Unit)?,
+) {
     val widthPx = with(LocalDensity.current) { width.roundToPx() } * 2
     val image by produceState<ImageBitmap?>(null, source, index) { value = source.render(index, widthPx) }
     val label = stringResource(R.string.preview_page, index + 1)
+    val colors = MaterialTheme.colorScheme
+    val picked = mark?.picked == true
+    val zoomLabel = stringResource(R.string.preview_open_full)
+    val tapModifier = if (onZoom == null) {
+        Modifier.clickable(role = Role.Image, onClickLabel = zoomLabel, onClick = onTap)
+    } else {
+        // Picking pages: tap picks or drops the page, long-press opens it full screen. Both are offered to
+        // TalkBack as actions, and the picked state is announced.
+        Modifier
+            .pointerInput(onTap, onZoom) { detectTapGestures(onTap = { onTap() }, onLongPress = { onZoom() }) }
+            .semantics {
+                role = Role.Checkbox
+                selected = picked
+                onClick(label = null) {
+                    onTap()
+                    true
+                }
+                onLongClick(label = zoomLabel) {
+                    onZoom()
+                    true
+                }
+            }
+    }
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Box(
             Modifier
                 .width(width)
                 .aspectRatio(remember(source, index) { source.aspect(index) } ?: A4_ASPECT)
+                .alpha(if (mark?.dimmed == true) DIMMED_ALPHA else 1f)
                 .background(Color.White)
-                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant))
-                .clickable(
-                    role = Role.Image,
-                    onClickLabel = stringResource(R.string.preview_open_full),
-                    onClick = onClick,
+                .border(
+                    if (picked) {
+                        BorderStroke(PICKED_BORDER, colors.primary)
+                    } else {
+                        BorderStroke(1.dp, colors.outlineVariant)
+                    },
                 )
+                .then(tapModifier)
                 .testTag("pdf_page_$index"),
         ) {
             image?.let { Image(it, label, Modifier.fillMaxSize(), contentScale = ContentScale.Fit) }
+            if (picked) {
+                Icon(
+                    Icons.Filled.CheckCircle,
+                    contentDescription = null,
+                    tint = colors.primary,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(Dimens.SpaceXs)
+                        .background(Color.White, CircleShape),
+                )
+            }
+            mark?.badge?.let { badge ->
+                Surface(
+                    color = if (picked) colors.primary else colors.secondaryContainer,
+                    contentColor = if (picked) colors.onPrimary else colors.onSecondaryContainer,
+                    shape = RoundedCornerShape(Dimens.SpaceXs),
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(Dimens.SpaceXs),
+                ) {
+                    Text(
+                        badge,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = Dimens.SpaceXs),
+                    )
+                }
+            }
         }
-        Text(label, style = MaterialTheme.typography.labelSmall, textAlign = TextAlign.Center)
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            textAlign = TextAlign.Center,
+            color = if (picked) colors.primary else Color.Unspecified,
+        )
     }
 }
 
@@ -281,5 +378,7 @@ private fun PdfPageDialog(source: PdfPageSource, index: Int, onDismiss: () -> Un
 }
 
 private const val A4_ASPECT = 595f / 842f
+private const val DIMMED_ALPHA = 0.35f
+private val PICKED_BORDER = 3.dp
 private const val DEFAULT_COLUMN_PAGES = 3
 private val PAGE_WIDTH = 120.dp

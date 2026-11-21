@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.mrfilefixit.core.domain.resume.ResumeEdits
 import com.mrfilefixit.core.domain.resume.ResumeEntry
 import com.mrfilefixit.core.domain.resume.ResumeSection
+import com.mrfilefixit.core.domain.resume.SampleSection
 import com.mrfilefixit.core.domain.resume.SectionKind
 import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.theme.Dimens
@@ -42,6 +43,7 @@ import com.mrfilefixit.feature.resume.R
 @Composable
 internal fun SectionEditor(
     section: ResumeSection,
+    sample: SampleSection?,
     isFirst: Boolean,
     isLast: Boolean,
     actions: ResumeEditorActions,
@@ -78,23 +80,31 @@ internal fun SectionEditor(
                 stringResource(R.string.resume_summary_text),
                 singleLine = false,
                 supporting = stringResource(R.string.resume_summary_hint),
+                example = sample?.text,
             )
-            SectionKind.SKILLS -> SkillsEditor(section, actions)
-            else -> EntriesEditor(section, actions)
+            SectionKind.SKILLS -> SkillsEditor(section, sample, actions)
+            else -> EntriesEditor(section, sample, actions)
         }
     }
 }
 
 @Composable
-private fun SkillsEditor(section: ResumeSection, actions: ResumeEditorActions) {
+private fun SkillsEditor(section: ResumeSection, sample: SampleSection?, actions: ResumeEditorActions) {
     section.entries.forEachIndexed { index, entry ->
+        val example = sample.exampleEntry(index)
         EntryCard(section, entry, index, actions) { change ->
-            EditField(entry.title, { v -> change { it.copy(title = v) } }, stringResource(R.string.resume_skill_group))
+            EditField(
+                entry.title,
+                { v -> change { it.copy(title = v) } },
+                stringResource(R.string.resume_skill_group),
+                example = example?.title,
+            )
             EditField(
                 entry.bullets.joinToString("\n"),
                 { v -> change { it.copy(bullets = v.split('\n')) } },
                 stringResource(R.string.resume_skill_list),
                 singleLine = false,
+                example = example?.bullets?.joinToString(", "),
             )
         }
     }
@@ -104,32 +114,39 @@ private fun SkillsEditor(section: ResumeSection, actions: ResumeEditorActions) {
 }
 
 @Composable
-private fun EntriesEditor(section: ResumeSection, actions: ResumeEditorActions) {
+private fun EntriesEditor(section: ResumeSection, sample: SampleSection?, actions: ResumeEditorActions) {
     val titleLabel = TemplateText.entryTitle(section.kind)?.let { stringResource(it) }.orEmpty()
     val subtitleLabel = TemplateText.entrySubtitle(section.kind)?.let { stringResource(it) }.orEmpty()
     section.entries.forEachIndexed { index, entry ->
+        val example = sample.exampleEntry(index)
         EntryCard(section, entry, index, actions) { change ->
-            EditField(entry.title, { v -> change { it.copy(title = v) } }, titleLabel)
-            EditField(entry.subtitle, { v -> change { it.copy(subtitle = v) } }, subtitleLabel)
-            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
-                EditField(
-                    entry.location,
-                    { v -> change { it.copy(location = v) } },
-                    stringResource(R.string.resume_location_short),
-                    Modifier.weight(1f),
-                )
-                EditField(
-                    entry.dates,
-                    { v -> change { it.copy(dates = v) } },
-                    stringResource(R.string.resume_dates),
-                    Modifier.weight(1f),
-                )
-            }
+            EditField(entry.title, { v -> change { it.copy(title = v) } }, titleLabel, example = example?.title)
+            EditField(
+                entry.subtitle,
+                { v -> change { it.copy(subtitle = v) } },
+                subtitleLabel,
+                example = example?.subtitle,
+            )
+            // Location and dates each take the full width: side by side, the two fields were too narrow for their
+            // floating labels, and focusing one made the row jump.
+            EditField(
+                entry.location,
+                { v -> change { it.copy(location = v) } },
+                stringResource(R.string.resume_location_short),
+                example = example?.location,
+            )
+            EditField(
+                entry.dates,
+                { v -> change { it.copy(dates = v) } },
+                stringResource(R.string.resume_dates),
+                example = example?.dates,
+            )
             EditField(
                 entry.bullets.joinToString("\n"),
                 { v -> change { it.copy(bullets = v.split('\n')) } },
                 stringResource(R.string.resume_bullets),
                 singleLine = false,
+                example = example?.bullets?.firstOrNull(),
             )
         }
     }
@@ -186,3 +203,7 @@ private fun AddButton(label: String, onClick: () -> Unit) {
         Text(label, Modifier.padding(start = Dimens.SpaceXs))
     }
 }
+
+/** The template's sample entry shown as examples in entry [index] (the first one again for extra entries). */
+private fun SampleSection?.exampleEntry(index: Int): ResumeEntry? =
+    this?.entries?.let { it.getOrNull(index) ?: it.firstOrNull() }

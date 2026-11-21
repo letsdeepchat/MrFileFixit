@@ -2,6 +2,8 @@ package com.mrfilefixit.app.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -16,10 +18,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.findRootCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -28,6 +35,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -79,12 +87,13 @@ enum class TopLevelDestination(
     @StringRes val label: Int,
     @StringRes val shortLabel: Int,
 ) {
+    // Priority order, also used for the swipe order and the home cards: Scan, Images, PDF, Resume, Exam forms.
     HOME(Icons.Filled.Home, R.string.nav_home, R.string.nav_home),
-    EXAM(Icons.Filled.Badge, R.string.nav_exam, R.string.nav_exam_short),
-    PDF(Icons.Filled.PictureAsPdf, R.string.nav_pdf, R.string.nav_pdf_short),
-    IMAGE(Icons.Filled.Image, R.string.nav_image, R.string.nav_image_short),
     SCAN(Icons.Filled.DocumentScanner, R.string.nav_scan, R.string.nav_scan),
+    IMAGE(Icons.Filled.Image, R.string.nav_image, R.string.nav_image_short),
+    PDF(Icons.Filled.PictureAsPdf, R.string.nav_pdf, R.string.nav_pdf_short),
     RESUME(Icons.Filled.Description, R.string.nav_resume, R.string.nav_resume_short),
+    EXAM(Icons.Filled.Badge, R.string.nav_exam, R.string.nav_exam_short),
 }
 
 /**
@@ -135,7 +144,22 @@ fun MffApp() {
             }
         },
     ) {
-        NavHost(navController = navController, startDestination = MainTabsRoute) {
+        // The navigation bar sits below this content. Telling the screens inside that the window's bottom insets
+        // up to the bar are already taken stops imePadding() from adding the bar's height again when the keyboard
+        // opens, which pushed fields up and left an empty band above the keyboard (resume location field).
+        val density = LocalDensity.current
+        var belowContent by remember { mutableStateOf(0.dp) }
+        NavHost(
+            navController = navController,
+            startDestination = MainTabsRoute,
+            modifier = Modifier
+                .onGloballyPositioned { coordinates ->
+                    val rootHeight = coordinates.findRootCoordinates().size.height
+                    val gap = (rootHeight - coordinates.boundsInWindow().bottom).coerceAtLeast(0f)
+                    belowContent = with(density) { gap.toDp() }
+                }
+                .consumeWindowInsets(PaddingValues(bottom = belowContent)),
+        ) {
             composable<MainTabsRoute> { MainTabs(navController, pagerState, scope) }
             // Exam shortcuts open the tool on its own screen with the exam's limits; Back returns to the exam.
             imageScreen(onOpenOcr = { navController.openOcr() }, onExit = { navController.popBackStack() })

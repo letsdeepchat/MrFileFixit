@@ -16,9 +16,11 @@ import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,8 +30,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mrfilefixit.core.domain.exam.CertificateSpec
 import com.mrfilefixit.core.domain.exam.DocumentKind
 import com.mrfilefixit.core.domain.image.NormalizedRect
+import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.components.ToolScaffold
+import com.mrfilefixit.core.ui.error.ErrorSnackbarEffect
 import com.mrfilefixit.core.ui.navigation.ReportInnerScreen
 import com.mrfilefixit.core.ui.share.shareFile
 import com.mrfilefixit.core.ui.theme.Dimens
@@ -117,13 +121,14 @@ private fun ExamFlowRoute(
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     val chooserTitle = stringResource(CoreR.string.share_chooser_title)
-    val errorText = stringResource(CoreR.string.error_unexpected)
+    var snackError by remember { mutableStateOf<AppError?>(null) }
+    ErrorSnackbarEffect(snackError, snackbar) { snackError = null }
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 is ExamEffect.Share -> context.shareFile(effect.uri, effect.mimeType, chooserTitle)
-                is ExamEffect.ShowError -> snackbar.showSnackbar(errorText)
+                is ExamEffect.ShowError -> snackError = effect.error
             }
         }
     }

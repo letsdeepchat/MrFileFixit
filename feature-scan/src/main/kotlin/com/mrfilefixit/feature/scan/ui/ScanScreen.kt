@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ClipData
 import android.os.PersistableBundle
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -69,6 +70,7 @@ import com.mrfilefixit.core.domain.ocr.OcrScript
 import com.mrfilefixit.core.domain.scan.ScanCapture
 import com.mrfilefixit.core.domain.scan.ScanFilter
 import com.mrfilefixit.core.ui.R as CoreR
+import com.mrfilefixit.core.ui.components.ChoiceGrid
 import com.mrfilefixit.core.ui.components.ErrorCard
 import com.mrfilefixit.core.ui.components.JobProgressCard
 import com.mrfilefixit.core.ui.components.PrimaryActionButton
@@ -108,6 +110,31 @@ private fun scannerClient(): GmsDocumentScanner = GmsDocumentScanning.getClient(
         .build(),
 )
 
+/**
+ * Opens Google's document scanner (edge detection, perspective crop, clean-up, up to [MAX_SCAN_PAGES] pages). It
+ * runs in Google Play services, so the app needs no camera permission. Anything that goes wrong while starting it
+ * (no Play services, scanner module not installed yet, an activity that cannot launch it) is reported on the Scan
+ * screen instead of crashing the app.
+ */
+private fun startScanner(
+    activity: Activity?,
+    launcher: ActivityResultLauncher<IntentSenderRequest>,
+    onUnavailable: () -> Unit,
+) {
+    if (activity == null || activity.isFinishing) {
+        onUnavailable()
+        return
+    }
+    runCatching {
+        scannerClient().getStartScanIntent(activity)
+            .addOnSuccessListener(activity) { sender ->
+                runCatching { launcher.launch(IntentSenderRequest.Builder(sender).build()) }
+                    .onFailure { onUnavailable() }
+            }
+            .addOnFailureListener(activity) { onUnavailable() }
+    }.onFailure { onUnavailable() }
+}
+
 @Composable
 internal fun ScanScreen(
     state: ScanUiState,
@@ -119,9 +146,10 @@ internal fun ScanScreen(
     val context = LocalContext.current
     val scanLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            // Cancelled (Back in the scanner) simply returns here, to the same Scan screen.
             val scan = result.data
                 ?.takeIf { result.resultCode == Activity.RESULT_OK }
-                ?.let(GmsDocumentScanningResult::fromActivityResultIntent)
+                ?.let { data -> runCatching { GmsDocumentScanningResult.fromActivityResultIntent(data) }.getOrNull() }
             if (scan != null) {
                 actions.onCaptured(
                     ScanCapture(
@@ -183,14 +211,7 @@ internal fun ScanScreen(
                         icon = Icons.Filled.DocumentScanner,
                         title = stringResource(R.string.scan_camera_title),
                         subtitle = stringResource(R.string.scan_camera_subtitle),
-                        onClick = {
-                            val activity = context.findActivity() ?: return@HeroCard
-                            scannerClient().getStartScanIntent(activity)
-                                .addOnSuccessListener { sender ->
-                                    scanLauncher.launch(IntentSenderRequest.Builder(sender).build())
-                                }
-                                .addOnFailureListener { actions.onScannerUnavailable() }
-                        },
+                        onClick = { startScanner(context.findActivity(), scanLauncher, actions.onScannerUnavailable) },
                         modifier = Modifier.testTag("scan_camera"),
                     )
                     HeroCard(
@@ -393,26 +414,25 @@ private fun OcrSection(state: ScanUiState, actions: ScanActions, onOpenOcr: (Lis
             )
         }
         Text(stringResource(R.string.scan_script), style = MaterialTheme.typography.titleSmall)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
-            OcrScript.entries.forEach { script ->
-                FilterChip(
-                    selected = script == state.script,
-                    onClick = { actions.onScript(script) },
-                    label = { Text(scriptLabel(script)) },
-                    modifier = Modifier.heightIn(min = Dimens.MinTouchTarget),
-                )
-            }
-        }
+        ChoiceGrid(
+            options = OcrScript.entries,
+            selected = state.script,
+            label = { scriptLabel(it) },
+            onSelect = actions.onScript,
+            enabled = state.ocr !is JobState.Running,
+            modifier = Modifier.fillMaxWidth(),
+        )
         when (val job = state.ocr) {
             is JobState.Running -> JobProgressCard(job.progress, actions.onCancel)
             is JobState.Success -> TextResult(job.value.text, job.value.pageCount, actions)
             else -> {
-                if (job is JobState.Failed) ErrorCard(job.error, onRetry = null)
+                if (job is JobState.Failed) ErrorCard(job.error, onRetry = actions.onRecognize)
                 if (job is JobState.Cancelled) Text(stringResource(CoreR.string.job_cancelled))
                 PrimaryActionButton(
                     stringResource(R.string.scan_recognize),
                     onClick = actions.onRecognize,
                     enabled = state.canRecognize,
+                    modifier = Modifier.testTag("scan_recognize"),
                 )
             }
         }

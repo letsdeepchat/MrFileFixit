@@ -268,4 +268,6 @@
     <string name="biodata_f_email">Email</string>
     <string name="biodata_f_website">Website</string>
     <string name="biodata_f_social">Instagram / social</string>
+    <string name="resume_example">e.g. %1$s</string>
+    <string name="resume_untitled">Untitled resume</string>
 </resources>

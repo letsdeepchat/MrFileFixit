@@ -82,6 +82,7 @@
     <string name="error_no_text_found">This PDF has no selectable text, so it is probably a scan. Use Extract Text in Scan &amp; OCR instead.</string>
     <string name="error_not_a_resume">This file was not made with the resume builder, so it cannot be opened for editing. Pick a Word file you exported from the Resume tab.</string>
     <string name="error_unexpected">Something went wrong. Please try again.</string>
+    <string name="error_unexpected_code">Something went wrong. Please try again. If it keeps happening, tell us this code: %1$s</string>
 
     <!-- Accessibility -->
     <string name="cd_thumbnail">Preview of the selected file</string>

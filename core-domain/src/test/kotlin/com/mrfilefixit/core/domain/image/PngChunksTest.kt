@@ -36,4 +36,11 @@ class PngChunksTest {
         assertNull(PngChunks.stripMetadata(signature + ihdr + idat))
         assertNull(PngChunks.stripMetadata(byteArrayOf(1, 2, 3)))
     }
+
+    @Test
+    fun `drops private vendor chunks too, keeping only what draws the picture`() {
+        val vendor = chunk("mkBF", "Pixel 8 Pro".toByteArray())
+        val png = signature + ihdr + srgb + vendor + idat + iend
+        assertArrayEquals(signature + ihdr + srgb + idat + iend, PngChunks.stripMetadata(png))
+    }
 }

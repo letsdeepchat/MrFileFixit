@@ -37,6 +37,7 @@ import com.mrfilefixit.core.domain.ocr.OcrExportFormat
 import com.mrfilefixit.core.domain.ocr.OcrResult
 import com.mrfilefixit.core.domain.ocr.OcrScript
 import com.mrfilefixit.core.ui.R as CoreR
+import com.mrfilefixit.core.ui.components.ChoiceGrid
 import com.mrfilefixit.core.ui.components.ErrorCard
 import com.mrfilefixit.core.ui.components.JobProgressCard
 import com.mrfilefixit.core.ui.components.PrimaryActionButton
@@ -139,22 +140,17 @@ private fun FilesCard(state: OcrUiState, onChange: () -> Unit, modifier: Modifie
 private fun LanguageCard(state: OcrUiState, actions: OcrActions, modifier: Modifier) {
     SectionCard(modifier) {
         SectionHeader(stringResource(R.string.ocr_language))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
-            verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXs),
-        ) {
-            OcrScript.entries.forEach { script ->
-                FilterChip(
-                    selected = script == state.script,
-                    onClick = { actions.onScript(script) },
-                    enabled = state.ocr !is JobState.Running,
-                    label = { Text(OcrText.script(script)) },
-                    modifier = Modifier
-                        .heightIn(min = Dimens.MinTouchTarget)
-                        .testTag("ocr_script_${script.name.lowercase()}"),
-                )
-            }
-        }
+        // An even two-column grid: Auto-detect and the long language names wrap inside their own tile instead of
+        // pushing into (and overlapping) the chips next to them.
+        ChoiceGrid(
+            options = OcrScript.entries,
+            selected = state.script,
+            label = { OcrText.script(it) },
+            onSelect = actions.onScript,
+            enabled = state.ocr !is JobState.Running,
+            tileModifier = { Modifier.testTag("ocr_script_${it.name.lowercase()}") },
+            modifier = Modifier.fillMaxWidth(),
+        )
         Text(
             OcrText.scriptHint(state.script),
             style = MaterialTheme.typography.bodySmall,

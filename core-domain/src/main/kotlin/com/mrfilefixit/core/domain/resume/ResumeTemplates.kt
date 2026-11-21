@@ -67,6 +67,9 @@ data class ResumeTemplate(
     val sections: List<SampleSection>,
 ) {
     val id: String get() = this.field.name
+
+    /** The sample content for a section of [kind], used as example text in empty fields. */
+    fun sampleFor(kind: SectionKind): SampleSection? = sections.firstOrNull { it.kind == kind }
 }
 
 /** The 15 bundled templates. Text is English sample content; every word is editable. */

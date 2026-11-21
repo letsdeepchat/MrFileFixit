@@ -238,4 +238,18 @@ class ResumeTest {
         )
         assertTrue((pdf as Result.Failure).error is AppError.UnsupportedFormat)
     }
+
+    @Test
+    fun `a blank draft keeps the template's sections and look but no sample text`() {
+        val template = ResumeTemplates.byId(ResumeField.MARKETING.name)
+        val blank = ResumeFactory.blankFromTemplate(template, "b1", 5L, newId)
+        assertEquals(ContactInfo(), blank.contact)
+        assertEquals(template.sections.map { it.kind }, blank.sections.map { it.kind })
+        assertEquals(template.sections.map { it.title }, blank.sections.map { it.title })
+        assertTrue(blank.sections.all { it.text.isEmpty() })
+        assertTrue(blank.sections.flatMap { it.entries }.all { it.title.isEmpty() && it.bullets.isEmpty() })
+        assertTrue(blank.sections.filterNot { it.kind.isText }.all { it.entries.size == 1 })
+        assertEquals(template.font, blank.style.font)
+        assertNotNull(template.sampleFor(blank.sections.first().kind))
+    }
 }

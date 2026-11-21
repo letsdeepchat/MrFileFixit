@@ -2,6 +2,7 @@ package com.mrfilefixit.core.domain.pdf
 
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.AppResult
+import com.mrfilefixit.core.domain.result.Result
 import com.mrfilefixit.core.domain.result.failure
 import com.mrfilefixit.core.domain.result.success
 
@@ -36,6 +37,47 @@ object PageSelection {
                 ?: return failure(AppError.InvalidPageSelection(pageCount))
         }
         return success(ranges)
+    }
+
+    /**
+     * Writes [pages] back in the typed form, keeping their order: ascending runs become ranges, so
+     * [3, 1, 2, 3, 4, 9] reads "3, 1-4, 9". [parse] of the result gives back [pages].
+     */
+    fun format(pages: List<Int>): String {
+        if (pages.isEmpty()) return ""
+        val parts = mutableListOf<String>()
+        var start = pages.first()
+        var end = start
+        for (page in pages.drop(1)) {
+            if (page == end + 1) {
+                end = page
+            } else {
+                parts += if (start == end) "$start" else "$start-$end"
+                start = page
+                end = page
+            }
+        }
+        parts += if (start == end) "$start" else "$start-$end"
+        return parts.joinToString(", ")
+    }
+
+    /**
+     * The page list after tapping [page] on the page board: a picked page is taken out, any other is added at the
+     * end. Unparsable [current] text counts as nothing picked.
+     */
+    fun toggle(current: String, page: Int, pageCount: Int): String {
+        val picked = if (current.isBlank()) emptyList() else (parse(current, pageCount) as? Result.Success)?.value
+        val list = picked.orEmpty()
+        return format(if (page in list) list.filterNot { it == page } else list + page)
+    }
+
+    /** Moves the page at [index] of the typed list one place earlier (-1) or later (+1). */
+    fun move(current: String, index: Int, delta: Int, pageCount: Int): String {
+        val list = (parse(current, pageCount) as? Result.Success)?.value?.toMutableList() ?: return current
+        val to = index + delta
+        if (index !in list.indices || to !in list.indices) return current
+        list.add(to, list.removeAt(index))
+        return format(list)
     }
 
     /** Splits every [n] pages: 1-n, n+1-2n, ... */

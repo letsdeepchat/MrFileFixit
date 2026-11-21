@@ -268,4 +268,6 @@
     <string name="biodata_f_email">ईमेल</string>
     <string name="biodata_f_website">वेबसाइट</string>
     <string name="biodata_f_social">Instagram / सोशल</string>
+    <string name="resume_example">उदाहरण: %1$s</string>
+    <string name="resume_untitled">बिना नाम का रिज़्यूमे</string>
 </resources>
