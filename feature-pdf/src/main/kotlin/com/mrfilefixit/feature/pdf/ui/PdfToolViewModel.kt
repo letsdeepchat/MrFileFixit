@@ -67,8 +67,10 @@ enum class PdfTool(
 ) {
     MERGE(PdfToolGroup.ORGANIZE, multipleInputs = true),
     SPLIT(PdfToolGroup.ORGANIZE),
+
     /** Extract and reorder in one: pick pages on a board, put them in order, save as a new PDF. */
     ORGANIZE(PdfToolGroup.ORGANIZE),
+
     ROTATE(PdfToolGroup.ORGANIZE),
     DELETE(PdfToolGroup.ORGANIZE),
     IMAGES_TO_PDF(PdfToolGroup.CONVERT, acceptsImages = true, multipleInputs = true),

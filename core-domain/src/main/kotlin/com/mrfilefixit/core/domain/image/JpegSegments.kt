@@ -34,6 +34,8 @@ object JpegSegments {
 
     /** Marker (2) + length (2) + "ICC_PROFILE\u0000" (12) + chunk number (1) + chunk count (1). */
     private const val ICC_SEGMENT_HEADER = 18
+    private const val DONE = -1
+    private const val FAILED = -2
 
     fun isJpeg(bytes: ByteArray): Boolean =
         bytes.size >= 4 && bytes.u(0) == MARKER && bytes.u(1) == SOI
@@ -50,48 +52,52 @@ object JpegSegments {
         val out = ByteArrayOutputStream(bytes.size)
         out.write(bytes, 0, 2)
         var pos = 2
-        while (pos + 1 < bytes.size) {
-            if (bytes.u(pos) != MARKER) return null
-            val marker = bytes.u(pos + 1)
-            when {
-                marker == MARKER -> {
-                    pos++
-                    continue
-                } // fill byte
-                marker == EOI -> {
-                    out.write(bytes, pos, 2)
-                    return out.toByteArray() // anything after EOI is a trailer, not part of the picture
-                }
-                marker == TEM || marker in RST0..RST7 -> {
-                    out.write(bytes, pos, 2)
-                    pos += 2
-                    continue
-                }
+        while (pos >= 0 && pos + 1 < bytes.size) pos = copyNext(bytes, pos, out)
+        return if (pos == DONE) out.toByteArray() else null
+    }
+
+    /** Copies what to keep of the marker at [pos]; returns where the next one starts, [DONE] or [FAILED]. */
+    private fun copyNext(bytes: ByteArray, pos: Int, out: ByteArrayOutputStream): Int {
+        if (bytes.u(pos) != MARKER) return FAILED
+        val marker = bytes.u(pos + 1)
+        return when {
+            marker == MARKER -> pos + 1 // fill byte
+            marker == EOI -> {
+                out.write(bytes, pos, 2)
+                DONE // anything after EOI is a trailer, not part of the picture
             }
-            if (pos + 3 >= bytes.size) return null
-            val length = (bytes.u(pos + 2) shl 8) or bytes.u(pos + 3)
-            val end = pos + 2 + length
-            if (length < 2 || end > bytes.size) return null
-            when {
-                marker == SOS -> {
-                    // Scan header, then entropy-coded data up to the next real marker (progressive JPEGs have
-                    // several scans with tables in between, so parsing goes on from there).
-                    val dataEnd = entropyDataEnd(bytes, end)
-                    out.write(bytes, pos, dataEnd - pos)
-                    pos = dataEnd
-                    if (pos >= bytes.size) return out.toByteArray() // truncated after the scan: keep what there is
-                    continue
-                }
-                marker == APP2 && startsWith(bytes, pos + 4, ICC_TAG) -> {
-                    val segment = bytes.copyOfRange(pos, end)
-                    IccProfiles.anonymize(segment, ICC_SEGMENT_HEADER)
-                    out.write(segment)
-                }
-                keepSegment(marker) -> out.write(bytes, pos, end - pos)
+            marker == TEM || marker in RST0..RST7 -> {
+                out.write(bytes, pos, 2)
+                pos + 2
             }
-            pos = end
+            else -> copySegment(bytes, pos, marker, out)
         }
-        return null
+    }
+
+    private fun copySegment(bytes: ByteArray, pos: Int, marker: Int, out: ByteArrayOutputStream): Int {
+        if (pos + 3 >= bytes.size) return FAILED
+        val length = (bytes.u(pos + 2) shl 8) or bytes.u(pos + 3)
+        val end = pos + 2 + length
+        if (length < 2 || end > bytes.size) return FAILED
+        return when {
+            marker == SOS -> {
+                // Scan header, then entropy-coded data up to the next real marker (progressive JPEGs have
+                // several scans with tables in between, so parsing goes on from there).
+                val dataEnd = entropyDataEnd(bytes, end)
+                out.write(bytes, pos, dataEnd - pos)
+                if (dataEnd >= bytes.size) DONE else dataEnd // truncated after the scan: keep what there is
+            }
+            marker == APP2 && startsWith(bytes, pos + 4, ICC_TAG) -> {
+                val segment = bytes.copyOfRange(pos, end)
+                IccProfiles.anonymize(segment, ICC_SEGMENT_HEADER)
+                out.write(segment)
+                end
+            }
+            else -> {
+                if (keepSegment(marker)) out.write(bytes, pos, end - pos)
+                end
+            }
+        }
     }
 
     /** Index of the first marker after entropy-coded data starting at [start] (stuffed 0xFF00 and RSTn skipped). */
