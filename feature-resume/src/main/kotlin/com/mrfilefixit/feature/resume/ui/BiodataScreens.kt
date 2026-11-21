@@ -104,6 +104,8 @@ import com.mrfilefixit.core.ui.components.SwitchRow
 import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.components.windowHeight
 import com.mrfilefixit.core.ui.format.formatBytes
+import com.mrfilefixit.core.ui.permission.AppPermission
+import com.mrfilefixit.core.ui.permission.rememberPermissionGate
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
@@ -518,6 +520,9 @@ private fun PhotosCard(state: BiodataUiState, kind: BiodataKind, actions: Biodat
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) actions.onPhoto(BiodataPhotoEvent.Picked(uri.toString()))
     }
+    val pick = rememberPermissionGate(AppPermission.PHOTOS) {
+        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
     SectionCard(modifier.testTag("biodata_photos")) {
         SectionHeader(stringResource(R.string.biodata_photos_title, biodata.photos.size, Biodata.MAX_PHOTOS))
         val crop = state.photoCrop
@@ -542,7 +547,7 @@ private fun PhotosCard(state: BiodataUiState, kind: BiodataKind, actions: Biodat
         if (state.photoBusy) CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
         if (biodata.canAddPhoto) {
             OutlinedButton(
-                onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                onClick = pick,
                 enabled = !state.photoBusy,
                 modifier = Modifier
                     .fillMaxWidth()

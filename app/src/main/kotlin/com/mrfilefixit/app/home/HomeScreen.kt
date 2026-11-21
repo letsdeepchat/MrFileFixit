@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mrfilefixit.app.R
 import com.mrfilefixit.app.navigation.TopLevelDestination
+import com.mrfilefixit.app.settings.LanguageMenuButton
 import com.mrfilefixit.core.ui.components.IconBadge
 import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.preview.AllPreviews
@@ -73,6 +74,7 @@ fun HomeScreen(
         modifier = Modifier.testTag("home"),
         titleContent = { BrandTitle() },
         actions = {
+            LanguageMenuButton()
             IconButton(onClick = onOpenSettings, modifier = Modifier.testTag("home_settings")) {
                 Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.nav_settings))
             }

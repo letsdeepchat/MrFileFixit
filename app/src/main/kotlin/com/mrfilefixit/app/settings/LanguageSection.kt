@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Build
 import android.os.LocaleList
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,12 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Translate
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -57,11 +64,7 @@ private fun LanguageChoices() {
     var current by remember { mutableStateOf(currentLanguage(context)) }
     Column(Modifier.selectableGroup()) {
         AppLanguage.entries.forEach { language ->
-            val label = when (language) {
-                AppLanguage.SYSTEM -> stringResource(R.string.settings_language_system)
-                AppLanguage.ENGLISH -> stringResource(R.string.settings_language_english)
-                AppLanguage.HINDI -> stringResource(R.string.settings_language_hindi)
-            }
+            val label = languageLabel(language)
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -77,6 +80,49 @@ private fun LanguageChoices() {
             ) {
                 RadioButton(selected = current == language, onClick = null)
                 Text(label, Modifier.padding(start = Dimens.SpaceM))
+            }
+        }
+    }
+}
+
+@Composable
+private fun languageLabel(language: AppLanguage): String = when (language) {
+    AppLanguage.SYSTEM -> stringResource(R.string.settings_language_system)
+    AppLanguage.ENGLISH -> stringResource(R.string.settings_language_english)
+    AppLanguage.HINDI -> stringResource(R.string.settings_language_hindi)
+}
+
+/**
+ * The language switch in the Home top bar: a translate icon that opens a menu of the same choices as Settings →
+ * Language. Phones before Android 13 have no per-app language, so the menu says the app follows the phone.
+ */
+@Composable
+internal fun LanguageMenuButton(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var open by remember { mutableStateOf(false) }
+    Box(modifier) {
+        IconButton(onClick = { open = true }, modifier = Modifier.testTag("home_language")) {
+            Icon(Icons.Filled.Translate, contentDescription = stringResource(R.string.settings_language))
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val current = currentLanguage(context)
+                AppLanguage.entries.forEach { language ->
+                    DropdownMenuItem(
+                        text = { Text(languageLabel(language)) },
+                        leadingIcon = { RadioButton(selected = current == language, onClick = null) },
+                        onClick = {
+                            open = false
+                            if (current != language) applyLanguage(context, language)
+                        },
+                        modifier = Modifier.testTag("home_language_${language.name.lowercase()}"),
+                    )
+                }
+            } else {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.settings_language_follows_phone)) },
+                    onClick = { open = false },
+                )
             }
         }
     }

@@ -83,6 +83,8 @@ import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.format.formatBytes
 import com.mrfilefixit.core.ui.navigation.ReportInnerScreen
 import com.mrfilefixit.core.ui.navigation.rememberGuardedBack
+import com.mrfilefixit.core.ui.permission.AppPermission
+import com.mrfilefixit.core.ui.permission.rememberPermissionGate
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.theme.Dimens
@@ -117,9 +119,9 @@ private fun scannerClient(): GmsDocumentScanner = GmsDocumentScanning.getClient(
 
 /**
  * Opens Google's document scanner (edge detection, perspective crop, clean-up, up to [MAX_SCAN_PAGES] pages). It
- * runs in Google Play services, so the app needs no camera permission. Anything that goes wrong while starting it
- * (no Play services, scanner module not installed yet, an activity that cannot launch it) is reported on the Scan
- * screen instead of crashing the app.
+ * runs in Google Play services; the Scan screen asks for the camera permission first. Anything that goes wrong
+ * while starting it (no Play services, scanner module not installed yet, an activity that cannot launch it) is
+ * reported on the Scan screen instead of crashing the app.
  */
 private fun startScanner(
     activity: Activity?,
@@ -166,6 +168,10 @@ internal fun ScanScreen(
                 )
             }
         }
+    // The camera permission is asked for right before the scanner opens; without it the scanner stays closed.
+    val scan = rememberPermissionGate(AppPermission.CAMERA) {
+        startScanner(context.findActivity(), scanLauncher, actions.onScannerUnavailable)
+    }
     val ocrPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         actions.onPickOcr(uris.map { it.toString() })
     }
@@ -216,7 +222,7 @@ internal fun ScanScreen(
                         icon = Icons.Filled.DocumentScanner,
                         title = stringResource(R.string.scan_camera_title),
                         subtitle = stringResource(R.string.scan_camera_subtitle),
-                        onClick = { startScanner(context.findActivity(), scanLauncher, actions.onScannerUnavailable) },
+                        onClick = scan,
                         modifier = Modifier.testTag("scan_camera"),
                     )
                     HeroCard(

@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-      No storage permissions: files come in through the Storage Access Framework and the photo picker,
-      and go out through FileProvider or "Save as". The app has no ads and no network code of its own.
+      Files come in through the Storage Access Framework and the photo picker, and go out through FileProvider,
+      MediaStore or "Save as". The app has no ads and no network code of its own.
     -->
     <!--
       heifwriter declares minSdk 28. It is only reached from ImageEncoding.encodeHeic, which is
@@ -27,11 +27,20 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING" tools:node="remove" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" tools:node="remove" />
 
-    <!-- Make sure no library sneaks in broad storage access. -->
+    <!--
+      Camera and photos, asked for at runtime right before a tool needs them (Scan asks for the camera; picking
+      images asks for photo access), with a clear explanation if the user says no. READ_MEDIA_IMAGES is Android 13+;
+      Android 12 and older use READ_EXTERNAL_STORAGE instead. The camera is optional hardware: phones without one
+      can still install the app and use every tool on existing files.
+    -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage"
-        tools:node="remove" />
+        android:maxSdkVersion="32" />
+
+    <!-- No write or all-files access: output goes through MediaStore, FileProvider or "Save as". -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage"
@@ -40,7 +49,9 @@
         android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage"
         tools:node="remove" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
+    <!-- Photos only: the app never reads videos or audio. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove" />
 
     <!--
       No internet at all. The app's own code never used the network; INTERNET only arrived merged from ML Kit, whose
@@ -49,26 +60,6 @@
       library brings it back. The document scanner runs inside Google Play services, in its own process.
     -->
     <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
-
-    <!--
-      Optional donations only hand a upi:// link to the user's own UPI app. Android 11+ hides other apps unless
-      declared, so this lets the Support screen see the installed UPI apps (any app handling upi://pay, plus the
-      common ones by name) and offer them in a chooser. No data is sent.
-    -->
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="upi" android:host="pay" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="upi" />
-        </intent>
-        <package android:name="com.google.android.apps.nbu.paisa.user" />
-        <package android:name="net.one97.paytm" />
-        <package android:name="com.phonepe.app" />
-        <package android:name="in.org.npci.upiapp" />
-    </queries>
 
     <application
         android:name=".MffApplication"
