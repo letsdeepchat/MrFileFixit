@@ -47,18 +47,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mrfilefixit.app.R
 import com.mrfilefixit.app.navigation.TopLevelDestination
+import com.mrfilefixit.app.settings.LanguageMenuButton
 import com.mrfilefixit.core.ui.components.IconBadge
 import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
 
+/** Most-used first: Scan, Images, PDF, Resume, then Exam forms (same order as the navigation bar). */
 private val tools = listOf(
-    TopLevelDestination.EXAM to R.string.home_exam_body,
-    TopLevelDestination.PDF to R.string.home_pdf_body,
-    TopLevelDestination.IMAGE to R.string.home_image_body,
     TopLevelDestination.SCAN to R.string.home_scan_body,
+    TopLevelDestination.IMAGE to R.string.home_image_body,
+    TopLevelDestination.PDF to R.string.home_pdf_body,
     TopLevelDestination.RESUME to R.string.home_resume_body,
+    TopLevelDestination.EXAM to R.string.home_exam_body,
 )
 
 @Composable
@@ -72,6 +74,7 @@ fun HomeScreen(
         modifier = Modifier.testTag("home"),
         titleContent = { BrandTitle() },
         actions = {
+            LanguageMenuButton()
             IconButton(onClick = onOpenSettings, modifier = Modifier.testTag("home_settings")) {
                 Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.nav_settings))
             }

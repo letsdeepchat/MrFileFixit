@@ -30,7 +30,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.ui.R as CoreR
+import com.mrfilefixit.core.ui.error.ErrorSnackbarEffect
 import com.mrfilefixit.core.ui.navigation.ReportInnerScreen
 import com.mrfilefixit.core.ui.share.shareFiles
 import com.mrfilefixit.core.ui.theme.Dimens
@@ -129,12 +131,13 @@ private fun PdfToolRoute(tool: PdfTool, sizeTarget: KbTarget?, onBack: (() -> Un
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     val chooser = stringResource(CoreR.string.share_chooser_title)
-    val errorText = stringResource(CoreR.string.error_unexpected)
+    var snackError by remember { mutableStateOf<AppError?>(null) }
+    ErrorSnackbarEffect(snackError, snackbar) { snackError = null }
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 is PdfEffect.Share -> context.shareFiles(effect.uris, effect.mimeType, chooser)
-                is PdfEffect.ShowError -> snackbar.showSnackbar(errorText)
+                is PdfEffect.ShowError -> snackError = effect.error
             }
         }
     }

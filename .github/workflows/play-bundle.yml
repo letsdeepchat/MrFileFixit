@@ -4,7 +4,7 @@ name: Play bundle
 # key never has to be stored as a repository secret. Runs on pushes to the bundle branch or from the Actions tab.
 on:
   push:
-    branches: [claude/project-thread-gsvv89]
+    branches: [claude/project-thread-gsvv89, claude/project-thread-qtk6po]
   workflow_dispatch:
 
 permissions:
@@ -22,8 +22,8 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
-      # Donations stay out of the Play build: Play's Payments policy only exempts tax-exempt charitable donations.
-      - run: ./gradlew :app:bundleRelease -Pmff.donations=false
+      # The Play build carries the UPI / PayPal support screen and no Play Billing.
+      - run: ./gradlew :app:bundleRelease
       - uses: actions/upload-artifact@v4
         with:
           name: app-release-unsigned-bundle

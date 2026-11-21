@@ -1,39 +1,27 @@
 package com.mrfilefixit.core.domain.support
 
 /**
- * Optional donations to the developer. The app has no payment code and no network code: these are only links
- * handed to the user's own UPI app or browser, which do the payment. Nothing about a donation is recorded.
+ * Optional donations to the developer. The app has no payment code and no network code: the user pays inside their
+ * own UPI app (by pasting the UPI ID or scanning the QR code) or on PayPal in the browser. Nothing is recorded.
+ *
+ * There is deliberately no "Pay with a UPI app" button. [UPI_ID] is a personal (person-to-person) UPI ID, and
+ * Google Pay and PhonePe reject `upi://pay` links that a third-party app hands them for a personal ID, showing a
+ * misleading "You have exceeded the bank limit" error. Paying from inside the UPI app has no such limit.
  */
 object Donation {
     const val UPI_ID = "deepakchaudhari705-1@okaxis"
     const val PAYEE_NAME = "Deepak Chaudhari"
     const val PAYPAL_URL = "https://paypal.me/MrFileFixit"
 
-    /** Suggested amounts in rupees. The user can always pay any amount, including none of these. */
-    val suggestedRupees = listOf(51, 101, 251, 501)
-
     /**
-     * What the bundled QR code (`upi_qr.png`) encodes: [upiUri] with no amount and no note, so any UPI app can
-     * scan it from a second phone or a screenshot. Regenerate the image if this changes.
+     * What the bundled QR code (`upi_qr.png`) encodes: the minimal personal UPI payload, payee address, name and
+     * currency only. No `am`, `tn`, `tr`, `tid` or `mc`, which a personal ID cannot carry. Regenerate the image if
+     * this changes.
      */
     const val QR_PAYLOAD = "upi://pay?pa=deepakchaudhari705-1@okaxis&pn=Deepak%20Chaudhari&cu=INR"
 
-    /** Upper bound for a prefilled amount; anything else is left for the user to type in their UPI app. */
-    const val MAX_RUPEES = 100_000
-
-    /**
-     * A `upi://pay` link (NPCI UPI linking specification) for any UPI app: `pa`, `pn`, then `am` with paise for a
-     * preset and `cu=INR`. [amountRupees] null ("Any amount") leaves out `am`, so the UPI app asks for the amount.
-     * No note by default: some UPI apps decline person-to-person links that carry one.
-     */
-    fun upiUri(amountRupees: Int? = null, note: String = ""): String = buildString {
-        append("upi://pay?pa=").append(encode(UPI_ID))
-        append("&pn=").append(encode(PAYEE_NAME))
-        if (amountRupees != null && amountRupees in 1..MAX_RUPEES) append("&am=").append(amountRupees).append(".00")
-        append("&cu=INR")
-        val cleanNote = note.filter { it.isLetterOrDigit() || it == ' ' }.trim().take(MAX_NOTE)
-        if (cleanNote.isNotEmpty()) append("&tn=").append(encode(cleanNote))
-    }
+    /** The standard personal UPI link for [UPI_ID]: `pa`, `pn` and `cu=INR`, nothing else. */
+    fun upiUri(): String = "upi://pay?pa=" + encode(UPI_ID) + "&pn=" + encode(PAYEE_NAME) + "&cu=INR"
 
     /** The PayPal.Me page; PayPal asks for the amount and currency. */
     fun payPalUri(): String = PAYPAL_URL
@@ -51,7 +39,6 @@ object Donation {
         }
     }
 
-    private const val MAX_NOTE = 50
     private const val BYTE = 0xFF
     private const val ASCII = 0x80
     private const val NIBBLE = 4

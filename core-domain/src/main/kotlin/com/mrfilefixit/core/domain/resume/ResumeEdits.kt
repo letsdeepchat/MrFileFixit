@@ -93,4 +93,26 @@ object ResumeFactory {
         style = ResumeStyle(font = template.font, accentArgb = template.accentArgb),
         updatedAtMillis = nowMillis,
     )
+
+    /**
+     * A new draft for the person to fill in: the template's look and section order with empty fields (one empty
+     * entry per list section). The template's sample content is shown as greyed-out examples in the editor
+     * ([ResumeTemplate.sampleFor]) instead of filler text that has to be deleted first.
+     */
+    fun blankFromTemplate(template: ResumeTemplate, id: String, nowMillis: Long, newId: () -> String): Resume =
+        Resume(
+            id = id,
+            templateId = template.id,
+            contact = ContactInfo(),
+            sections = template.sections.map { sample ->
+                ResumeSection(
+                    id = newId(),
+                    kind = sample.kind,
+                    title = sample.title,
+                    entries = if (sample.kind.isText) emptyList() else listOf(ResumeEntry(id = newId())),
+                )
+            },
+            style = ResumeStyle(font = template.font, accentArgb = template.accentArgb),
+            updatedAtMillis = nowMillis,
+        )
 }

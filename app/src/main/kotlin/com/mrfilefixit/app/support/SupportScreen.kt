@@ -3,18 +3,27 @@ package com.mrfilefixit.app.support
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.ClipData
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -23,11 +32,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -35,12 +45,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,11 +63,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import com.mrfilefixit.app.R
 import com.mrfilefixit.core.domain.support.Donation
 import com.mrfilefixit.core.ui.R as CoreR
-import com.mrfilefixit.core.ui.components.PrimaryActionButton
 import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.share.shareFile
@@ -73,23 +79,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Optional donations: UPI for India (QR code, UPI ID and a `upi://pay` link to the user's own UPI app) and
- * PayPal.Me for everyone else. The app takes no part in the payment: it only opens another app or the browser.
+ * Optional support for the developer: UPI (QR code and UPI ID, paid from inside the user's own UPI app) and
+ * PayPal.Me. No Google Play Billing, so the Play listing shows no "In-app purchases" label. Every tool stays free,
+ * and nothing here unlocks anything.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SupportScreen(onBack: () -> Unit) {
-    val context = LocalContext.current
-    val clipboard = LocalClipboard.current
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
-    var amount by rememberSaveable { mutableStateOf<Int?>(null) }
-    val copied = stringResource(R.string.support_copied)
-    val noUpiApp = stringResource(R.string.support_no_upi_app)
-    val noBrowser = stringResource(R.string.support_no_browser)
-    val chooseUpi = stringResource(R.string.support_choose_upi)
-    val chooser = stringResource(CoreR.string.share_chooser_title)
-    val shareFailed = stringResource(CoreR.string.error_unexpected)
     val say: (String) -> Unit = { message -> scope.launch { snackbar.showSnackbar(message) } }
 
     ToolScaffold(
@@ -115,101 +112,8 @@ fun SupportScreen(onBack: () -> Unit) {
                     Icon(Icons.Filled.Favorite, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Text(stringResource(R.string.support_intro), style = MaterialTheme.typography.bodyLarge)
                 }
-
-                SectionCard(Modifier.fillMaxWidth()) {
-                    Heading(stringResource(R.string.support_upi_title))
-                    Text(stringResource(R.string.support_upi_scan), style = MaterialTheme.typography.bodyMedium)
-                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Image(
-                            painterResource(R.drawable.upi_qr),
-                            contentDescription = stringResource(R.string.support_qr_cd, Donation.PAYEE_NAME),
-                            modifier = Modifier
-                                .size(QR_SIZE.dp)
-                                .clip(RoundedCornerShape(Dimens.ButtonCorner))
-                                // QR codes need a light quiet zone to scan, also in dark theme.
-                                .background(Color.White)
-                                .testTag("support_qr"),
-                        )
-                    }
-                    Text(
-                        stringResource(R.string.support_payee, Donation.PAYEE_NAME),
-                        style = MaterialTheme.typography.titleSmall,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Text(
-                        stringResource(R.string.support_upi_id, Donation.UPI_ID),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS, Alignment.CenterHorizontally),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-                                scope.launch {
-                                    clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("UPI ID", Donation.UPI_ID)))
-                                    say(copied)
-                                }
-                            },
-                            modifier = Modifier.testTag("support_copy_upi"),
-                        ) {
-                            Icon(Icons.Filled.ContentCopy, contentDescription = null)
-                            Text(stringResource(R.string.support_copy_upi), Modifier.padding(start = Dimens.SpaceS))
-                        }
-                        OutlinedButton(
-                            onClick = {
-                                scope.launch {
-                                    val uri = exportQr(context)
-                                    if (uri == null) say(shareFailed) else context.shareFile(uri, PNG, chooser)
-                                }
-                            },
-                            modifier = Modifier.testTag("support_share_qr"),
-                        ) {
-                            Icon(Icons.Filled.Share, contentDescription = null)
-                            Text(stringResource(R.string.support_share_qr), Modifier.padding(start = Dimens.SpaceS))
-                        }
-                    }
-                    Text(stringResource(R.string.support_amount), style = MaterialTheme.typography.labelLarge)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
-                        FilterChip(
-                            selected = amount == null,
-                            onClick = { amount = null },
-                            label = { Text(stringResource(R.string.support_amount_any)) },
-                        )
-                        Donation.suggestedRupees.forEach { rupees ->
-                            FilterChip(
-                                selected = amount == rupees,
-                                onClick = { amount = rupees },
-                                label = { Text(stringResource(R.string.support_amount_value, rupees)) },
-                                modifier = Modifier.testTag("support_amount_$rupees"),
-                            )
-                        }
-                    }
-                    PrimaryActionButton(
-                        text = stringResource(R.string.support_pay_upi),
-                        onClick = { if (!openUpi(context, Donation.upiUri(amount), chooseUpi)) say(noUpiApp) },
-                        modifier = Modifier.testTag("support_pay_upi"),
-                    )
-                }
-
-                SectionCard(Modifier.fillMaxWidth()) {
-                    Heading(stringResource(R.string.support_paypal_title))
-                    Text(stringResource(R.string.support_paypal_body), style = MaterialTheme.typography.bodyMedium)
-                    OutlinedButton(
-                        onClick = { if (!openLink(context, Donation.payPalUri())) say(noBrowser) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("support_paypal"),
-                    ) {
-                        Icon(Icons.Filled.Public, contentDescription = null)
-                        Text(stringResource(R.string.support_paypal_button), Modifier.padding(start = Dimens.SpaceS))
-                    }
-                }
-
+                UpiCard(say)
+                PayPalCard(say)
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceM)) {
                     Icon(
                         Icons.Filled.Lock,
@@ -234,30 +138,130 @@ fun SupportScreen(onBack: () -> Unit) {
     }
 }
 
+/**
+ * UPI: QR code, UPI ID and three actions that always work with a personal UPI ID: copy the ID, save the QR code to
+ * the gallery, or share it. The user then pays inside GPay, PhonePe or Paytm (paste the ID, or Scan QR → upload from
+ * gallery). There is no `upi://pay` button: GPay and PhonePe reject such links to a personal ID with a false
+ * "bank limit exceeded" error (see [Donation]).
+ */
+@Composable
+private fun UpiCard(say: (String) -> Unit) {
+    val context = LocalContext.current
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
+    val copied = stringResource(R.string.support_copied)
+    val saved = stringResource(R.string.support_qr_saved)
+    val chooser = stringResource(CoreR.string.share_chooser_title)
+    val failed = stringResource(CoreR.string.error_unexpected)
+    // Android 9 has no MediaStore RELATIVE_PATH without a storage permission, so it saves through "Save as".
+    val saveAs = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(PNG)) { uri ->
+        if (uri != null) scope.launch { say(if (writeQr(context, uri)) saved else failed) }
+    }
+    SectionCard(Modifier.fillMaxWidth()) {
+        Heading(stringResource(R.string.support_upi_title))
+        Text(stringResource(R.string.support_upi_scan), style = MaterialTheme.typography.bodyMedium)
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Image(
+                painterResource(R.drawable.upi_qr),
+                contentDescription = stringResource(R.string.support_qr_cd, Donation.PAYEE_NAME),
+                modifier = Modifier
+                    .size(QR_SIZE.dp)
+                    .clip(RoundedCornerShape(Dimens.ButtonCorner))
+                    // QR codes need a light quiet zone to scan, also in dark theme.
+                    .background(Color.White)
+                    .testTag("support_qr"),
+            )
+        }
+        Text(
+            stringResource(R.string.support_payee, Donation.PAYEE_NAME),
+            style = MaterialTheme.typography.titleSmall,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            stringResource(R.string.support_upi_id, Donation.UPI_ID),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Button(
+            onClick = {
+                scope.launch {
+                    clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("UPI ID", Donation.UPI_ID)))
+                    say(copied)
+                }
+            },
+            shape = RoundedCornerShape(Dimens.ButtonCorner),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = Dimens.PrimaryButtonHeight)
+                .testTag("support_copy_upi"),
+        ) {
+            Icon(Icons.Filled.ContentCopy, contentDescription = null)
+            Text(stringResource(R.string.support_copy_upi), Modifier.padding(start = Dimens.SpaceS))
+        }
+        OutlinedButton(
+            onClick = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    scope.launch { say(if (saveQrToGallery(context)) saved else failed) }
+                } else {
+                    saveAs.launch(QR_FILE_NAME)
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("support_save_qr"),
+        ) {
+            Icon(Icons.Filled.Download, contentDescription = null)
+            Text(stringResource(R.string.support_save_qr), Modifier.padding(start = Dimens.SpaceS))
+        }
+        OutlinedButton(
+            onClick = {
+                scope.launch {
+                    val uri = exportQr(context)
+                    if (uri == null) say(failed) else context.shareFile(uri, PNG, chooser)
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("support_share_qr"),
+        ) {
+            Icon(Icons.Filled.Share, contentDescription = null)
+            Text(stringResource(R.string.support_share_qr), Modifier.padding(start = Dimens.SpaceS))
+        }
+        Text(
+            stringResource(R.string.support_upi_tip),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun PayPalCard(say: (String) -> Unit) {
+    val context = LocalContext.current
+    val noBrowser = stringResource(R.string.support_no_browser)
+    SectionCard(Modifier.fillMaxWidth()) {
+        Heading(stringResource(R.string.support_paypal_title))
+        Text(stringResource(R.string.support_paypal_body), style = MaterialTheme.typography.bodyMedium)
+        OutlinedButton(
+            onClick = { if (!openLink(context, Donation.payPalUri())) say(noBrowser) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("support_paypal"),
+        ) {
+            Icon(Icons.Filled.Public, contentDescription = null)
+            Text(stringResource(R.string.support_paypal_button), Modifier.padding(start = Dimens.SpaceS))
+        }
+    }
+}
+
 @Composable
 private fun Heading(text: String) {
     Text(text, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
-}
-
-/**
- * Hands [upiUri] to the user's UPI app (GPay, PhonePe, Paytm, BHIM, ...), with a chooser when several are
- * installed. False only when Android has nothing that opens `upi://` links.
- *
- * The lookup uses no flags: several UPI apps do not mark their pay screen as a default handler, so
- * MATCH_DEFAULT_ONLY reported "no UPI app" on phones that had them. If the lookup still finds nothing (a hidden
- * package), the link is opened anyway and only a real ActivityNotFoundException counts as "none installed".
- */
-private fun openUpi(context: Context, upiUri: String, chooserTitle: String): Boolean {
-    val intent = Intent(Intent.ACTION_VIEW, upiUri.toUri())
-
-    @Suppress("DEPRECATION") // The flags overload is API 33+; 0 means the same on every version.
-    val found = context.packageManager.queryIntentActivities(intent, 0).size
-    return try {
-        context.startActivity(if (found > 1) Intent.createChooser(intent, chooserTitle) else intent)
-        true
-    } catch (_: ActivityNotFoundException) {
-        false
-    }
 }
 
 /** Opens [url] in the user's browser. False when there is none. */
@@ -287,5 +291,62 @@ private suspend fun exportQr(context: Context): String? = withContext(Dispatcher
     }
 }
 
+/**
+ * Saves the QR code as a PNG in Pictures/MrFileFixit through MediaStore (Android 10+, no permission needed), so
+ * users can pick it from GPay / PhonePe → Scan QR → upload from gallery. True when it was written.
+ */
+@RequiresApi(Build.VERSION_CODES.Q)
+private suspend fun saveQrToGallery(context: Context): Boolean = withContext(Dispatchers.IO) {
+    val resolver = context.contentResolver
+    val values = ContentValues().apply {
+        put(MediaStore.Images.Media.DISPLAY_NAME, QR_FILE_NAME)
+        put(MediaStore.Images.Media.MIME_TYPE, PNG)
+        put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/MrFileFixit")
+        put(MediaStore.Images.Media.IS_PENDING, 1)
+    }
+    val uri = runCatching {
+        resolver.insert(MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), values)
+    }.getOrNull() ?: return@withContext false
+    val ok = writeQrNow(context, uri)
+    if (ok) {
+        runCatching {
+            resolver.update(uri, ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }, null, null)
+        }
+    } else {
+        runCatching { resolver.delete(uri, null, null) }
+    }
+    ok
+}
+
+private suspend fun writeQr(context: Context, uri: Uri): Boolean = withContext(Dispatchers.IO) {
+    writeQrNow(context, uri)
+}
+
+/**
+ * Writes the bundled QR code to [uri] as a crisp PNG: scaled up [QR_EXPORT_SCALE]× with nearest-neighbour sampling,
+ * so modules stay sharp, keeping the image's white quiet zone.
+ */
+@SuppressLint("ResourceType")
+private fun writeQrNow(context: Context, uri: Uri): Boolean {
+    val source = context.resources.openRawResource(R.drawable.upi_qr).use { BitmapFactory.decodeStream(it) }
+        ?: return false
+    val big = source.scale(source.width * QR_EXPORT_SCALE, source.height * QR_EXPORT_SCALE, filter = false)
+    return try {
+        context.contentResolver.openOutputStream(uri)?.use { out ->
+            big.compress(Bitmap.CompressFormat.PNG, PNG_QUALITY, out)
+        } ?: false
+    } catch (_: IOException) {
+        false
+    } catch (_: SecurityException) {
+        false
+    } finally {
+        if (big !== source) big.recycle()
+        source.recycle()
+    }
+}
+
 private const val QR_SIZE = 220
+private const val QR_EXPORT_SCALE = 2
+private const val PNG_QUALITY = 100
+private const val QR_FILE_NAME = "MrFileFixit_UPI_QR.png"
 private const val PNG = "image/png"

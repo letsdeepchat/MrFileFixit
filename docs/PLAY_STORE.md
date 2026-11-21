@@ -33,11 +33,22 @@ Signing in the console so Google holds the app signing key.
 | Permission | Why |
 | --- | --- |
 | `ACCESS_NETWORK_STATE` (merged from ML Kit and WorkManager) | Only reads whether a network exists. It cannot send anything. |
+| `CAMERA` | Asked for at runtime right before the document scanner opens. Photos stay on the phone. |
+| `READ_MEDIA_IMAGES` (Android 13+) | Asked for at runtime right before an image is picked for a tool. |
+| `READ_EXTERNAL_STORAGE` (`maxSdkVersion="32"`) | The Android 12-and-older equivalent of `READ_MEDIA_IMAGES`. |
 
 Removed on purpose: `INTERNET`, `FOREGROUND_SERVICE` (and its `DATA_SYNC` / `MEDIA_PROCESSING` types),
-`POST_NOTIFICATIONS`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `MANAGE_EXTERNAL_STORAGE`,
-`READ_MEDIA_IMAGES` and `AD_ID`. Without `INTERNET` the app cannot open a network connection at all. Files arrive through the system photo picker and document picker, so no
-Photo and Video Permissions declaration is needed. CI fails if any of them reappears in the merged manifest.
+`POST_NOTIFICATIONS`, `WRITE_EXTERNAL_STORAGE`, `MANAGE_EXTERNAL_STORAGE`, `READ_MEDIA_VIDEO`, `READ_MEDIA_AUDIO`,
+`com.android.vending.BILLING` and `AD_ID`. Without `INTERNET` the app cannot open a network connection at all. CI
+fails if any of them reappears in the merged manifest, or if `READ_EXTERNAL_STORAGE` loses its `maxSdkVersion`.
+
+### Photo and Video Permissions declaration
+
+Since 1.0.9 the app declares `READ_MEDIA_IMAGES`, so Play Console asks for the **Photo and Video Permissions**
+declaration (App content). Google allows the permission only for apps whose core purpose needs broad photo access;
+others are expected to use the photo picker. Describe the image tools (resize, compress, exam photo/signature
+fixer, scan to PDF) as the core use. If review rejects it, remove `READ_MEDIA_IMAGES` and `READ_EXTERNAL_STORAGE`
+from the manifest: every picker keeps working, because the app still opens images through the system photo picker.
 
 ### Foreground services
 
@@ -72,14 +83,24 @@ disclosures, not this app's.
 
 ## Donations
 
-The Play build has **no donation feature**. CI's release job builds the bundle with `-Pmff.donations=false`, which
-removes the Support screen, the Home card and the Settings row; the `<queries>` entries for UPI apps are the only
-trace left. Google Play's Payments policy requires Google Play billing for in-app payments and forbids leading users
-to other payment methods, with an exception for tax-exempt (charitable) donations only. A tip to the developer's
-own UPI ID or PayPal is not covered, and reviewers flag it.
+Since 1.0.8 the Play build carries the same optional **UPI and PayPal** support screen as the tester build, and
+**no Google Play Billing**: the billing library is gone and the manifest removes `com.android.vending.BILLING`
+(`tools:node="remove"`). CI fails if Play Billing appears in the merged manifest. Every tool stays free and support
+unlocks nothing.
 
-The sideloaded tester build on GitHub releases keeps donations. To accept tips on Play later, add Google Play
-Billing consumable products (for example "Tip ₹51") that unlock nothing.
+The "In-app purchases" label on the store listing is set by Play Console, not only by the app. It goes away once
+(1) every in-app product and subscription under **Monetize with Play → Products** is deactivated or deleted, and
+(2) no release on any track (production, open, closed or internal testing) still serves an older bundle that has
+the `BILLING` permission. Roll out 1.0.8 or later to every track, then wait for the listing to refresh (can take a
+day or more).
+
+The UPI section offers **Copy UPI ID**, **Save QR to Gallery** (PNG in `Pictures/MrFileFixit` via MediaStore) and
+**Share QR code**. There is no `upi://pay` button: the UPI ID is a personal one, and Google Pay and PhonePe reject
+such links from a third-party app with a false "You have exceeded the bank limit" error.
+
+**Policy risk, accepted by the owner:** Google Play's Payments policy asks apps to use Google Play billing for
+in-app payments to the developer and exempts only tax-exempt charitable donations. Links to the developer's own
+UPI ID or PayPal can be flagged in review. If that happens, build with `-Pmff.donations=false` to drop the screen.
 
 * **Data safety:** unchanged.
 * **Financial features:** No. The app does not process payments.
@@ -138,9 +159,12 @@ your device and hands the pages back to the app ([Google privacy policy](https:/
   Scan screens in light and dark).
 * Short description (80 chars): "Fix photos, signatures and PDFs for exam forms. Free, offline, no ads."
 * Category: Productivity.
-* Full description must include, near the top: "Mr File Fixit is not affiliated with, endorsed by or connected to
-  SSC, UPSC, IBPS, RRB, NTA or any government body. Photo and signature presets are a convenience; always check
-  the official notification for your exam."
+* Full description: open with the disclaimer that the app is independent, is not a government app and is not
+  affiliated with any exam body, then an "Official sources" list with one homepage per exam body named in the app
+  (the same URLs as `sourceUrl` in exam_rules.json). Play rejected earlier versions under Misleading Claims for
+  missing source links, then for an unreachable one (afcat.cdac.in, which Play's reviewers could not open, so the
+  AFCAT preset was removed). Avoid C-DAC and regional hosts. The current text is in the project's
+  `store-assets/full-description-*.txt`.
 * Don't use exam bodies' logos or emblems in the icon, screenshots or feature graphic.
 
 ## Before the first upload

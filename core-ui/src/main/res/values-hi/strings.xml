@@ -27,7 +27,7 @@
     <string name="job_done">हो गया</string>
 
     <string name="disclaimer_title">आधिकारिक सूचना ज़रूर देखें</string>
-    <string name="disclaimer_body">ये साइज़ सार्वजनिक गाइड और आधिकारिक पेजों से जुटाए गए हैं, पर ये आधिकारिक नियम नहीं हैं और हर साल बदलते हैं। आवेदन जमा करने से पहले अपनी परीक्षा की आधिकारिक अधिसूचना से फ़ोटो, हस्ताक्षर और दस्तावेज़ों की शर्तें हमेशा मिलाएँ।</string>
+    <string name="disclaimer_body">Mr File Fixit एक स्वतंत्र ऐप है। यह सरकारी ऐप नहीं है और इसका SSC, UPSC, IBPS, SBI, RRB, NTA या किसी भी सरकारी संस्था से कोई संबंध नहीं है। ये साइज़ सार्वजनिक गाइड और आधिकारिक पेजों से जुटाए गए हैं, पर ये आधिकारिक नियम नहीं हैं और हर साल बदलते हैं। आवेदन जमा करने से पहले अपनी परीक्षा की आधिकारिक अधिसूचना से फ़ोटो, हस्ताक्षर और दस्तावेज़ों की शर्तें हमेशा मिलाएँ। हर परीक्षा पर \"आधिकारिक साइट खोलें\" से उसकी आधिकारिक वेबसाइट देखें।</string>
     <string name="verification_community">समुदाय से जुटाया गया</string>
     <string name="verification_verified">आधिकारिक पेज से मिलाया, %1$s</string>
     <string name="last_verified">आखिरी जाँच: %1$s</string>
@@ -77,6 +77,7 @@
     <string name="error_no_text_found">इस PDF में चुनने योग्य टेक्स्ट नहीं है, शायद यह स्कैन है। इसके बजाय स्कैन और OCR में "स्टोरेज से टेक्स्ट निकालें" का उपयोग करें।</string>
     <string name="error_not_a_resume">यह फ़ाइल रिज़्यूमे बिल्डर से नहीं बनी है, इसलिए इसे बदलने के लिए नहीं खोला जा सकता। रिज़्यूमे टैब से एक्सपोर्ट की गई Word फ़ाइल चुनें।</string>
     <string name="error_unexpected">कुछ गलत हो गया। कृपया फिर से कोशिश करें।</string>
+    <string name="error_unexpected_code">कुछ गलत हो गया। कृपया फिर से कोशिश करें। अगर ऐसा बार-बार हो, तो हमें यह कोड बताएँ: %1$s</string>
 
     <string name="cd_thumbnail">चुनी गई फ़ाइल का प्रीव्यू</string>
     <string name="cd_crop_area">क्रॉप एरिया। खिसकाने के लिए खींचें, ज़ूम के लिए पिंच करें।</string>
@@ -118,4 +119,12 @@
     <string name="discard_leave">बाहर जाएँ</string>
     <string name="discard_stay">रुकें</string>
     <string name="action_close">बंद करें</string>
+    <!-- Runtime permissions -->
+    <string name="permission_camera_title">कैमरा अनुमति चाहिए</string>
+    <string name="permission_camera_body">स्कैन आपके दस्तावेज़ों की फ़ोटो लेने के लिए कैमरे का उपयोग करता है। स्कैन करने के लिए सेटिंग्स → अनुमतियाँ में कैमरा की अनुमति दें। फ़ोटो आपके फ़ोन में ही रहती हैं।</string>
+    <string name="permission_photos_title">फ़ोटो अनुमति</string>
+    <string name="permission_photos_body">Mr File Fixit केवल वही इमेज पढ़ता है जो आप चुनते हैं, और वे आपके फ़ोन से बाहर नहीं जातीं। आप सेटिंग्स → अनुमतियाँ में फ़ोटो की अनुमति दे सकते हैं, या जारी रखकर इमेज एक-एक करके चुन सकते हैं।</string>
+    <string name="permission_open_settings">सेटिंग्स खोलें</string>
+    <string name="permission_continue_picker">जारी रखें</string>
+    <string name="permission_not_now">अभी नहीं</string>
 </resources>

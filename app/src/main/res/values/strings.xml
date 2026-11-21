@@ -26,6 +26,11 @@
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_dynamic_color">Use wallpaper colours</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">Phone language</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_hindi">हिन्दी</string>
+    <string name="settings_language_follows_phone">The app uses your phone\'s language. To change it, change the phone\'s language in Settings.</string>
     <string name="settings_privacy_title">Privacy</string>
     <string name="settings_privacy_body">Mr File Fixit is free, has no ads, no accounts and no sign-in. Here is what happens to your files:</string>
     <string name="privacy_offline_title" formatted="false">100% on-device processing</string>
@@ -38,26 +43,20 @@
     <string name="privacy_metadata_body">Location, camera details and other EXIF data are stripped from images when you export them.</string>
     <string name="settings_version">Version %1$s</string>
     <!-- Home quick cards -->
-    <string name="home_support_title">Support Mr File Fixit</string>
-    <string name="home_support_body">Free, with no ads and no premium. If it helped you, an optional donation helps it improve.</string>
+    <string name="home_support_title">Support &amp; Payment</string>
+    <string name="home_support_body">Support the developer so we can keep all tools free and build advanced features</string>
     <!-- Settings and support screen -->
-    <string name="settings_support_title">Support the app</string>
-    <string name="settings_support_body">Optional donation by UPI or PayPal</string>
-    <string name="support_title">Support the app</string>
-    <string name="support_intro">Mr File Fixit is free, with no ads, no premium and no sign-in. If it saved you time, you can donate any amount to help improve its quality and add new features. It is completely optional: every tool stays free either way.</string>
+    <string name="settings_support_title">Support &amp; Payment</string>
+    <string name="settings_support_body">Optional, to keep every tool free</string>
+    <string name="support_title">Support the developer</string>
+    <string name="support_intro">Mr File Fixit is free, with no ads, no premium and no sign-in. If it saved you time, you can support the developer to help improve its quality and add new features. It is completely optional: every tool stays free either way.</string>
     <string name="support_upi_title">UPI (India)</string>
-    <string name="support_upi_scan">Scan this QR code with any UPI app, such as Google Pay, PhonePe, Paytm or BHIM.</string>
+    <string name="support_upi_scan">Scan this QR code from another phone with any UPI app, such as Google Pay, PhonePe, Paytm or BHIM.</string>
     <string name="support_qr_cd">UPI QR code to donate to %1$s</string>
     <string name="support_payee">Payee: %1$s</string>
     <string name="support_upi_id">UPI ID: %1$s</string>
     <string name="support_copy_upi">Copy UPI ID</string>
-    <string name="support_copied">UPI ID copied</string>
-    <string name="support_amount">Pick an amount, or type your own in the UPI app</string>
-    <string name="support_amount_any">Any amount</string>
-    <string name="support_amount_value">₹%1$d</string>
-    <string name="support_pay_upi">Pay with a UPI app</string>
-    <string name="support_choose_upi">Pay with</string>
-    <string name="support_no_upi_app">No UPI app found on this phone. Scan the QR code from another phone or copy the UPI ID.</string>
+    <string name="support_copied">UPI ID copied. Open GPay, PhonePe, or Paytm and paste to pay.</string>
     <string name="support_share_qr">Share QR code</string>
     <string name="support_paypal_title">PayPal (outside India)</string>
     <string name="support_paypal_body">Opens paypal.me/MrFileFixit in your browser, where you choose the amount and currency.</string>
@@ -65,4 +64,7 @@
     <string name="support_no_browser">No browser found to open PayPal.</string>
     <string name="support_privacy">Payments happen in your UPI app or on PayPal. Mr File Fixit never sees your payment details and does not record donations.</string>
     <string name="support_thanks">Thank you for keeping a free, private app going!</string>
+    <string name="support_save_qr">Save QR to Gallery</string>
+    <string name="support_qr_saved">QR code saved to Pictures/MrFileFixit. In GPay or PhonePe, tap Scan QR and upload it from the gallery.</string>
+    <string name="support_upi_tip">Tip: Copy the UPI ID or save the QR code and pay directly inside GPay, PhonePe, or Paytm.</string>
 </resources>

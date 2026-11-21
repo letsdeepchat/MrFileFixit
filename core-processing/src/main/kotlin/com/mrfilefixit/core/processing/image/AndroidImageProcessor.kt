@@ -19,6 +19,7 @@ import com.mrfilefixit.core.domain.image.ImagePlan
 import com.mrfilefixit.core.domain.image.ImageProcessor
 import com.mrfilefixit.core.domain.image.ImageRequest
 import com.mrfilefixit.core.domain.image.JpegSegments
+import com.mrfilefixit.core.domain.image.MetadataGroup
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.domain.image.OutputGeometry
 import com.mrfilefixit.core.domain.image.OutputSpec
@@ -76,6 +77,7 @@ internal class AndroidImageProcessor @Inject constructor(
                     sizeBytes = source.sizeBytes ?: 0L,
                     rotationDegrees = raw.exifRotation,
                     hasMetadata = raw.hasExif,
+                    metadata = raw.metadata,
                 ),
             )
         }
@@ -95,7 +97,12 @@ internal class AndroidImageProcessor @Inject constructor(
                 progress.report(PROGRESS_DECODED / 2)
 
                 if (output.target == EncodeTarget.Original) {
-                    losslessStrip(request, raw)?.let { return@runCatchingAppFlat success(it) }
+                    val cleaned = if (request.removeMetadata == MetadataGroup.ALL) {
+                        losslessStrip(request, raw)
+                    } else {
+                        selectiveStrip(request, raw)
+                    }
+                    cleaned?.let { return@runCatchingAppFlat success(it) }
                 }
 
                 val background = request.effects.background
@@ -314,6 +321,38 @@ internal class AndroidImageProcessor @Inject constructor(
         } finally {
             if (bitmap !== source && !bitmap.isRecycled) bitmap.recycle()
         }
+    }
+
+    /**
+     * "Remove metadata" with some groups kept: a fully clean copy of the JPEG/PNG bytes, then the kept EXIF tags
+     * (and the orientation, so the photo stays upright) written back. Null for other formats, which are
+     * re-encoded and lose everything.
+     */
+    private fun selectiveStrip(request: ImageRequest, raw: RawImageInfo): ProcessedImage? {
+        if (request.operations.isNotEmpty() || !request.effects.isNone) return null
+        val format = raw.format?.takeIf { it == request.output.format } ?: return null
+        val bytes = resolver.readAllLimited(request.source.uri, limits.maxFileBytes)
+        val clean = when (format) {
+            ImageFormat.JPEG -> JpegSegments.stripMetadata(bytes)
+            ImageFormat.PNG -> PngChunks.stripMetadata(bytes)
+            else -> null
+        } ?: return null
+        val file = newOutputFile(request.outputDir, request.outputBaseName, format.extension)
+        file.writeBytes(clean)
+        ExifRewrite.copyTags(bytes, file, MetadataGroup.keptTags(request.removeMetadata))
+        return ProcessedImage(
+            OutputFile(
+                file.absolutePath,
+                file.name,
+                format.mimeType,
+                file.length(),
+                raw.uprightWidth,
+                raw.uprightHeight,
+            ),
+            format,
+            quality = null,
+            padded = false,
+        )
     }
 
     /** Lossless metadata strip for JPEG/PNG that are already upright. Returns null to fall back to re-encode. */

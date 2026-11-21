@@ -5,7 +5,9 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -13,7 +15,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.ui.R as CoreR
+import com.mrfilefixit.core.ui.error.ErrorSnackbarEffect
 import com.mrfilefixit.core.ui.share.shareFiles
 import kotlinx.serialization.Serializable
 
@@ -45,12 +49,13 @@ fun ImageTab(
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     val chooser = stringResource(CoreR.string.share_chooser_title)
-    val errorText = stringResource(CoreR.string.error_unexpected)
+    var snackError by remember { mutableStateOf<AppError?>(null) }
+    ErrorSnackbarEffect(snackError, snackbar) { snackError = null }
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 is ImageEffect.Share -> context.shareFiles(effect.uris, effect.mimeType, chooser)
-                is ImageEffect.ShowError -> snackbar.showSnackbar(errorText)
+                is ImageEffect.ShowError -> snackError = effect.error
             }
         }
     }

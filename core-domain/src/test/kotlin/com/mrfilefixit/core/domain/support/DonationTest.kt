@@ -2,12 +2,11 @@ package com.mrfilefixit.core.domain.support
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DonationTest {
     @Test
-    fun `upi link pays the developer's UPI id in rupees with no amount by default`() {
+    fun `upi link is the minimal personal payload`() {
         assertEquals(
             "upi://pay?pa=deepakchaudhari705-1@okaxis&pn=Deepak%20Chaudhari&cu=INR",
             Donation.upiUri(),
@@ -15,37 +14,15 @@ class DonationTest {
     }
 
     @Test
-    fun `the bundled QR payload is the plain link without amount or note`() {
+    fun `the bundled QR payload is the plain link`() {
         assertEquals(Donation.QR_PAYLOAD, Donation.upiUri())
     }
 
     @Test
-    fun `every preset is prefilled exactly as NPCI expects`() {
-        Donation.suggestedRupees.forEach { rupees ->
-            assertEquals(
-                "upi://pay?pa=deepakchaudhari705-1@okaxis&pn=Deepak%20Chaudhari&am=$rupees.00&cu=INR",
-                Donation.upiUri(rupees),
-            )
-        }
-    }
-
-    @Test
-    fun `a suggested amount is prefilled with paise`() {
-        assertTrue(Donation.upiUri(101).contains("&am=101.00&cu=INR"))
-    }
-
-    @Test
-    fun `impossible amounts are left for the user to type`() {
-        assertFalse(Donation.upiUri(0).contains("am="))
-        assertFalse(Donation.upiUri(-5).contains("am="))
-        assertFalse(Donation.upiUri(Donation.MAX_RUPEES + 1).contains("am="))
-    }
-
-    @Test
-    fun `the note cannot inject extra parameters`() {
-        val uri = Donation.upiUri(note = "thanks&pa=attacker@bank")
-        assertEquals(1, Regex("pa=").findAll(uri).count())
-        assertTrue(uri.endsWith("&tn=thankspaattackerbank"))
+    fun `the QR payload carries no merchant or transaction fields`() {
+        val params = Donation.QR_PAYLOAD.substringAfter('?').split('&').map { it.substringBefore('=') }
+        assertEquals(listOf("pa", "pn", "cu"), params)
+        listOf("am", "tn", "tr", "tid", "mc").forEach { assertFalse(it in params) }
     }
 
     @Test

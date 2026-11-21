@@ -9,6 +9,8 @@ import android.os.Build
 import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import com.mrfilefixit.core.domain.image.ImageFormat
+import com.mrfilefixit.core.domain.image.MetadataGroup
+import com.mrfilefixit.core.domain.image.MetadataSummary
 import com.mrfilefixit.core.domain.image.NormalizedRect
 import com.mrfilefixit.core.domain.result.Result
 import com.mrfilefixit.core.domain.security.InputLimits
@@ -28,6 +30,7 @@ internal data class RawImageInfo(
     val exifRotation: Int,
     val flipped: Boolean,
     val hasExif: Boolean,
+    val metadata: MetadataSummary = MetadataSummary.NONE,
 ) {
     val format: ImageFormat? get() = ImageFormat.fromMimeType(mimeType)
     val uprightWidth: Int get() = if (exifRotation % 180 == 0) width else height
@@ -68,6 +71,7 @@ internal class ImageDecoding @Inject constructor(
             exifRotation = exif?.rotationDegrees ?: 0,
             flipped = exif?.isFlipped ?: false,
             hasExif = exif?.let { e -> METADATA_TAGS.any(e::hasAttribute) } ?: false,
+            metadata = exif?.let(::summaryOf) ?: MetadataSummary.NONE,
         )
     }
 
@@ -132,6 +136,17 @@ internal class ImageDecoding @Inject constructor(
     }
 
     /** Raises the sample size until the decoded bitmap fits in a quarter of the heap. */
+    private fun summaryOf(exif: ExifInterface): MetadataSummary = MetadataSummary(
+        device = MetadataSummary.deviceName(
+            exif.getAttribute(ExifInterface.TAG_MAKE),
+            exif.getAttribute(ExifInterface.TAG_MODEL),
+        ),
+        takenAt = exif.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL)
+            ?: exif.getAttribute(ExifInterface.TAG_DATETIME),
+        hasLocation = MetadataGroup.LOCATION.tags.any(exif::hasAttribute),
+        hasOther = MetadataGroup.OTHER.tags.any(exif::hasAttribute),
+    )
+
     private fun safeSampleSize(width: Int, height: Int, requested: Int): Int {
         val budget = Runtime.getRuntime().maxMemory() / HEAP_FRACTION
         var sample = requested.coerceAtLeast(1)

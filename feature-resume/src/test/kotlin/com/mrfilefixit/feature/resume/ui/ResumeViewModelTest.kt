@@ -175,12 +175,18 @@ class ResumeViewModelTest {
     }
 
     @Test
-    fun `choosing a template opens a saved draft with its sample content`() = runTest(dispatcher) {
+    fun `choosing a template opens a saved empty draft with its sections`() = runTest(dispatcher) {
         val vm = editorWith("LEGAL")
         val state = vm.state.value
         assertEquals(ResumePage.EDITOR, state.page)
         assertEquals("LEGAL", state.resume?.templateId)
         assertEquals(state.resume?.sections, repo.drafts.values.single().sections)
+        assertEquals("", state.resume?.contact?.fullName)
+        assertEquals(
+            ResumeTemplates.byId("LEGAL").sections.map { it.kind },
+            state.resume?.sections?.map { it.kind },
+        )
+        assertTrue(state.resume?.sections.orEmpty().all { it.text.isEmpty() })
     }
 
     @Test

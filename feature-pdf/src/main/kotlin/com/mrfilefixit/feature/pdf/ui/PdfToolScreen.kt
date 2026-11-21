@@ -89,6 +89,8 @@ import com.mrfilefixit.core.ui.components.UriImage
 import com.mrfilefixit.core.ui.components.ZoomableImageDialog
 import com.mrfilefixit.core.ui.components.rememberListReorderState
 import com.mrfilefixit.core.ui.format.formatBytes
+import com.mrfilefixit.core.ui.permission.AppPermission
+import com.mrfilefixit.core.ui.permission.rememberPermissionGate
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
@@ -129,11 +131,12 @@ internal fun PdfToolScreen(
     val pickImages = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
         actions.onPick(uris.map { it.toString() })
     }
+    val pickImagesWithPermission = rememberPermissionGate(AppPermission.PHOTOS) {
+        pickImages.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
     val pick = {
         when {
-            tool.acceptsImages -> pickImages.launch(
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-            )
+            tool.acceptsImages -> pickImagesWithPermission()
             tool.conversion != null -> pickPdf.launch(tool.pickerMimeTypes)
             tool.multipleInputs -> pickPdfs.launch(arrayOf(PDF_MIME))
             else -> pickPdf.launch(arrayOf(PDF_MIME))
@@ -236,16 +239,18 @@ private fun DocumentContent(
                 item(key = "summary") {
                     DocumentSummary(file, state.info, onChange = onAddMore, Modifier.contentWidth())
                 }
-                // The pages, so page numbers for split, extract, delete or reorder can be picked by eye.
+                // The pages, marked for the tool (split files, picked pages), so the choice is visible by eye.
+                // Organize keeps its board after saving, so pages can be changed and saved again.
                 val info = state.info
-                if (info != null && !info.encrypted && file.mimeType == PDF_MIME && state.job !is JobState.Success) {
+                val showPages = state.job !is JobState.Success || state.tool == PdfTool.ORGANIZE
+                if (info != null && !info.encrypted && file.mimeType == PDF_MIME && showPages) {
                     item(key = "input-pages") {
-                        SectionCard(Modifier.contentWidth()) { PdfPageStrip(file.uri) }
+                        SectionCard(Modifier.contentWidth()) { InputPageStrip(state, file.uri, actions) }
                     }
                 }
             }
         }
-        if (state.job !is JobState.Success) {
+        if (state.job !is JobState.Success || state.tool == PdfTool.ORGANIZE) {
             item(key = "options") { Options(state, actions, password, Modifier.contentWidth()) }
         }
         item(key = "job") { JobSection(state, actions, Modifier.contentWidth()) }
@@ -310,6 +315,9 @@ private fun runLabel(state: PdfToolUiState): String = when (state.tool) {
             pluralStringResource(R.plurals.pdf_run_split, count, count)
         }
     }
+    PdfTool.ORGANIZE -> state.organizedPages.size.let { n ->
+        if (n == 0) toolLabel(state.tool) else pluralStringResource(R.plurals.pdf_run_organize, n, n)
+    }
     else -> toolLabel(state.tool)
 }
 
@@ -317,6 +325,8 @@ private fun runLabel(state: PdfToolUiState): String = when (state.tool) {
 private fun runHint(state: PdfToolUiState): String? = when {
     state.tool == PdfTool.MERGE && state.files.size < 2 -> stringResource(R.string.pdf_merge_need_two)
     state.info?.encrypted == true && state.tool != PdfTool.UNLOCK -> stringResource(R.string.pdf_unlock_first)
+    state.tool == PdfTool.ORGANIZE && state.info != null && state.organizedPages.isEmpty() ->
+        stringResource(R.string.pdf_organize_pick_one)
     else -> null
 }
 
@@ -475,13 +485,16 @@ private fun Options(
         }
         when (state.tool) {
             PdfTool.SPLIT -> SplitOptions(state, actions)
-            PdfTool.EXTRACT, PdfTool.REORDER, PdfTool.DELETE, PdfTool.ROTATE, PdfTool.TO_IMAGES -> {
+            PdfTool.ORGANIZE -> PagesField(
+                value = o.pages,
+                onValue = { v -> actions.onOptions { it.copy(pages = v) } },
+                hint = stringResource(R.string.pdf_order_hint),
+            )
+            PdfTool.DELETE, PdfTool.ROTATE, PdfTool.TO_IMAGES -> {
                 PagesField(
                     value = o.pages,
                     onValue = { v -> actions.onOptions { it.copy(pages = v) } },
-                    hint = stringResource(
-                        if (state.tool == PdfTool.REORDER) R.string.pdf_order_hint else R.string.pdf_pages_hint,
-                    ),
+                    hint = stringResource(R.string.pdf_pages_hint),
                 )
                 if (state.tool == PdfTool.ROTATE) {
                     SectionHeader(stringResource(R.string.pdf_rotate_by))
@@ -647,8 +660,7 @@ internal fun toolLabel(tool: PdfTool): String = stringResource(
     when (tool) {
         PdfTool.MERGE -> R.string.pdf_tool_MERGE
         PdfTool.SPLIT -> R.string.pdf_tool_SPLIT
-        PdfTool.EXTRACT -> R.string.pdf_tool_EXTRACT
-        PdfTool.REORDER -> R.string.pdf_tool_REORDER
+        PdfTool.ORGANIZE -> R.string.pdf_tool_ORGANIZE
         PdfTool.ROTATE -> R.string.pdf_tool_ROTATE
         PdfTool.DELETE -> R.string.pdf_tool_DELETE
         PdfTool.COMPRESS -> R.string.pdf_tool_COMPRESS

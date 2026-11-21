@@ -32,7 +32,7 @@ alive() {
 }
 
 alive "launch"
-for tab in nav_exam nav_pdf nav_image nav_scan nav_resume nav_home; do
+for tab in nav_scan nav_image nav_pdf nav_resume nav_exam nav_home; do
   tap "$tab"
   alive "$tab"
 done

@@ -14,10 +14,10 @@ android {
 
     defaultConfig {
         applicationId = "com.mrfilefixit.app"
-        versionCode = 4
-        versionName = "1.0.2"
-        // The optional UPI / PayPal donation screen. Build with -Pmff.donations=false to leave it out, for
-        // example for a store listing whose payments policy does not allow external donation links.
+        versionCode = 11
+        versionName = "1.0.9"
+        // The optional UPI / PayPal support screen, in every build including Play. There is no Play Billing, so the
+        // listing carries no "In-app purchases" label. -Pmff.donations=false leaves the screen out.
         val donations = providers.gradleProperty("mff.donations").orNull?.toBooleanStrict() ?: true
         buildConfigField("boolean", "DONATIONS_ENABLED", donations.toString())
         // Phone builds pass -Pmff.abis=arm64-v8a,armeabi-v7a so the APK carries native code only for phone chips;

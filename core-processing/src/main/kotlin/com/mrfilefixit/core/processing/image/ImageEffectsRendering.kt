@@ -47,6 +47,8 @@ internal object ImageEffectsRendering {
     suspend fun apply(source: Bitmap, effects: ImageEffects, fonts: (OverlayFont) -> Typeface): Bitmap {
         if (effects.isNone) return source
         var bitmap = source
+        effects.erase?.takeUnless { it.isEmpty }?.let { bitmap = replace(bitmap, ObjectErasing.apply(bitmap, it)) }
+        coroutineContext.ensureActive()
         effects.enhance?.let { bitmap = replace(bitmap, enhance(bitmap, it)) }
         coroutineContext.ensureActive()
         if (effects.filter == ImageFilter.DOCUMENT) {
