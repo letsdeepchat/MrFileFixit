@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mrfilefixit.core.domain.batch.BatchPolicy
 import com.mrfilefixit.core.domain.dispatchers.ApplicationScope
+import com.mrfilefixit.core.domain.exam.DocumentSpec
 import com.mrfilefixit.core.domain.exam.GetExamProfilesUseCase
 import com.mrfilefixit.core.domain.file.DescribeFileUseCase
 import com.mrfilefixit.core.domain.file.DestinationUri
@@ -478,32 +479,35 @@ class ImageToolViewModel @Inject constructor(
         }
     }
 
+    private fun resizeSpec(o: ImageOptions, examSpec: DocumentSpec?, quality: EncodeTarget): ImageBatchSpec =
+        ImageBatchSpec(
+            listOf(
+                ImageOp.Resize(
+                    o.width.toIntOrNull()?.coerceIn(1, limits.maxDimension) ?: DEFAULT_SIDE,
+                    o.height.toIntOrNull()?.coerceIn(1, limits.maxDimension) ?: DEFAULT_SIDE,
+                    when {
+                        examSpec != null -> ResizeMode.FILL
+                        o.keepAspect -> ResizeMode.FIT
+                        else -> ResizeMode.STRETCH
+                    },
+                ),
+            ),
+            if (examSpec != null) {
+                // Same KB targeting as the exam flow: aim inside the window under either KB reading.
+                val range = examSpec.targetBytes
+                OutputSpec(ImageFormat.JPEG, EncodeTarget.SizeRange(range.first, range.last, allowPadding = true))
+            } else {
+                OutputSpec(o.format, quality)
+            },
+            "-resized",
+        )
+
     private fun buildSpec(s: ImageToolUiState): ImageBatchSpec {
         val o = s.options
         val quality = EncodeTarget.Quality(o.quality.coerceIn(1, MAX_QUALITY))
         val examSpec = s.activePreset?.spec
         return when (s.tool) {
-            ImageTool.RESIZE -> ImageBatchSpec(
-                listOf(
-                    ImageOp.Resize(
-                        o.width.toIntOrNull()?.coerceIn(1, limits.maxDimension) ?: DEFAULT_SIDE,
-                        o.height.toIntOrNull()?.coerceIn(1, limits.maxDimension) ?: DEFAULT_SIDE,
-                        when {
-                            examSpec != null -> ResizeMode.FILL
-                            o.keepAspect -> ResizeMode.FIT
-                            else -> ResizeMode.STRETCH
-                        },
-                    ),
-                ),
-                if (examSpec != null) {
-                    // Same KB targeting as the exam flow: aim inside the window under either KB reading.
-                    val range = examSpec.targetBytes
-                    OutputSpec(ImageFormat.JPEG, EncodeTarget.SizeRange(range.first, range.last, allowPadding = true))
-                } else {
-                    OutputSpec(o.format, quality)
-                },
-                "-resized",
-            )
+            ImageTool.RESIZE -> resizeSpec(o, examSpec, quality)
             ImageTool.CROP -> ImageBatchSpec(listOf(ImageOp.Crop(o.crop)), OutputSpec(o.format, quality), "-cropped")
             ImageTool.ROTATE -> ImageBatchSpec(
                 listOf(ImageOp.Rotate(o.degrees)),
