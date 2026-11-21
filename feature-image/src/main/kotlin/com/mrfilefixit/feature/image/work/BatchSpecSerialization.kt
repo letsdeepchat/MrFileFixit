@@ -8,6 +8,7 @@ import com.mrfilefixit.core.domain.image.ImageBatchSpec
 import com.mrfilefixit.core.domain.image.ImageEffects
 import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.ImageOp
+import com.mrfilefixit.core.domain.image.MetadataGroup
 import com.mrfilefixit.core.domain.image.OutputSpec
 import com.mrfilefixit.core.domain.image.ProcessedImage
 import com.mrfilefixit.core.domain.image.ResizeMode
@@ -31,6 +32,8 @@ internal data class BatchJobDto(
     val suffix: String,
     /** Absent in jobs written before the Edit and Enhance tools. */
     val effects: ImageEffects? = null,
+    /** Remove metadata: the groups to take out; absent means all of them (jobs from before the choice). */
+    val removeMetadata: List<String>? = null,
 )
 
 @Serializable
@@ -68,6 +71,7 @@ internal object BatchSpecSerialization {
             original = spec.output.target == EncodeTarget.Original,
             suffix = spec.suffix,
             effects = spec.effects.takeUnless { it.isNone },
+            removeMetadata = spec.removeMetadata.takeUnless { it == MetadataGroup.ALL }?.map { it.name },
         ),
     )
 
@@ -83,6 +87,10 @@ internal object BatchSpecSerialization {
             output = OutputSpec(ImageFormat.valueOf(dto.format), target),
             suffix = dto.suffix,
             effects = dto.effects ?: ImageEffects.NONE,
+            removeMetadata = dto.removeMetadata
+                ?.mapNotNull { name -> MetadataGroup.entries.firstOrNull { it.name == name } }
+                ?.toSet()
+                ?: MetadataGroup.ALL,
         )
     }
 

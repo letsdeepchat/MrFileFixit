@@ -22,6 +22,7 @@ data class ImageBatchSpec(
     /** Appended to each source name, e.g. "-resized". */
     val suffix: String,
     val effects: ImageEffects = ImageEffects.NONE,
+    val removeMetadata: Set<MetadataGroup> = MetadataGroup.ALL,
 )
 
 data class BatchOutcome(
@@ -60,12 +61,8 @@ class BatchImageUseCase @Inject constructor(
                 outputBaseName = FilenameSanitizer.sanitize(source.displayName.substringBeforeLast('.') + spec.suffix),
                 operations = spec.operations,
                 effects = spec.effects,
-                // "Remove metadata" keeps each file's own format.
-                output = if (spec.output.target == EncodeTarget.Original) {
-                    spec.output.copy(format = ImageFormat.fromMimeType(source.mimeType) ?: spec.output.format)
-                } else {
-                    spec.output
-                },
+                output = outputFor(source, spec.output),
+                removeMetadata = spec.removeMetadata,
             )
             val sizeCheck = limits.checkFileSize(source.sizeBytes)
             val result = if (sizeCheck is Result.Failure) {
@@ -82,5 +79,15 @@ class BatchImageUseCase @Inject constructor(
             progress.step(index, sources.size)
         }
         return if (images.isEmpty()) failure(failures.first()) else success(BatchOutcome(images, failures))
+    }
+
+    /**
+     * "Remove metadata" keeps each file's own format when this phone can write it. HEIC needs a hardware encoder
+     * many phones lack, so those photos come out as JPEG instead of failing.
+     */
+    private fun outputFor(source: FileRef, output: OutputSpec): OutputSpec {
+        if (output.target != EncodeTarget.Original) return output
+        val own = ImageFormat.fromMimeType(source.mimeType) ?: return output
+        return if (processor.canEncode(own)) output.copy(format = own) else output.copy(format = ImageFormat.JPEG)
     }
 }

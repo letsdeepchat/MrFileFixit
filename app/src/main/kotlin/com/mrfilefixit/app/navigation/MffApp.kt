@@ -169,10 +169,10 @@ fun MffApp() {
                 SettingsScreen(
                     onBack = { navController.popBackStack() },
                     onOpenSupport = { navController.navigate(SupportRoute) { launchSingleTop = true } }
-                        .takeIf { BuildConfig.DONATIONS_ENABLED },
+                        .takeIf { SUPPORT_ENABLED },
                 )
             }
-            if (BuildConfig.DONATIONS_ENABLED) {
+            if (SUPPORT_ENABLED) {
                 composable<SupportRoute> { SupportScreen(onBack = { navController.popBackStack() }) }
             }
         }
@@ -192,7 +192,7 @@ private fun MainTabs(navController: NavHostController, pagerState: PagerState, s
                 onOpen = { scope.showTab(pagerState, it.ordinal) },
                 onOpenSettings = { navController.navigate(SettingsRoute) { launchSingleTop = true } },
                 onOpenSupport = { navController.navigate(SupportRoute) { launchSingleTop = true } }
-                    .takeIf { BuildConfig.DONATIONS_ENABLED },
+                    .takeIf { SUPPORT_ENABLED },
             )
             TopLevelDestination.EXAM -> ExamListDetail(
                 onPrepareInImageTools = { examId, kind ->
@@ -245,3 +245,6 @@ private const val LARGE_FONT_SCALE = 1.3f
 
 /** 11 sp medium with slight tracking: readable, and short enough that every caption stays on one line. */
 private val NavLabelStyle = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.2.sp)
+
+/** The Support screen exists when the build takes UPI/PayPal donations or Play Billing tips. */
+private val SUPPORT_ENABLED = BuildConfig.DONATIONS_ENABLED || BuildConfig.BILLING_ENABLED

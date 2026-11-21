@@ -4,9 +4,12 @@ import com.mrfilefixit.core.domain.image.BackgroundFill
 import com.mrfilefixit.core.domain.image.BackgroundReplace
 import com.mrfilefixit.core.domain.image.ColorAdjust
 import com.mrfilefixit.core.domain.image.EncodeTarget
+import com.mrfilefixit.core.domain.image.EraseStroke
 import com.mrfilefixit.core.domain.image.ImageEffects
 import com.mrfilefixit.core.domain.image.ImageFilter
+import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.domain.image.NaturalEnhance
+import com.mrfilefixit.core.domain.image.ObjectErase
 import com.mrfilefixit.core.domain.image.OverlayFont
 import com.mrfilefixit.core.domain.image.OverlayPosition
 import com.mrfilefixit.core.domain.image.PhotoStamp
@@ -134,3 +137,27 @@ data class BackgroundOptions(
         const val DEFAULT_COLOR = -0x2a2a2b
     }
 }
+
+/** The Erase object tab: the strokes painted over what should go, and the brush for the next stroke. */
+data class EraseOptions(
+    val strokes: List<EraseStroke> = emptyList(),
+    val brush: EraseBrush = EraseBrush.MEDIUM,
+) {
+    val isReady: Boolean get() = !ObjectErase(strokes).isEmpty
+
+    fun toEffects(): ImageEffects = ImageEffects(erase = ObjectErase(strokes))
+
+    companion object {
+        /** High quality: the fill should not pick up compression blocks on top. */
+        val QUALITY = EncodeTarget.Quality(92)
+
+        /** The picture's own format when it is one we write losslessly or well; JPEG otherwise (HEIC, GIF...). */
+        fun formatFor(mimeType: String?): ImageFormat = when (val own = ImageFormat.fromMimeType(mimeType)) {
+            ImageFormat.PNG, ImageFormat.WEBP -> own
+            else -> ImageFormat.JPEG
+        }
+    }
+}
+
+/** Brush radius as a share of the picture's shorter side. */
+enum class EraseBrush(val radius: Float) { SMALL(0.015f), MEDIUM(0.035f), LARGE(0.07f) }

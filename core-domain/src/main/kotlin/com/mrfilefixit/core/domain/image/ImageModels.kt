@@ -37,6 +37,8 @@ data class ImageInfo(
     /** EXIF rotation in degrees (0, 90, 180, 270). Width/height are already swapped for 90/270. */
     val rotationDegrees: Int = 0,
     val hasMetadata: Boolean = false,
+    /** What the EXIF data says, for "Remove metadata". */
+    val metadata: MetadataSummary = MetadataSummary.NONE,
 )
 
 /** Crop rectangle in normalised coordinates (0..1) of the upright image. */
@@ -157,6 +159,11 @@ data class ImageRequest(
     val output: OutputSpec,
     /** Pixel edits after the geometry: filters, the exam name and date bar, text, upscaling. */
     val effects: ImageEffects = ImageEffects.NONE,
+    /**
+     * "Remove metadata" only ([EncodeTarget.Original]): the groups to take out. The rest is written back into
+     * the cleaned file. All groups (the default) gives a fully clean file.
+     */
+    val removeMetadata: Set<MetadataGroup> = MetadataGroup.ALL,
 )
 
 /** Photo and signature stacked into one image, as some exam portals require. */

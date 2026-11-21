@@ -1,8 +1,11 @@
 package com.mrfilefixit.feature.scan.ui
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.ClipData
+import android.content.Intent
 import android.os.PersistableBundle
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -60,6 +63,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
@@ -67,6 +71,7 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import com.mrfilefixit.core.domain.file.OutputFile
 import com.mrfilefixit.core.domain.job.JobState
 import com.mrfilefixit.core.domain.ocr.OcrScript
+import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.scan.ScanCapture
 import com.mrfilefixit.core.domain.scan.ScanFilter
 import com.mrfilefixit.core.ui.R as CoreR
@@ -221,7 +226,10 @@ internal fun ScanScreen(
                         onClick = { ocrPicker.launch(arrayOf("image/*", "application/pdf")) },
                         modifier = Modifier.testTag("scan_storage"),
                     )
-                    state.inputError?.let { ErrorCard(it, onRetry = null) }
+                    state.inputError?.let { error ->
+                        ErrorCard(error, onRetry = null)
+                        if (error == SCANNER_UNAVAILABLE) ScannerSettingsHint()
+                    }
                     ScanSection(state, actions)
                     if (state.canRecognize || state.ocr !is JobState.Idle) OcrSection(state, actions, onOpenOcr)
                 }
@@ -513,3 +521,33 @@ private fun ScanPreview() {
         )
     }
 }
+
+private val SCANNER_UNAVAILABLE = AppError.FeatureUnavailable(AppError.Feature.DOCUMENT_SCANNER)
+
+/**
+ * The scanner and its camera belong to Google Play services, which asks for the camera itself; Mr File Fixit has
+ * no camera permission to ask for. When the scanner cannot start (camera blocked, Play services disabled or out
+ * of date), this opens Play services' own settings, where the camera can be allowed.
+ */
+@Composable
+private fun ScannerSettingsHint() {
+    val context = LocalContext.current
+    Text(
+        stringResource(R.string.scan_camera_settings_hint),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    OutlinedButton(
+        onClick = {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:$PLAY_SERVICES".toUri())
+            try {
+                context.startActivity(intent)
+            } catch (_: ActivityNotFoundException) {
+                context.startActivity(Intent(Settings.ACTION_SETTINGS))
+            }
+        },
+        modifier = Modifier.testTag("scan_camera_settings"),
+    ) { Text(stringResource(R.string.scan_camera_settings)) }
+}
+
+private const val PLAY_SERVICES = "com.google.android.gms"

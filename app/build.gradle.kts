@@ -14,12 +14,16 @@ android {
 
     defaultConfig {
         applicationId = "com.mrfilefixit.app"
-        versionCode = 8
-        versionName = "1.0.6"
+        versionCode = 9
+        versionName = "1.0.7"
         // The optional UPI / PayPal donation screen. Build with -Pmff.donations=false to leave it out, for
         // example for a store listing whose payments policy does not allow external donation links.
         val donations = providers.gradleProperty("mff.donations").orNull?.toBooleanStrict() ?: true
         buildConfigField("boolean", "DONATIONS_ENABLED", donations.toString())
+        // Tips through Google Play Billing (one-time products tip_49, tip_99, tip_199, tip_499). The Play build passes
+        // -Pmff.billing=true: Play's Payments policy requires Play Billing for payments to the developer.
+        val billing = providers.gradleProperty("mff.billing").orNull?.toBooleanStrict() ?: false
+        buildConfigField("boolean", "BILLING_ENABLED", billing.toString())
         // Phone builds pass -Pmff.abis=arm64-v8a,armeabi-v7a so the APK carries native code only for phone chips;
         // x86 and x86_64 are for emulators. Without the property every chip type is kept, for local emulators.
         providers.gradleProperty("mff.abis").orNull?.let { abis -> ndk { abiFilters += abis.split(",") } }
@@ -91,6 +95,7 @@ dependencies {
     implementation(libs.androidx.profileinstaller)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.timber)
+    implementation(libs.play.billing)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)
     implementation(libs.bundles.compose.adaptive)

@@ -43,13 +43,13 @@
     <string name="privacy_metadata_body">Location, camera details and other EXIF data are stripped from images when you export them.</string>
     <string name="settings_version">Version %1$s</string>
     <!-- Home quick cards -->
-    <string name="home_support_title">Help &amp; Support</string>
-    <string name="home_support_body">Free, with no ads and no premium. If it helped you, an optional donation helps it improve.</string>
+    <string name="home_support_title">Support &amp; Payment</string>
+    <string name="home_support_body">Support the developer so we can keep all tools free and build advanced features</string>
     <!-- Settings and support screen -->
-    <string name="settings_support_title">Help &amp; Support</string>
-    <string name="settings_support_body">Optional donation by UPI or PayPal</string>
-    <string name="support_title">Help &amp; Support</string>
-    <string name="support_intro">Mr File Fixit is free, with no ads, no premium and no sign-in. If it saved you time, you can donate any amount to help improve its quality and add new features. It is completely optional: every tool stays free either way.</string>
+    <string name="settings_support_title">Support &amp; Payment</string>
+    <string name="settings_support_body">Optional, to keep every tool free</string>
+    <string name="support_title">Support the developer</string>
+    <string name="support_intro">Mr File Fixit is free, with no ads, no premium and no sign-in. If it saved you time, you can support the developer to help improve its quality and add new features. It is completely optional: every tool stays free either way.</string>
     <string name="support_upi_title">UPI (India)</string>
     <string name="support_upi_scan">Scan this QR code with any UPI app, such as Google Pay, PhonePe, Paytm or BHIM.</string>
     <string name="support_qr_cd">UPI QR code to donate to %1$s</string>
@@ -57,7 +57,7 @@
     <string name="support_upi_id">UPI ID: %1$s</string>
     <string name="support_copy_upi">Copy UPI ID</string>
     <string name="support_copied">UPI ID copied</string>
-    <string name="support_amount">Pick an amount, or type your own in the UPI app</string>
+    <string name="support_amount">Pick an amount</string>
     <string name="support_amount_any">Any amount</string>
     <string name="support_amount_value">₹%1$d</string>
     <string name="support_pay_upi">Pay with a UPI app</string>
@@ -70,4 +70,18 @@
     <string name="support_no_browser">No browser found to open PayPal.</string>
     <string name="support_privacy">Payments happen in your UPI app or on PayPal. Mr File Fixit never sees your payment details and does not record donations.</string>
     <string name="support_thanks">Thank you for keeping a free, private app going!</string>
+    <string name="support_amount_custom">Custom</string>
+    <string name="support_amount_custom_label">Your amount</string>
+    <string name="support_amount_custom_hint">Whole rupees, up to ₹%1$d</string>
+    <string name="support_upi_failed">The UPI app says the payment did not go through. No money was taken.</string>
+    <string name="support_upi_pending">The UPI app says the payment is still being processed.</string>
+    <string name="support_thanks_title">Thank you!</string>
+    <string name="support_thanks_body">Your support keeps every tool free and helps build new features.</string>
+    <string name="support_thanks_ok">Close</string>
+    <string name="support_play_title">Tip through Google Play</string>
+    <string name="support_play_body">Pick a tip. Google Play shows the price in your currency and handles the payment.</string>
+    <string name="support_play_pending">Google Play is still processing your tip. It completes on its own.</string>
+    <string name="support_play_failed">Google Play could not complete the tip. Nothing was charged.</string>
+    <string name="support_play_unavailable">Tips are not available right now. Check that Google Play is installed and signed in, then open this screen again.</string>
+    <string name="support_privacy_play">Payments happen in Google Play. Mr File Fixit never sees your payment details.</string>
 </resources>
