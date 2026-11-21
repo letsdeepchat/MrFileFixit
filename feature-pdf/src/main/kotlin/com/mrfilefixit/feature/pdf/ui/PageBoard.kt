@@ -1,5 +1,6 @@
 package com.mrfilefixit.feature.pdf.ui
 
+import android.content.res.Resources
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -47,7 +48,7 @@ internal fun InputPageStrip(state: PdfToolUiState, uri: String, actions: PdfTool
             val plan = (state.splitPlan as? Result.Success)?.value
             val fileOf = remember(plan, count) { splitFileOfPage(plan, count) }
             val badges = remember(plan, resources) {
-                List(plan?.size ?: 0) { fileIndex -> resources.getString(R.string.pdf_split_badge, fileIndex + 1) }
+                List(plan?.size ?: 0) { fileIndex -> splitBadge(resources, fileIndex + 1) }
             }
             Text(stringResource(R.string.pdf_split_pages_hint), style = MaterialTheme.typography.bodySmall)
             PdfPageStrip(uri, mark = { index ->
@@ -63,6 +64,10 @@ internal fun InputPageStrip(state: PdfToolUiState, uri: String, actions: PdfTool
         else -> PdfPageStrip(uri)
     }
 }
+
+/** "File 2" on a page going into the second split file. */
+private fun splitBadge(resources: Resources, fileNumber: Int): String =
+    resources.getString(R.string.pdf_split_badge, fileNumber)
 
 /** Index of the split file each page goes into (first file wins for overlapping ranges), or -1. */
 internal fun splitFileOfPage(plan: List<IntRange>?, pageCount: Int): IntArray {
