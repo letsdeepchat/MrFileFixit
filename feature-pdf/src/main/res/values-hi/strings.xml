@@ -4,8 +4,6 @@
     <string name="pdf_title">PDF टूल</string>
     <string name="pdf_tool_MERGE">PDF जोड़ें</string>
     <string name="pdf_tool_SPLIT">PDF बाँटें</string>
-    <string name="pdf_tool_EXTRACT">पेज निकालें</string>
-    <string name="pdf_tool_REORDER">पेज का क्रम बदलें</string>
     <string name="pdf_tool_ROTATE">पेज घुमाएँ</string>
     <string name="pdf_tool_DELETE">पेज हटाएँ</string>
     <string name="pdf_tool_COMPRESS">PDF छोटा करें</string>
@@ -65,8 +63,6 @@
     <string name="pdf_group_SECURITY">सुरक्षा</string>
     <string name="pdf_desc_MERGE">फ़ाइलें किसी भी क्रम में जोड़ें</string>
     <string name="pdf_desc_SPLIT">एक PDF को कई में बाँटें</string>
-    <string name="pdf_desc_EXTRACT">सिर्फ़ ज़रूरी पेज रखें</string>
-    <string name="pdf_desc_REORDER">पेजों का क्रम बदलें</string>
     <string name="pdf_desc_ROTATE">पेज सीधे करें</string>
     <string name="pdf_desc_DELETE">बेकार पेज हटाएँ</string>
     <string name="pdf_desc_IMAGES_TO_PDF">फ़ोटो और स्कैन से एक PDF</string>
@@ -161,4 +157,25 @@
     <string name="pdf_convert_note_from_pdf">दस्तावेज़ों से सेव की गई PDF के साथ सबसे अच्छा काम करता है। स्कैन किए गए पेज में बदलने लायक टेक्स्ट नहीं होता, इसलिए पहले स्कैन और OCR का उपयोग करें। सब कुछ आपके फ़ोन पर ही रहता है।</string>
     <string name="pdf_preview_pick">किसी फ़ाइल पर टैप करके उसके पेज देखें।</string>
     <string name="pdf_preview_source_note">Word, PowerPoint और Excel फ़ाइलें फ़ोन पर दिखाई नहीं जा सकतीं, इसलिए ये वे मूल पेज हैं जिन्हें बदला गया।</string>
+    <string name="pdf_tool_ORGANIZE">पेज निकालें और क्रम बदलें</string>
+    <string name="pdf_desc_ORGANIZE">पेज चुनें, क्रम लगाएँ, सेव करें</string>
+    <string name="pdf_split_pages_hint">हर पेज पर लिखा है कि वह किस फ़ाइल में जाएगा। धुँधले पेज छोड़ दिए जाएँगे।</string>
+    <string name="pdf_split_badge">फ़ाइल %1$d</string>
+    <string name="pdf_organize_hint">पेज रखने या हटाने के लिए उस पर टैप करें। रखे गए पेजों पर उनका नया क्रम लिखा है। पूरी स्क्रीन पर देखने के लिए पेज को देर तक दबाएँ।</string>
+    <string name="pdf_organize_badge">#%1$d</string>
+    <string name="pdf_organize_all">सभी पेज रखें</string>
+    <string name="pdf_organize_none">चुनाव हटाएँ</string>
+    <string name="pdf_organize_order">पेजों का नया क्रम</string>
+    <string name="pdf_organize_earlier">पेज %1$d को पहले करें</string>
+    <string name="pdf_organize_later">पेज %1$d को बाद में करें</string>
+    <string name="pdf_organize_remove">पेज %1$d हटाएँ</string>
+    <string name="pdf_organize_pick_one">कम से कम एक पेज चुनें।</string>
+    <plurals name="pdf_organize_picked">
+        <item quantity="one">%2$d में से %1$d पेज रखा गया</item>
+        <item quantity="other">%2$d में से %1$d पेज रखे गए</item>
+    </plurals>
+    <plurals name="pdf_run_organize">
+        <item quantity="one">%1$d पेज को नई PDF में सेव करें</item>
+        <item quantity="other">%1$d पेजों को नई PDF में सेव करें</item>
+    </plurals>
 </resources>

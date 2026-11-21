@@ -5,12 +5,18 @@ package com.mrfilefixit.core.domain.image
 import java.io.ByteArrayOutputStream
 
 /**
- * Removes metadata chunks from a PNG without touching image data:
- * eXIf (EXIF), tEXt/zTXt/iTXt (text, often XMP), and tIME. Colour chunks (gAMA, cHRM, sRGB, iCCP) stay.
+ * Removes metadata from a PNG without touching image data. Only chunks needed to show the picture are kept:
+ * the critical ones (IHDR, PLTE, IDAT, IEND), colour and transparency (tRNS, gAMA, cHRM, sRGB, iCCP, sBIT, cICP,
+ * HDR info), background, pixel density and animation. Everything else goes: eXIf (EXIF), tEXt/zTXt/iTXt (text,
+ * often XMP with the phone model), tIME, and private vendor chunks that phones and editors add.
  */
 object PngChunks {
     private val SIGNATURE = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
-    private val METADATA = setOf("eXIf", "tEXt", "zTXt", "iTXt", "tIME")
+    private val KEPT = setOf(
+        "IHDR", "PLTE", "IDAT", "IEND",
+        "tRNS", "gAMA", "cHRM", "sRGB", "iCCP", "sBIT", "cICP", "mDCV", "cLLI", "mDCv", "cLLi",
+        "bKGD", "pHYs", "acTL", "fcTL", "fdAT",
+    )
     private const val LENGTH_BYTES = 4
     private const val TYPE_BYTES = 4
     private const val CRC_BYTES = 4
@@ -30,7 +36,7 @@ object PngChunks {
             val total = LENGTH_BYTES.toLong() + TYPE_BYTES + length + CRC_BYTES
             if (pos + total > bytes.size) return null
             val type = String(bytes, pos + LENGTH_BYTES, TYPE_BYTES, Charsets.US_ASCII)
-            if (type !in METADATA) out.write(bytes, pos, total.toInt())
+            if (type in KEPT) out.write(bytes, pos, total.toInt())
             pos += total.toInt()
             if (type == "IEND") return out.toByteArray()
         }

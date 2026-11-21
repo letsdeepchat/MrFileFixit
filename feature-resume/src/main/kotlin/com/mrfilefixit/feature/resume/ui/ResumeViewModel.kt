@@ -151,7 +151,7 @@ class ResumeViewModel @Inject constructor(
             mutableState.update { it.copy(page = ResumePage.EDITOR, restyling = false) }
             return
         }
-        val resume = ResumeFactory.fromTemplate(template, ids.next(), now(), ids::next)
+        val resume = ResumeFactory.blankFromTemplate(template, ids.next(), now(), ids::next)
         openEditor(resume, photo = null)
         scheduleSave(immediate = true)
     }

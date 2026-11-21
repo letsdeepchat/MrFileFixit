@@ -89,7 +89,7 @@ internal class AndroidOcrExporter @Inject constructor(
                     val placed = mutableListOf<Placement>()
                     sources.forEachIndexed { sourceIndex, source ->
                         coroutineContext.ensureActive()
-                        placed += if (source.mimeType == OcrPageImages.PDF_MIME) {
+                        placed += if (pages.isPdf(source)) {
                             val copy = copyToJob(source, outputDir).also { temps += it }
                             val original = openPdf(copy).also { opened += it }
                             if (original.pages.any { it.rotation % FULL_TURN != 0 }) {

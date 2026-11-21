@@ -2,6 +2,7 @@ package com.mrfilefixit.core.storage.files
 
 import android.content.ContentResolver
 import android.content.Context
+import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
@@ -11,6 +12,7 @@ import com.mrfilefixit.core.domain.file.FileRef
 import com.mrfilefixit.core.domain.file.FileRepository
 import com.mrfilefixit.core.domain.file.ImportFormat
 import com.mrfilefixit.core.domain.file.OutputFile
+import com.mrfilefixit.core.domain.image.JpegSegments
 import com.mrfilefixit.core.domain.result.AppError
 import com.mrfilefixit.core.domain.result.AppResult
 import com.mrfilefixit.core.domain.result.failure
@@ -21,6 +23,7 @@ import com.mrfilefixit.core.domain.security.FilenameSanitizer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.OutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
@@ -59,8 +62,7 @@ internal class SafFileRepository @Inject constructor(
         withContext(dispatchers.io) {
             runCatchingAppFlat {
                 val file = jobFile(output) ?: return@runCatchingAppFlat failure(AppError.FileNotFound)
-                // "wt" truncates: overwriting a longer file must not leave its tail behind.
-                resolver.openOutputStream(destination.value.toUri(), "wt")
+                openForWriting(destination.value.toUri())
                     ?.use { out -> file.inputStream().use { it.copyTo(out) } }
                     ?: return@runCatchingAppFlat failure(AppError.PermissionDenied)
                 success(Unit)
@@ -113,8 +115,31 @@ internal class SafFileRepository @Inject constructor(
                 target.delete()
                 return@runCatchingAppFlat failure(AppError.EmptyFile)
             }
+            // Scanner pages can carry the phone's make and model in EXIF: drop it before anything is shared.
+            if (format == ImportFormat.JPEG) {
+                JpegSegments.stripMetadata(target.readBytes())?.let { clean ->
+                    target.writeBytes(clean)
+                    copied = clean.size.toLong()
+                }
+            }
             success(OutputFile(target.absolutePath, target.name, format.mimeType, copied))
         }
+    }
+
+    /**
+     * "wt" truncates, so overwriting a longer file never leaves its tail behind. Some document providers (Google
+     * Drive, several OEM file managers, older Downloads providers) reject "wt" with an exception; a document that
+     * "Save as" has just created is empty anyway, so plain "w" is a safe fallback there.
+     */
+    private fun openForWriting(uri: Uri): OutputStream? = try {
+        resolver.openOutputStream(uri, "wt")
+    } catch (e: IllegalArgumentException) {
+        resolver.openOutputStream(uri, "w")
+    } catch (e: UnsupportedOperationException) {
+        resolver.openOutputStream(uri, "w")
+    } catch (e: FileNotFoundException) {
+        // Thrown for an unsupported mode by some providers, and for a missing document: "w" tells them apart.
+        resolver.openOutputStream(uri, "w")
     }
 
     private fun uniqueFile(dir: File, base: String, extension: String): File {

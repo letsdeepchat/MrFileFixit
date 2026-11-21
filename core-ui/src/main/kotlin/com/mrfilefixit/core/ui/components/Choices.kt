@@ -3,10 +3,13 @@ package com.mrfilefixit.core.ui.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
@@ -50,12 +53,29 @@ fun <T> ChoiceGrid(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     columns: Int = 2,
+    enabled: Boolean = true,
+    tileModifier: (T) -> Modifier = { Modifier },
 ) {
     Column(modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
         options.chunked(columns).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
+            // Tiles in a row share the tallest one's height, so a label that wraps (Hindi, large text) never
+            // makes its neighbours look misaligned or overlap the next row.
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
+            ) {
                 row.forEach { option ->
-                    ChoiceTile(label(option), option == selected, { onSelect(option) }, Modifier.weight(1f))
+                    ChoiceTile(
+                        label(option),
+                        option == selected,
+                        { onSelect(option) },
+                        tileModifier(option)
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        enabled,
+                    )
                 }
                 repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
             }
@@ -64,7 +84,13 @@ fun <T> ChoiceGrid(
 }
 
 @Composable
-private fun ChoiceTile(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun ChoiceTile(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
     val colors = MaterialTheme.colorScheme
     Surface(
         shape = RoundedCornerShape(Dimens.ButtonCorner),
@@ -73,7 +99,7 @@ private fun ChoiceTile(text: String, selected: Boolean, onClick: () -> Unit, mod
         border = BorderStroke(1.dp, if (selected) colors.secondary else colors.outlineVariant),
         modifier = modifier
             .heightIn(min = Dimens.MinTouchTarget)
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
+            .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick),
     ) {
         Row(
             Modifier.padding(horizontal = Dimens.SpaceM, vertical = Dimens.SpaceS),

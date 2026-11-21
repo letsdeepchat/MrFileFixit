@@ -56,6 +56,7 @@
     <string name="exam_prepare_files_hint">इमेज टूल इस परीक्षा की पिक्सेल और KB सीमा के साथ खुलेंगे।</string>
     <string name="exam_req_dimensions">आकार</string>
     <string name="exam_dimensions_value">%1$s × %2$s px</string>
+    <string name="exam_dimensions_bounds">%1$s × %2$s</string>
     <string name="exam_req_size">फ़ाइल साइज़</string>
     <string name="exam_req_format">फ़ॉर्मैट</string>
     <string name="exam_req_background">बैकग्राउंड</string>

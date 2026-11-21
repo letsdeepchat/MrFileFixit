@@ -63,6 +63,7 @@ import com.mrfilefixit.core.domain.biodata.BiodataTemplates
 import com.mrfilefixit.core.domain.convert.DocumentFormat
 import com.mrfilefixit.core.domain.resume.HeaderLayout
 import com.mrfilefixit.core.domain.resume.HeadingStyle
+import com.mrfilefixit.core.domain.resume.Resume
 import com.mrfilefixit.core.domain.resume.ResumeSummary
 import com.mrfilefixit.core.domain.resume.ResumeTemplate
 import com.mrfilefixit.core.domain.resume.ResumeTemplates
@@ -271,7 +272,11 @@ private fun DraftRow(draft: ResumeSummary, onOpen: () -> Unit, onDelete: () -> U
     ) {
         ListItem(
             leadingContent = { TemplateSketch(template, Modifier.width(SKETCH_SMALL.dp)) },
-            headlineContent = { Text(draft.name) },
+            headlineContent = {
+                // A draft without a name yet is stored as "Resume"; show it in the app's language instead.
+                val named = draft.name.takeUnless { it.isBlank() || it == Resume.DEFAULT_NAME }
+                Text(named ?: stringResource(R.string.resume_untitled))
+            },
             supportingContent = {
                 Text("${templateName(template)} · ${stringResource(R.string.resume_edited, edited)}")
             },

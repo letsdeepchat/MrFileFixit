@@ -1,7 +1,11 @@
 package com.mrfilefixit.core.ui.error
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.mrfilefixit.core.domain.result.AppError
@@ -52,5 +56,26 @@ fun appErrorMessage(error: AppError): String = when (error) {
     AppError.EmptyOutput -> stringResource(R.string.error_empty_output)
     AppError.PhotoRequired -> stringResource(R.string.error_photo_required)
     AppError.NoPersonFound -> stringResource(R.string.error_no_person_found)
-    is AppError.Unexpected -> stringResource(R.string.error_unexpected)
+    // The exception's class name only (never a file name or content), so a report says what failed.
+    is AppError.Unexpected ->
+        if (error.type.isBlank()) {
+            stringResource(R.string.error_unexpected)
+        } else {
+            stringResource(R.string.error_unexpected_code, error.type)
+        }
+}
+
+/**
+ * Shows [error] in [snackbar] with its real message (not a generic "Something went wrong"), then calls
+ * [onShown] so the caller can clear it. Effects that report an [AppError] set it; this turns it into text.
+ */
+@Composable
+fun ErrorSnackbarEffect(error: AppError?, snackbar: SnackbarHostState, onShown: () -> Unit) {
+    if (error == null) return
+    val message = appErrorMessage(error)
+    val shown by rememberUpdatedState(onShown)
+    LaunchedEffect(error, message) {
+        snackbar.showSnackbar(message)
+        shown()
+    }
 }
