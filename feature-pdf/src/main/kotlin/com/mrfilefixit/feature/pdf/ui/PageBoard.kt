@@ -46,14 +46,13 @@ internal fun InputPageStrip(state: PdfToolUiState, uri: String, actions: PdfTool
         PdfTool.SPLIT -> {
             val plan = (state.splitPlan as? Result.Success)?.value
             val fileOf = remember(plan, count) { splitFileOfPage(plan, count) }
+            val badges = remember(plan, resources) {
+                List(plan?.size ?: 0) { fileIndex -> resources.getString(R.string.pdf_split_badge, fileIndex + 1) }
+            }
             Text(stringResource(R.string.pdf_split_pages_hint), style = MaterialTheme.typography.bodySmall)
             PdfPageStrip(uri, mark = { index ->
-                val file = fileOf.getOrElse(index) { -1 }
-                if (file < 0) {
-                    PageMark(dimmed = plan != null)
-                } else {
-                    PageMark(badge = resources.getString(R.string.pdf_split_badge, file + 1), picked = true)
-                }
+                val badge = badges.getOrNull(fileOf.getOrElse(index) { -1 })
+                if (badge == null) PageMark(dimmed = plan != null) else PageMark(badge = badge, picked = true)
             })
         }
         PdfTool.ORGANIZE -> OrganizeBoard(state, uri, count, actions)

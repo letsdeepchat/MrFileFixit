@@ -166,8 +166,8 @@
     <string name="pdf_organize_all">Keep all pages</string>
     <string name="pdf_organize_none">Clear selection</string>
     <string name="pdf_organize_order">New page order</string>
-    <string name="pdf_organize_earlier">Move page %1$d earlier</string>
-    <string name="pdf_organize_later">Move page %1$d later</string>
+    <string name="pdf_organize_earlier">Move earlier (page %1$d)</string>
+    <string name="pdf_organize_later">Move later (page %1$d)</string>
     <string name="pdf_organize_remove">Drop page %1$d</string>
     <string name="pdf_organize_pick_one">Pick at least one page.</string>
     <plurals name="pdf_organize_picked">
