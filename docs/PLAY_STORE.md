@@ -72,14 +72,14 @@ disclosures, not this app's.
 
 ## Donations
 
-The Play build has **no donation feature**. CI's release job builds the bundle with `-Pmff.donations=false`, which
-removes the Support screen, the Home card and the Settings row; the `<queries>` entries for UPI apps are the only
-trace left. Google Play's Payments policy requires Google Play billing for in-app payments and forbids leading users
-to other payment methods, with an exception for tax-exempt (charitable) donations only. A tip to the developer's
-own UPI ID or PayPal is not covered, and reviewers flag it.
+Since 1.0.8 the Play build carries the same optional **UPI and PayPal** support screen as the tester build, and
+**no Google Play Billing**: the billing library is gone and the manifest removes `com.android.vending.BILLING`
+(`tools:node="remove"`), so the listing shows no "In-app purchases" label. CI fails if Play Billing appears in the
+merged manifest. Every tool stays free and support unlocks nothing.
 
-The sideloaded tester build on GitHub releases keeps donations. To accept tips on Play later, add Google Play
-Billing consumable products (for example "Tip ₹51") that unlock nothing.
+**Policy risk, accepted by the owner:** Google Play's Payments policy asks apps to use Google Play billing for
+in-app payments to the developer and exempts only tax-exempt charitable donations. Links to the developer's own
+UPI ID or PayPal can be flagged in review. If that happens, build with `-Pmff.donations=false` to drop the screen.
 
 * **Data safety:** unchanged.
 * **Financial features:** No. The app does not process payments.

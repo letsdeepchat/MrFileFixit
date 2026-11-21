@@ -13,6 +13,12 @@
     <uses-sdk tools:overrideLibrary="androidx.heifwriter" />
 
     <!--
+      No Google Play Billing: support is voluntary UPI or PayPal, so the Play listing shows no "In-app purchases"
+      label. Removed in case a library brings it back; CI fails if it appears in the merged manifest.
+    -->
+    <uses-permission android:name="com.android.vending.BILLING" tools:node="remove" />
+
+    <!--
       No foreground services and no notifications: every job runs while the app is open, or as plain WorkManager
       background work. Removed in case a library brings them back; CI fails if one appears in the merged manifest.
     -->

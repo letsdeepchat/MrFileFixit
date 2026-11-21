@@ -40,7 +40,6 @@ pdfbox-android = "2.0.27.0"
 # Logging
 timber = "5.0.1"
 # Google Play Billing: tips in the Play build only. Play requires version 8 or newer for app updates.
-play-billing = "8.0.0"
 # Testing
 junit5 = "5.13.4"
 mockk = "1.14.5"
@@ -113,7 +112,6 @@ pdfbox-android = { module = "com.tom-roush:pdfbox-android", version.ref = "pdfbo
 
 # Logging
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
-play-billing = { module = "com.android.billingclient:billing", version.ref = "play-billing" }
 
 # Testing
 junit5-bom = { module = "org.junit:junit-bom", version.ref = "junit5" }

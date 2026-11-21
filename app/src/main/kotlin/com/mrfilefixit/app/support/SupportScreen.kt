@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,12 +41,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,7 +65,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
-import com.mrfilefixit.app.BuildConfig
 import com.mrfilefixit.app.R
 import com.mrfilefixit.core.domain.support.Donation
 import com.mrfilefixit.core.domain.support.UpiOutcome
@@ -76,7 +72,6 @@ import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.components.PrimaryActionButton
 import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.components.ToolScaffold
-import com.mrfilefixit.core.ui.share.findActivity
 import com.mrfilefixit.core.ui.share.shareFile
 import com.mrfilefixit.core.ui.theme.Dimens
 import java.io.File
@@ -86,9 +81,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Optional support for the developer. Tester builds offer UPI (QR code, UPI ID and a `upi://pay` link to the
- * user's own UPI app) and PayPal.Me; the Play build offers tips through Google Play Billing instead, as Play's
- * Payments policy requires. Every tool stays free either way, and nothing here unlocks anything.
+ * Optional support for the developer: UPI (QR code, UPI ID and a `upi://pay` link to the user's own UPI app) and
+ * PayPal.Me. No Google Play Billing, so the Play listing shows no "In-app purchases" label. Every tool stays free,
+ * and nothing here unlocks anything.
  */
 @Composable
 fun SupportScreen(onBack: () -> Unit) {
@@ -120,21 +115,16 @@ fun SupportScreen(onBack: () -> Unit) {
                     Icon(Icons.Filled.Favorite, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Text(stringResource(R.string.support_intro), style = MaterialTheme.typography.bodyLarge)
                 }
-                if (BuildConfig.BILLING_ENABLED) PlayTipsCard(onThanks = { thanks = true }, say = say)
-                if (BuildConfig.DONATIONS_ENABLED) {
-                    UpiCard(onThanks = { thanks = true }, say = say)
-                    PayPalCard(say)
-                }
+                UpiCard(onThanks = { thanks = true }, say = say)
+                PayPalCard(say)
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceM)) {
                     Icon(
                         Icons.Filled.Lock,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    val privacy =
-                        if (BuildConfig.DONATIONS_ENABLED) R.string.support_privacy else R.string.support_privacy_play
                     Text(
-                        stringResource(privacy),
+                        stringResource(R.string.support_privacy),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -162,62 +152,6 @@ private fun ThanksDialog(onDismiss: () -> Unit) {
         confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.support_thanks_ok)) } },
         modifier = Modifier.testTag("support_thanks_dialog"),
     )
-}
-
-/** Play build: the four tips at Play's prices in the user's currency, paid in Play's own purchase sheet. */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun PlayTipsCard(onThanks: () -> Unit, say: (String) -> Unit) {
-    val context = LocalContext.current
-    var options by remember { mutableStateOf<List<TipOption>?>(null) }
-    var unavailable by remember { mutableStateOf(false) }
-    val pending = stringResource(R.string.support_play_pending)
-    val failed = stringResource(R.string.support_play_failed)
-    val currentThanks by rememberUpdatedState(onThanks)
-    val currentSay by rememberUpdatedState(say)
-    val tips = remember(context) {
-        PlayTips(
-            context,
-            onOptions = { options = it },
-            onEvent = { event ->
-                when (event) {
-                    TipEvent.THANKS -> currentThanks()
-                    TipEvent.PENDING -> currentSay(pending)
-                    TipEvent.FAILED -> currentSay(failed)
-                    TipEvent.UNAVAILABLE -> unavailable = true
-                }
-            },
-        )
-    }
-    DisposableEffect(tips) {
-        tips.connect()
-        onDispose { tips.close() }
-    }
-    SectionCard(Modifier.fillMaxWidth()) {
-        Heading(stringResource(R.string.support_play_title))
-        Text(stringResource(R.string.support_play_body), style = MaterialTheme.typography.bodyMedium)
-        val loaded = options
-        when {
-            loaded != null -> FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
-                verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                loaded.forEach { option ->
-                    OutlinedButton(
-                        onClick = { context.findActivity()?.let { tips.tip(it, option) } },
-                        modifier = Modifier.testTag("support_${option.productId}"),
-                    ) { Text(option.price) }
-                }
-            }
-            unavailable -> Text(
-                stringResource(R.string.support_play_unavailable),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            else -> CircularProgressIndicator(Modifier.size(PROGRESS_SIZE.dp))
-        }
-    }
 }
 
 /**
@@ -437,6 +371,5 @@ private suspend fun exportQr(context: Context): String? = withContext(Dispatcher
 }
 
 private const val QR_SIZE = 220
-private const val PROGRESS_SIZE = 32
 private const val CUSTOM_DIGITS = 6
 private const val PNG = "image/png"
