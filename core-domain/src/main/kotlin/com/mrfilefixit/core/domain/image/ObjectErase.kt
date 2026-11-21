@@ -1,10 +1,10 @@
 package com.mrfilefixit.core.domain.image
 
-import kotlinx.serialization.Serializable
 import kotlin.math.ceil
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
+import kotlinx.serialization.Serializable
 
 /**
  * "Erase object": what the user painted over. Each stroke is a finger path in coordinates normalised to the
@@ -22,7 +22,7 @@ data class ObjectErase(val strokes: List<EraseStroke>) {
         strokes.forEach { stroke ->
             val r = stroke.radius * side + growPixels
             val xs = stroke.points.filterIndexed { i, _ -> i % 2 == 0 }.map { it * width }
-                val ys = stroke.points.filterIndexed { i, _ -> i % 2 == 1 }.map { it * height }
+            val ys = stroke.points.filterIndexed { i, _ -> i % 2 == 1 }.map { it * height }
             val count = min(xs.size, ys.size)
             for (i in 0 until count) {
                 val (x0, y0) = xs[i] to ys[i]
