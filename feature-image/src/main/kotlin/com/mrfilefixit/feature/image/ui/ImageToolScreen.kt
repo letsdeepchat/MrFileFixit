@@ -81,6 +81,8 @@ import com.mrfilefixit.core.ui.components.windowHeight
 import com.mrfilefixit.core.ui.format.formatBytes
 import com.mrfilefixit.core.ui.navigation.ReportInnerScreen
 import com.mrfilefixit.core.ui.navigation.rememberGuardedBack
+import com.mrfilefixit.core.ui.permission.AppPermission
+import com.mrfilefixit.core.ui.permission.rememberPermissionGate
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
@@ -130,7 +132,9 @@ internal fun ImageToolScreen(
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(MAX_PICK)) { uris ->
         actions.onPick(uris.map { it.toString() })
     }
-    val pick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+    val pick = rememberPermissionGate(AppPermission.PHOTOS) {
+        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
     ToolScaffold(
         title = stringResource(R.string.image_title),
         modifier = modifier,

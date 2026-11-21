@@ -119,4 +119,12 @@
     <string name="discard_leave">बाहर जाएँ</string>
     <string name="discard_stay">रुकें</string>
     <string name="action_close">बंद करें</string>
+    <!-- Runtime permissions -->
+    <string name="permission_camera_title">कैमरा अनुमति चाहिए</string>
+    <string name="permission_camera_body">स्कैन आपके दस्तावेज़ों की फ़ोटो लेने के लिए कैमरे का उपयोग करता है। स्कैन करने के लिए सेटिंग्स → अनुमतियाँ में कैमरा की अनुमति दें। फ़ोटो आपके फ़ोन में ही रहती हैं।</string>
+    <string name="permission_photos_title">फ़ोटो अनुमति</string>
+    <string name="permission_photos_body">Mr File Fixit केवल वही इमेज पढ़ता है जो आप चुनते हैं, और वे आपके फ़ोन से बाहर नहीं जातीं। आप सेटिंग्स → अनुमतियाँ में फ़ोटो की अनुमति दे सकते हैं, या जारी रखकर इमेज एक-एक करके चुन सकते हैं।</string>
+    <string name="permission_open_settings">सेटिंग्स खोलें</string>
+    <string name="permission_continue_picker">जारी रखें</string>
+    <string name="permission_not_now">अभी नहीं</string>
 </resources>

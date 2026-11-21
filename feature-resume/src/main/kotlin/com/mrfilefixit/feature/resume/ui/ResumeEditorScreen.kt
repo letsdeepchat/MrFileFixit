@@ -78,6 +78,8 @@ import com.mrfilefixit.core.ui.components.StickyActionBar
 import com.mrfilefixit.core.ui.components.ToolScaffold
 import com.mrfilefixit.core.ui.components.windowHeight
 import com.mrfilefixit.core.ui.format.formatBytes
+import com.mrfilefixit.core.ui.permission.AppPermission
+import com.mrfilefixit.core.ui.permission.rememberPermissionGate
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
@@ -278,7 +280,9 @@ private fun PhotoCard(state: ResumeUiState, actions: ResumeEditorActions, modifi
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) actions.onPhoto(PhotoEvent.Picked(uri.toString()))
     }
-    val pick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+    val pick = rememberPermissionGate(AppPermission.PHOTOS) {
+        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
     SectionCard(modifier) {
         SectionHeader(stringResource(R.string.resume_photo))
         val crop = state.photoCrop

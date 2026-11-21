@@ -33,6 +33,8 @@ import com.mrfilefixit.core.domain.image.ImageFormat
 import com.mrfilefixit.core.ui.R as CoreR
 import com.mrfilefixit.core.ui.components.SectionCard
 import com.mrfilefixit.core.ui.components.SectionHeader
+import com.mrfilefixit.core.ui.permission.AppPermission
+import com.mrfilefixit.core.ui.permission.rememberPermissionGate
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.thumbnail.Thumbnail
 import com.mrfilefixit.feature.image.R
@@ -55,7 +57,9 @@ internal fun BackgroundOptionsCards(state: ImageToolUiState, actions: ImageToolA
             update { it.copy(choice = BackgroundChoice.PICTURE, pictureUri = uri.toString()) }
         }
     }
-    val pick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+    val pick = rememberPermissionGate(AppPermission.PHOTOS) {
+        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
     // The edge slider moves freely; the preview is only redone when it is released.
     var edge by remember(background.edge) { mutableFloatStateOf(background.edge) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Dimens.SpaceM)) {

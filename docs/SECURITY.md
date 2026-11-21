@@ -8,7 +8,7 @@ Each rule from the product spec is listed with where it is enforced and how it i
 | Rule | Enforced in | Checked by |
 | --- | --- | --- |
 | Nothing in the app touches the network (no ads, no analytics, no backend) | The app has **no `INTERNET` permission**: `app/AndroidManifest.xml` removes the one ML Kit merges in, so Android itself blocks every socket. `NetworkIsolation.kt` also fails the build if a module resolves a networking library or declares `INTERNET`; CI fails if any merged manifest (debug or release) has `INTERNET`, an ads component or `AD_ID` | `verifyNetworkIsolation` task (runs with `check`); detekt `ForbiddenImport` bans `java.net.*`, `javax.net.*`, OkHttp, Retrofit, Ktor everywhere |
-| Scoped storage and SAF only; no broad storage permissions | Photo Picker / `OpenDocument` / `CreateDocument` only. `app/AndroidManifest.xml` removes `READ/WRITE/MANAGE_EXTERNAL_STORAGE` and `READ_MEDIA_IMAGES` with `tools:node="remove"` in case a library adds them | Merged-manifest review in CI (`processReleaseManifest` + grep step) |
+| Scoped storage and SAF; no write or all-files access | Photo Picker / `OpenDocument` / `CreateDocument` / MediaStore. `CAMERA` and `READ_MEDIA_IMAGES` (or `READ_EXTERNAL_STORAGE` up to Android 12) are asked for at runtime right before Scan or an image picker. `app/AndroidManifest.xml` removes `WRITE/MANAGE_EXTERNAL_STORAGE` and `READ_MEDIA_VIDEO/AUDIO` with `tools:node="remove"` in case a library adds them | Merged-manifest review in CI (`processReleaseManifest` + grep step) |
 | Validate before decoding: 50 MB, max pixels, page count | `InputLimits` (50 MB, 64 MP, 16 384 px side, 1 000 pages, 100 files). Sizes are checked from SAF metadata, then again while streaming (`LimitedInputStream`); dimensions from the header before any bitmap is allocated; page count before rendering | `InputLimitsTest`, `BatchImageUseCaseTest`, `ScanUseCasesTest` |
 | Office files are untrusted input | `:core-office` parses DOCX/PPTX/XLSX with a strict XML pull parser that rejects DTDs (no XXE, no entity expansion) and reads ZIPs with entry-count, per-entry and total expanded-size caps (zip bombs); legacy DOC/PPT/XLS go through a Compound File reader with bounds and cycle checks; row, column, slide and paragraph counts are capped (`OfficeLimits`). Macros, OLE objects and external links are never executed or followed | `XmlReaderTest`, `DocxRoundTripTest`, `SheetFormatsTest` |
 | Resume drafts stay private | Drafts and photos live in app-private `files/resumes/` (excluded from backup like everything else); ids are validated against `[A-Za-z0-9-]`; a photo is only copied from this app's own cache; JSON is size-capped and parsed without reflection (kotlinx-serialization) | `ResumeTest`, `ResumeViewModelTest` |
@@ -71,11 +71,10 @@ There are none. The ads SDK, consent SDK and advertising ID were removed; every 
 Settings → Support and the card on Home offer optional donations by UPI or PayPal, in every build including Play
 (`-Pmff.donations=false` leaves them out). There is no Google Play Billing. The app itself sends nothing:
 
-* **UPI.** The QR code is a bundled image of a fixed `upi://pay` link (payee and UPI ID only, see
-  `Donation.QR_PAYLOAD`). "Pay with a UPI app" opens the user's own UPI app with an `ACTION_VIEW` intent. The
-  manifest's `<queries>` entries (the `upi` scheme, plus GPay, Paytm, PhonePe and BHIM by package name) only let
-  the app see which UPI apps are installed. A preset amount adds `am=` (for example `am=49.00`); "Any amount"
-  leaves it out so the UPI app asks.
+* **UPI.** The QR code is a bundled image of a fixed `upi://pay` link (payee, name and currency only, see
+  `Donation.QR_PAYLOAD`). The user copies the UPI ID, saves the QR code to `Pictures/MrFileFixit` (MediaStore, no
+  permission) or shares it, and pays inside their own UPI app. The app launches no UPI intent and has no
+  `<queries>` for UPI apps.
 * **PayPal.** Opens `https://paypal.me/MrFileFixit` in the user's browser.
 
 No payment data passes through the app, and nothing is recorded about whether anyone donated. See

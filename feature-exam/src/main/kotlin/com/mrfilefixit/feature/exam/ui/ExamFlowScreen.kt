@@ -63,6 +63,8 @@ import com.mrfilefixit.core.ui.components.boundsText
 import com.mrfilefixit.core.ui.components.displayName
 import com.mrfilefixit.core.ui.format.formatIsoDate
 import com.mrfilefixit.core.ui.format.formatNumber
+import com.mrfilefixit.core.ui.permission.AppPermission
+import com.mrfilefixit.core.ui.permission.rememberPermissionGate
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
@@ -333,6 +335,9 @@ private fun SlotCard(key: SlotKey, slot: SlotUiState, actions: ExamFlowActions, 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let { actions.onPick(key, it.toString()) }
     }
+    val pick = rememberPermissionGate(AppPermission.PHOTOS) {
+        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
     SectionCard(modifier) {
         Text(
             documentLabel(slot.spec.kind),
@@ -347,7 +352,7 @@ private fun SlotCard(key: SlotKey, slot: SlotUiState, actions: ExamFlowActions, 
         if (source == null || info == null) {
             PrimaryActionButton(
                 stringResource(R.string.exam_choose_for, documentLabel(slot.spec.kind)),
-                onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                onClick = pick,
                 modifier = Modifier.padding(top = Dimens.SpaceS),
             )
         } else {
