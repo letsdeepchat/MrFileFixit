@@ -89,6 +89,8 @@ import com.mrfilefixit.core.ui.components.UriImage
 import com.mrfilefixit.core.ui.components.ZoomableImageDialog
 import com.mrfilefixit.core.ui.components.rememberListReorderState
 import com.mrfilefixit.core.ui.format.formatBytes
+import com.mrfilefixit.core.ui.permission.AppPermission
+import com.mrfilefixit.core.ui.permission.rememberPermissionGate
 import com.mrfilefixit.core.ui.preview.AllPreviews
 import com.mrfilefixit.core.ui.theme.Dimens
 import com.mrfilefixit.core.ui.theme.MffTheme
@@ -129,11 +131,12 @@ internal fun PdfToolScreen(
     val pickImages = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
         actions.onPick(uris.map { it.toString() })
     }
+    val pickImagesWithPermission = rememberPermissionGate(AppPermission.PHOTOS) {
+        pickImages.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
     val pick = {
         when {
-            tool.acceptsImages -> pickImages.launch(
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-            )
+            tool.acceptsImages -> pickImagesWithPermission()
             tool.conversion != null -> pickPdf.launch(tool.pickerMimeTypes)
             tool.multipleInputs -> pickPdfs.launch(arrayOf(PDF_MIME))
             else -> pickPdf.launch(arrayOf(PDF_MIME))

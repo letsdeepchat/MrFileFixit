@@ -14,8 +14,8 @@ android {
 
     defaultConfig {
         applicationId = "com.mrfilefixit.app"
-        versionCode = 10
-        versionName = "1.0.8"
+        versionCode = 11
+        versionName = "1.0.9"
         // The optional UPI / PayPal support screen, in every build including Play. There is no Play Billing, so the
         // listing carries no "In-app purchases" label. -Pmff.donations=false leaves the screen out.
         val donations = providers.gradleProperty("mff.donations").orNull?.toBooleanStrict() ?: true

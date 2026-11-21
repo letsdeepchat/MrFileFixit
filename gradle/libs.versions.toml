@@ -39,7 +39,6 @@ mlkit-segmentation-selfie = "16.0.0-beta6"
 pdfbox-android = "2.0.27.0"
 # Logging
 timber = "5.0.1"
-# Google Play Billing: tips in the Play build only. Play requires version 8 or newer for app updates.
 # Testing
 junit5 = "5.13.4"
 mockk = "1.14.5"
