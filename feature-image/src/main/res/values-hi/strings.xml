@@ -130,4 +130,14 @@
     <string name="image_strip_found_other">इस फ़ोटो में: कैमरा सेटिंग या टिप्पणी</string>
     <string name="image_strip_not_found">इस फ़ोटो में नहीं है</string>
     <string name="image_strip_pick_one">हटाने के लिए कम से कम एक तरह की जानकारी चालू करें।</string>
+    <string name="image_tool_ERASE">चीज़ हटाएँ</string>
+    <string name="image_erase_title">जो हटाना है उस पर पेंट करें</string>
+    <string name="image_erase_hint">किसी व्यक्ति, दाग, तारीख की मुहर या किसी भी चीज़ पर पेंट करें। उसकी जगह आसपास से भर दी जाती है, इसी फ़ोन पर, बिना इंटरनेट के।</string>
+    <string name="image_erase_single_only">चीज़ हटाना एक बार में एक फ़ोटो पर काम करता है। एक ही फ़ोटो चुनें।</string>
+    <string name="image_erase_brush">ब्रश का आकार</string>
+    <string name="image_erase_brush_small">छोटा</string>
+    <string name="image_erase_brush_medium">मध्यम</string>
+    <string name="image_erase_brush_large">बड़ा</string>
+    <string name="image_erase_undo">वापस लें</string>
+    <string name="image_erase_note">सादी या दोहराने वाली पृष्ठभूमि पर सबसे अच्छा काम करता है, जैसे दीवार, आसमान, कागज़ या घास। चीज़ के किनारों से थोड़ा बाहर तक पेंट करें।</string>
 </resources>

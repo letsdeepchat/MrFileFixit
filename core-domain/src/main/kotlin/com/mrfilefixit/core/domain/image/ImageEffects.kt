@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Pixel edits applied after the geometry of an [ImageRequest] (rotate, crop, resize), in this order:
- * [background] replacement, [enhance], then [filter] and [adjust], then the exam [stamp] bar, then the [texts].
+ * [background] replacement, [erase], [enhance], then [filter] and [adjust], then the exam [stamp] bar, then the [texts].
  * Serializable so a batch handed to WorkManager carries them.
  */
 @Serializable
@@ -15,6 +15,8 @@ data class ImageEffects(
     val texts: List<TextOverlay> = emptyList(),
     val enhance: NaturalEnhance? = null,
     val background: BackgroundReplace? = null,
+    /** Erase object: the painted area is filled from its surroundings. */
+    val erase: ObjectErase? = null,
 ) {
     val isNone: Boolean get() = this == NONE
 

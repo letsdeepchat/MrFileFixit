@@ -340,6 +340,7 @@ private fun ToolOptions(state: ImageToolUiState, actions: ImageToolActions, modi
         ImageTool.EDIT -> EditOptionsCards(state, actions, modifier)
         ImageTool.ENHANCE -> EnhanceOptionsCards(state, actions, modifier)
         ImageTool.BACKGROUND -> BackgroundOptionsCards(state, actions, modifier)
+        ImageTool.ERASE -> EraseOptionsCard(state, actions, modifier)
         ImageTool.STRIP_EXIF -> MetadataOptionsCard(state, actions, modifier)
     }
 }
@@ -649,6 +650,7 @@ private fun toolLabel(tool: ImageTool): String = stringResource(
         ImageTool.EDIT -> R.string.image_tool_EDIT
         ImageTool.ENHANCE -> R.string.image_tool_ENHANCE
         ImageTool.BACKGROUND -> R.string.image_tool_BACKGROUND
+        ImageTool.ERASE -> R.string.image_tool_ERASE
         ImageTool.STRIP_EXIF -> R.string.image_tool_STRIP_EXIF
     },
 )
@@ -663,7 +665,7 @@ private fun aspectLabel(aspect: Float?): String = when (aspect) {
 }
 
 private const val MAX_PICK = 100
-private val LIVE_PREVIEW_TOOLS = setOf(ImageTool.ENHANCE, ImageTool.EDIT, ImageTool.BACKGROUND)
+private val LIVE_PREVIEW_TOOLS = setOf(ImageTool.ENHANCE, ImageTool.EDIT, ImageTool.BACKGROUND, ImageTool.ERASE)
 private const val PDF_MIME = "application/pdf"
 private const val PICKED_MAX_HEIGHT_FRACTION = 0.4f
 private const val MIN_ASPECT = 0.3f

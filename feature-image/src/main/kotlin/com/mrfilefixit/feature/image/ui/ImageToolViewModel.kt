@@ -59,7 +59,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class ImageTool { RESIZE, CROP, ROTATE, COMPRESS, CONVERT, EDIT, ENHANCE, BACKGROUND, STRIP_EXIF }
+enum class ImageTool { RESIZE, CROP, ROTATE, COMPRESS, CONVERT, EDIT, ENHANCE, BACKGROUND, ERASE, STRIP_EXIF }
 
 data class ImageOptions(
     val width: String = "1080",
@@ -79,6 +79,8 @@ data class ImageOptions(
     val edit: EditOptions = EditOptions(),
     val enhance: EnhanceOptions = EnhanceOptions(),
     val background: BackgroundOptions = BackgroundOptions(),
+    /** Erase object: what the user painted over. */
+    val erase: EraseOptions = EraseOptions(),
     /** Remove metadata: the kinds of detail to take out. */
     val removeMetadata: Set<MetadataGroup> = MetadataGroup.ALL,
 )
@@ -134,7 +136,8 @@ data class ImageToolUiState(
     val canRun: Boolean
         get() = files.isNotEmpty() && (tool != ImageTool.CROP || files.size == 1) &&
             (tool != ImageTool.BACKGROUND || options.background.isReady) &&
-            (tool != ImageTool.STRIP_EXIF || options.removeMetadata.isNotEmpty())
+            (tool != ImageTool.STRIP_EXIF || options.removeMetadata.isNotEmpty()) &&
+            (tool != ImageTool.ERASE || (files.size == 1 && options.erase.isReady))
     val activePreset: ResizePreset? get() = presets.firstOrNull { it.id == options.presetId }
 }
 
@@ -288,7 +291,7 @@ class ImageToolViewModel @Inject constructor(
                             livePreview = null,
                             ranTool = null,
                             delivered = false,
-                            options = it.options.copy(crop = NormalizedRect.FULL),
+                            options = it.options.copy(crop = NormalizedRect.FULL, erase = EraseOptions()),
                         )
                     }
                     imageProcessor.readInfo(described.value.first()).fold(
@@ -317,6 +320,7 @@ class ImageToolViewModel @Inject constructor(
         ImageTool.ENHANCE -> options.enhance.copy(scale = 1).toEffects()
         ImageTool.EDIT -> options.edit.toEffects()
         ImageTool.BACKGROUND -> options.background.toEffects().takeIf { options.background.isReady }
+        ImageTool.ERASE -> options.erase.toEffects().takeIf { options.erase.isReady }
         else -> null
     }
 
@@ -548,6 +552,12 @@ class ImageToolViewModel @Inject constructor(
                     effects = background.toEffects(),
                 )
             }
+            ImageTool.ERASE -> ImageBatchSpec(
+                operations = emptyList(),
+                output = OutputSpec(EraseOptions.formatFor(s.files.firstOrNull()?.mimeType), EraseOptions.QUALITY),
+                suffix = "-erased",
+                effects = o.erase.toEffects(),
+            )
             ImageTool.STRIP_EXIF -> ImageBatchSpec(
                 emptyList(),
                 OutputSpec(ImageFormat.JPEG, EncodeTarget.Original),
